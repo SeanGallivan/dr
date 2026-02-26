@@ -62,7 +62,7 @@
                 <div>
                     <div style="font-size: 1.8rem; font-weight: 800;" id="vName">Patient Name</div>
                     <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;" id="vNextContainer">
-                        </div>
+                    </div>
                 </div>
                 <div class="header-meta">ID: <span id="vId"></span></div>
                 <div class="header-meta">DOB: <span id="vDob"></span></div>
@@ -132,7 +132,6 @@
 </div>
 
 <script>
-    // Normalized ages 25-70
     const patients = [
         { id: "DAAB6673", name: "Elizabeth Blackwell", lastVisit: "Feb 24, 2026", next: "Mar 12, 2026", dob: "8/27/1984", age: 41, h: "70", w: "206", bmi: "29.60", adx: "Follow-up", sched: false },
         { id: "JS123456", name: "Jonas Salk", lastVisit: "Feb 22, 2026", next: "", dob: "10/28/1975", age: 50, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
@@ -194,10 +193,8 @@
 
         const nextContainer = document.getElementById('vNextContainer');
         if (p.sched) {
-            // Remove "Next Visit:" label and just show link
             nextContainer.innerHTML = `<a class="schedule-link">Schedule Next Visit →</a>`;
         } else {
-            // Include "Next Visit:" label
             nextContainer.innerHTML = `Next Visit: <span id="vNextVisit">${p.next}</span>`;
         }
 
@@ -205,7 +202,6 @@
             <tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>
         `).join('');
 
-        // Ensure content scrolls to top on selection
         document.getElementById('mainContent').scrollTop = 0;
     }
 
