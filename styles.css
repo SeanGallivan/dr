@@ -7,21 +7,25 @@
     --text-dark: #222;
     --text-muted: #666;
     --active-gray: #e9ecef;
-    --header-height: 80px; /* Fixed height for calculations */
+    --header-height: 80px;
 }
 
-/* 1. Lock the Viewport */
 html, body {
     height: 100vh;
     width: 100vw;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Stops the whole page from scrolling */
+    overflow: hidden;
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-gray);
 }
 
-/* 2. Fixed Header */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Header --- */
 header {
     height: var(--header-height);
     background: white;
@@ -32,6 +36,7 @@ header {
     border-bottom: 3px solid var(--primary-navy);
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     box-sizing: border-box;
+    z-index: 100;
 }
 
 .logo-area {
@@ -45,12 +50,15 @@ header {
 nav a {
     text-decoration: none;
     color: var(--text-dark);
-    margin-left: 2rem;
-    font-weight: 600;
-    font-size: 0.95rem;
+    margin-left: 2.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
 }
 
-/* 3. The Wrapper: Fills exactly what is left */
+nav a.active { color: var(--primary-navy); border-bottom: 2px solid var(--primary-navy); padding-bottom: 5px; }
+
+/* --- Structure --- */
 .wrapper {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -59,13 +67,12 @@ nav a {
     overflow: hidden;
 }
 
-/* 4. Sidebar Scroll */
 .sidebar {
     background: white;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    height: 100%; /* Fills wrapper height */
+    height: 100%;
     overflow: hidden;
 }
 
@@ -75,44 +82,53 @@ nav a {
     flex-shrink: 0;
 }
 
-#patientSearch {
+#searchBox {
     width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-family: 'Montserrat';
     box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
-.patient-list { 
+.add-link {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.list-container { 
     flex: 1;
-    overflow-y: auto; /* FORCES SCROLL */
+    overflow-y: auto;
     background: white;
 }
 
-.patient-item {
+.list-item {
     padding: 1.2rem 1.5rem;
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
 }
 
-.patient-item.active { 
+.list-item.active { 
     background: var(--active-gray); 
     border-left: 6px solid var(--primary-navy); 
 }
 
-.patient-name { font-weight: 700; display: block; color: var(--primary-navy); }
-.last-visit { font-size: 0.8rem; color: var(--text-muted); }
+.item-main { font-weight: 700; display: block; color: var(--primary-navy); }
+.item-sub { font-size: 0.8rem; color: var(--text-muted); }
 
-/* 5. Main Content Scroll */
+/* --- Main Content --- */
 main {
-    height: 100%; /* Fills wrapper height */
-    overflow-y: auto; /* FORCES SCROLL */
-    padding: 0;
+    height: 100%;
+    overflow-y: auto;
     background: var(--bg-gray);
 }
 
-/* --- Dashboard Stats --- */
+.view-section { padding: 4rem; }
+
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -120,104 +136,22 @@ main {
     margin: 3rem 0;
 }
 
-.stat-item {
-    border-left: 1px solid var(--border-color);
-    padding-left: 2rem;
-}
+.stat-item { border-left: 1px solid var(--border-color); padding-left: 2rem; }
+.stat-value { font-size: 3.2rem; font-weight: 800; display: block; line-height: 1.2; margin: 1rem 0; }
+.stat-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
 
-.stat-value {
-    font-size: 3.2rem;
-    font-weight: 800;
-    display: block;
-    line-height: 1.2;
-    margin: 1rem 0;
-}
+/* --- Detail Views --- */
+.detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3rem; display: flex; gap: 4rem; align-items: center; }
+.content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; }
+.data-section { margin-bottom: 4rem; }
+.data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; margin-bottom: 2rem; font-size: 1.1rem; text-transform: uppercase; }
 
-.stat-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
+.table-custom { width: 100%; border-collapse: collapse; }
+.table-custom th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border-color); }
+.table-custom td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
 
-.see-more {
-    font-size: 0.8rem;
-    color: var(--primary-navy);
-    text-decoration: none;
-    font-weight: 700;
-    display: block;
-    margin-top: 1rem;
-}
-
-/* --- Patient Detail Layout --- */
-.detail-header {
-    background: var(--primary-navy);
-    color: white;
-    padding: 2rem 3rem;
-    display: flex;
-    gap: 3rem;
-    align-items: center;
-}
-
-.tab-bar {
-    display: flex;
-    background: #e2e8f0;
-    padding: 0 2rem;
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.tab {
-    padding: 1rem 1.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.tab.active {
-    background: white;
-    color: var(--primary-navy);
-    border-bottom: 2px solid var(--primary-navy);
-}
-
-.content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 4rem;
-    padding: 3rem;
-}
-
-.data-section {
-    margin-bottom: 4rem;
-}
-
-.data-section h3 {
-    border-bottom: 2px solid var(--primary-navy);
-    padding-bottom: 0.8rem;
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.at-a-glance-item { margin-bottom: 2.5rem; }
-.at-a-glance-item b {
-    display: block;
-    margin-top: 1rem;
-    font-size: 1.4rem;
-}
-
-.visit-table { width: 100%; border-collapse: collapse; }
-.visit-table th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border-color); }
-.visit-table td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
-
-.btn-group { display: flex; gap: 12px; margin-top: 1.5rem; flex-wrap: wrap; }
 .btn { padding: 12px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; }
 .btn-primary { background: var(--primary-navy); color: white; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
 
 .hidden { display: none; }
-.schedule-link { color: #fff; font-weight: 800; text-decoration: underline; cursor: pointer; font-size: 1.1rem; }
