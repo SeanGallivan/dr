@@ -11,207 +11,157 @@
 
 <header>
     <div class="logo-area">Derived Results</div>
-    <nav>
-        <a href="#">Dashboard</a>
-        <a href="#">Network Physicians</a>
-        <a href="#">Billing</a>
-        <a href="#" style="color:var(--secondary-red)">Sign Out</a>
+    <nav id="topNav">
+        <a onclick="switchMode('patients')" id="nav-patients" class="active">Dashboard</a>
+        <a onclick="switchMode('practices')" id="nav-practices">Practices</a>
+        <a href="#" style="color:var(--secondary-red); margin-left: 4rem;">Sign Out</a>
     </nav>
 </header>
 
 <div class="wrapper">
     <aside class="sidebar">
         <div class="search-container">
-            <input type="text" id="patientSearch" placeholder="Search Patients...">
+            <input type="text" id="searchBox" placeholder="Search Patients...">
+            <a href="#" id="addLink" class="hidden">+ Add New Practice</a>
         </div>
-        <div class="patient-list" id="patientList">
+        <div class="list-container" id="sidebarList">
             </div>
     </aside>
 
     <main id="mainContent">
-        <div id="defaultDashboard" style="padding: 4rem;">
-            <h1 style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);">Summit Musculoskeletal Group</h1>
-            <p style="color:var(--text-muted); font-weight:600; margin-top:0.5rem;">Practice Performance Overview</p>
+        <div id="overviewContainer" class="view-section">
+            <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);">Summit Musculoskeletal Group</h1>
+            <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.5rem;">Practice Performance Overview</p>
             
-            <div class="stats-container">
-                <div class="stat-item">
-                    <span class="stat-label">Patients</span>
-                    <span class="stat-value">134</span>
-                    <a href="#" class="see-more">View Patient Report →</a>
+            <div class="stats-container" id="dashStats">
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Monthly Billing</span>
-                    <span class="stat-value">$42,850</span>
-                    <a href="#" class="see-more">View Financials →</a>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Avg Days to First Visit</span>
-                    <span class="stat-value">14.2</span>
-                    <a href="#" class="see-more">View Pipeline →</a>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Active Diagnoses</span>
-                    <span class="stat-value">255</span>
-                    <a href="#" class="see-more">View Clinical Data →</a>
-                </div>
-            </div>
         </div>
 
-        <div id="patientView" class="hidden">
-            <div class="detail-header">
-                <div>
-                    <div style="font-size: 1.8rem; font-weight: 800;" id="vName">Patient Name</div>
-                    <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;" id="vNextContainer">
-                    </div>
+        <div id="detailContainer" class="hidden">
+            <div id="detailHeader" class="detail-header">
                 </div>
-                <div class="header-meta">ID: <span id="vId"></span></div>
-                <div class="header-meta">DOB: <span id="vDob"></span></div>
-                <div class="header-meta">Age: <span id="vAge"></span></div>
-            </div>
-
-            <div class="tab-bar">
-                <div class="tab active">Information</div>
-                <div class="tab">Evaluation & Treatment</div>
-                <div class="tab">Documents</div>
-                <div class="tab">Imaging</div>
-                <div class="tab">Analytics</div>
-            </div>
-
-            <div class="content-grid">
-                <div class="left-col">
-                    <div class="data-section">
-                        <h3>Evaluation & Management (At-a-glance)</h3>
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 2rem;">
-                            <div class="at-a-glance-item"><span class="stat-label">Height</span><b id="vHeight">70</b></div>
-                            <div class="at-a-glance-item"><span class="stat-label">Weight</span><b id="vWeight">206</b></div>
-                            <div class="at-a-glance-item"><span class="stat-label">BMI</span><b id="vBmi">29.60</b></div>
-                            <div class="at-a-glance-item"><span class="stat-label">Latest ADX Code</span><b id="vAdx">Level V</b></div>
-                        </div>
-                    </div>
-
-                    <div class="data-section">
-                        <h3>Visit History</h3>
-                        <table class="visit-table">
-                            <thead>
-                                <tr><th>Date</th><th>Procedure / Milestone</th><th>Status</th></tr>
-                            </thead>
-                            <tbody id="vHistory"></tbody>
-                        </table>
-                    </div>
+            
+            <div class="content-grid" id="detailBody">
                 </div>
-
-                <div class="right-col">
-                    <div class="data-section">
-                        <h3>Quick Actions</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary">Add Visit</button>
-                            <button class="btn btn-outline">Add Note</button>
-                            <button class="btn btn-outline">Message</button>
-                            <button class="btn btn-outline">Upload Images</button>
-                        </div>
-                    </div>
-                    
-                    <div class="data-section">
-                        <h3>Active Diagnoses</h3>
-                        <p style="font-weight:700; color:var(--primary-navy); margin-bottom:5px;">M54.16 - Radiculopathy, lumbar region</p>
-                        <p style="font-weight:700; color:var(--primary-navy);">M51.26 - Other intervertebral disc displacement</p>
-                    </div>
-
-                    <div class="data-section">
-                        <h3>Allergies</h3>
-                        <ul style="font-size: 0.9rem; padding-left: 1.2rem; color:var(--secondary-red); font-weight:600;">
-                            <li>Penicillins (Active)</li>
-                            <li>Codeine (Active)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <button onclick="showDashboard()" style="margin: 0 3rem 4rem 3rem; cursor:pointer;" class="btn btn-outline">← Back to Overview</button>
+            <button onclick="clearSelection()" style="margin: 0 3rem 4rem 3rem;" class="btn btn-outline">← Back to Overview</button>
         </div>
     </main>
 </div>
 
 <script>
-    const patients = [
-        { id: "DAAB6673", name: "Elizabeth Blackwell", lastVisit: "Feb 24, 2026", next: "Mar 12, 2026", dob: "8/27/1984", age: 41, h: "70", w: "206", bmi: "29.60", adx: "Follow-up", sched: false },
-        { id: "JS123456", name: "Jonas Salk", lastVisit: "Feb 22, 2026", next: "", dob: "10/28/1975", age: 50, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
-        { id: "VA987654", name: "Virginia Apgar", lastVisit: "Feb 19, 2026", next: "", dob: "6/07/1981", age: 44, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval", sched: true },
-        { id: "CD555444", name: "Charles Drew", lastVisit: "Feb 15, 2026", next: "Mar 18, 2026", dob: "6/03/1992", age: 33, h: "72", w: "210", bmi: "28.5", adx: "Injection", sched: false },
-        { id: "SF111222", name: "Sigmund Freud", lastVisit: "Jan 30, 2026", next: "", dob: "5/06/1966", age: 59, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
-        { id: "MC333222", name: "Marie Curie", lastVisit: "Jan 25, 2026", next: "", dob: "11/07/1989", age: 36, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval", sched: true },
-        { id: "LP444333", name: "Louis Pasteur", lastVisit: "Jan 20, 2026", next: "Mar 25, 2026", dob: "12/27/1978", age: 47, h: "66", w: "175", bmi: "28.2", adx: "Surgery", sched: false },
-        { id: "RF555666", name: "Rosalind Franklin", lastVisit: "Jan 15, 2026", next: "", dob: "7/25/1990", age: 35, h: "65", w: "145", bmi: "24.1", adx: "Follow-up", sched: true },
-        { id: "FN1", name: "Florence Nightingale", lastVisit: "Jan 10, 2026", next: "", dob: "5/12/1985", age: 40, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval", sched: true },
-        { id: "JL1", name: "Joseph Lister", lastVisit: "Jan 05, 2026", next: "", dob: "4/05/1972", age: 53, h: "69", w: "170", bmi: "25.1", adx: "Post-Op", sched: true },
-        { id: "CB1", name: "Clara Barton", lastVisit: "Jan 02, 2026", next: "", dob: "12/25/1983", age: 42, h: "63", w: "125", bmi: "22.1", adx: "Follow-up", sched: true },
-        { id: "AF1", name: "Alexander Fleming", lastVisit: "Dec 28, 2025", next: "Apr 08, 2026", dob: "8/06/1995", age: 30, h: "67", w: "165", bmi: "25.8", adx: "Injection", sched: false },
-        { id: "EJ1", name: "Edward Jenner", lastVisit: "Dec 25, 2025", next: "", dob: "5/17/1960", age: 65, h: "68", w: "180", bmi: "27.4", adx: "Surgery", sched: true },
-        { id: "GM1", name: "Gregor Mendel", lastVisit: "Dec 20, 2025", next: "", dob: "7/20/1979", age: 46, h: "66", w: "155", bmi: "25.0", adx: "Imaging", sched: true },
-        { id: "WH1", name: "William Harvey", lastVisit: "Dec 15, 2025", next: "", dob: "4/01/1988", age: 37, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval", sched: true },
-        { id: "AV1", name: "Andreas Vesalius", lastVisit: "Dec 10, 2025", next: "", dob: "12/31/1974", age: 51, h: "70", w: "190", bmi: "27.3", adx: "Follow-up", sched: true },
-        { id: "HT1", name: "Helen Taussig", lastVisit: "Nov 25, 2025", next: "", dob: "5/24/1994", age: 31, h: "65", w: "140", bmi: "23.3", adx: "Follow-up", sched: true },
-        { id: "GE1", name: "Gertrude Elion", lastVisit: "Nov 20, 2025", next: "", dob: "1/23/1982", age: 43, h: "63", w: "120", bmi: "21.3", adx: "Injection", sched: true },
-        { id: "RLM1", name: "Rita Levi-Montalcini", lastVisit: "Nov 15, 2025", next: "", dob: "4/22/1987", age: 38, h: "62", w: "115", bmi: "21.0", adx: "Post-Op", sched: true },
-        { id: "GC1", name: "Gerty Cori", lastVisit: "Nov 10, 2025", next: "May 10, 2026", dob: "8/15/1971", age: 54, h: "64", w: "135", bmi: "23.2", adx: "Surgery", sched: false },
-        { id: "JW1", name: "Jane Cooke Wright", lastVisit: "Nov 05, 2025", next: "", dob: "11/20/1986", age: 39, h: "66", w: "150", bmi: "24.2", adx: "Follow-up", sched: true },
-        { id: "DW1", name: "Daniel Hale Williams", lastVisit: "Nov 01, 2025", next: "", dob: "1/18/1977", age: 48, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval", sched: true }
-    ];
+    let currentMode = 'patients';
 
-    const mskHistory = [
-        { date: "Feb 24, 2026", proc: "Post-Op Check (Discectomy)", status: "Completed" },
-        { date: "Feb 10, 2026", proc: "Procedure: Lumbar Discectomy (L4-L5)", status: "Completed" },
-        { date: "Jan 15, 2026", proc: "Epidural Steroid Injection", status: "Completed" },
-        { date: "Jan 02, 2026", proc: "Diagnostic: MRI Lumbar Spine", status: "Completed" },
-        { date: "Dec 15, 2025", proc: "Initial Consultation / Physical Exam", status: "Completed" }
-    ];
+    const data = {
+        patients: [
+            { id: "P1", name: "Elizabeth Blackwell", last: "Feb 24, 2026", dob: "8/27/1984", age: 41, sub: "Last Seen: Feb 24" },
+            { id: "P2", name: "Jonas Salk", last: "Feb 22, 2026", dob: "10/28/1975", age: 50, sub: "Last Seen: Feb 22" },
+            { id: "P3", name: "Virginia Apgar", last: "Feb 19, 2026", dob: "6/07/1981", age: 44, sub: "Last Seen: Feb 19" }
+        ],
+        practices: [
+            { id: "PR1", name: "Summit Musculoskeletal", days: "14.2", sub: "Avg Days to 1st Visit: 14.2" },
+            { id: "PR2", name: "Northside Chiropractic", days: "18.5", sub: "Avg Days to 1st Visit: 18.5" },
+            { id: "PR3", name: "Downtown Wellness", days: "11.0", sub: "Avg Days to 1st Visit: 11.0" }
+        ]
+    };
 
-    function renderList() {
-        const listContainer = document.getElementById('patientList');
-        listContainer.innerHTML = patients.map(p => `
-            <div class="patient-item" id="p-${p.id}" onclick="viewPatient('${p.id}')">
-                <span class="patient-name">${p.name}</span>
-                <span class="last-visit">Last Seen: ${p.lastVisit}</span>
+    function switchMode(mode) {
+        currentMode = mode;
+        // Update Nav UI
+        document.querySelectorAll('#topNav a').forEach(a => a.classList.remove('active'));
+        document.getElementById(`nav-${mode}`).classList.add('active');
+        
+        // Update Sidebar Header
+        const search = document.getElementById('searchBox');
+        const addLink = document.getElementById('addLink');
+        search.placeholder = mode === 'patients' ? "Search Patients..." : "Search Practices...";
+        addLink.classList.toggle('hidden', mode === 'patients');
+        
+        renderSidebar();
+        renderDashboard();
+        clearSelection();
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('sidebarList');
+        list.innerHTML = data[currentMode].map(item => `
+            <div class="list-item" onclick="selectItem('${item.id}')" id="item-${item.id}">
+                <span class="item-main">${item.name}</span>
+                <span class="item-sub">${item.sub}</span>
             </div>
         `).join('');
     }
 
-    function viewPatient(id) {
-        const p = patients.find(pat => pat.id === id);
-        document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`p-${id}`).classList.add('active');
-        document.getElementById('defaultDashboard').classList.add('hidden');
-        document.getElementById('patientView').classList.remove('hidden');
-        
-        document.getElementById('vName').innerText = p.name;
-        document.getElementById('vId').innerText = p.id;
-        document.getElementById('vDob').innerText = p.dob;
-        document.getElementById('vAge').innerText = p.age;
-        document.getElementById('vHeight').innerText = p.h;
-        document.getElementById('vWeight').innerText = p.w;
-        document.getElementById('vBmi').innerText = p.bmi;
-        document.getElementById('vAdx').innerText = p.adx;
-
-        const nextContainer = document.getElementById('vNextContainer');
-        if (p.sched) {
-            nextContainer.innerHTML = `<a class="schedule-link">Schedule Next Visit →</a>`;
+    function renderDashboard() {
+        const stats = document.getElementById('dashStats');
+        if (currentMode === 'patients') {
+            document.getElementById('overviewTitle').innerText = "Summit Musculoskeletal Group";
+            document.getElementById('overviewSub').innerText = "Practice Performance Overview";
+            stats.innerHTML = `
+                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" class="add-link">View Report →</a></div>
+                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" class="add-link">View Financials →</a></div>
+                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" class="add-link">View Clinical →</a></div>
+            `;
         } else {
-            nextContainer.innerHTML = `Next Visit: <span id="vNextVisit">${p.next}</span>`;
+            document.getElementById('overviewTitle').innerText = "Network Practices";
+            document.getElementById('overviewSub').innerText = "Global Practice Distribution";
+            stats.innerHTML = `
+                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">12</span><a href="#" class="add-link">Manage Network →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" class="add-link">Patient Map →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142,000</span><a href="#" class="add-link">Network Revenue →</a></div>
+            `;
         }
+    }
 
-        document.getElementById('vHistory').innerHTML = mskHistory.map(h => `
-            <tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>
-        `).join('');
+    function selectItem(id) {
+        document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(`item-${id}`).classList.add('active');
+        
+        document.getElementById('overviewContainer').classList.add('hidden');
+        document.getElementById('detailContainer').classList.remove('hidden');
 
+        const item = data[currentMode].find(i => i.id === id);
+        const header = document.getElementById('detailHeader');
+        const body = document.getElementById('detailBody');
+
+        if (currentMode === 'patients') {
+            header.innerHTML = `<div><div style="font-size:1.8rem; font-weight:800;">${item.name}</div><div style="margin-top:5px; opacity:0.8;">DOB: ${item.dob} (Age: ${item.age})</div></div>`;
+            body.innerHTML = `<div class="data-section"><h3>Clinical Overview</h3><p>MSK Pathway: Evaluation Complete. Diagnostic Imaging Pending.</p></div>`;
+        } else {
+            header.innerHTML = `<div><div style="font-size:1.8rem; font-weight:800;">${item.name}</div><div style="margin-top:5px; opacity:0.8;">Avg Pipeline: ${item.days} Days</div></div>`;
+            body.innerHTML = `
+                <div class="left-col">
+                    <div class="data-section">
+                        <h3>Practice Physicians</h3>
+                        <table class="table-custom">
+                            <thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr>
+                                <tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <div class="data-section">
+                        <h3>Administrative Staff</h3>
+                        <ul style="font-weight:600; font-size:0.9rem;">
+                            <li>Marty McGraw (Operations)</li>
+                            <li>Chris (Records)</li>
+                            <li>Rosie (Records)</li>
+                        </ul>
+                    </div>
+                </div>`;
+        }
         document.getElementById('mainContent').scrollTop = 0;
     }
 
-    function showDashboard() {
-        document.getElementById('defaultDashboard').classList.remove('hidden');
-        document.getElementById('patientView').classList.add('hidden');
-        document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('active'));
+    function clearSelection() {
+        document.getElementById('overviewContainer').classList.remove('hidden');
+        document.getElementById('detailContainer').classList.add('hidden');
+        document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
     }
 
-    renderList();
+    switchMode('patients');
 </script>
 </body>
 </html>
