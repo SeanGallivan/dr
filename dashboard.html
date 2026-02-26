@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derived Results | Dashboard</title>
+    <title>Derived Results | Summit Musculoskeletal Group</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -21,16 +21,17 @@
 
 <div class="wrapper">
     <aside class="sidebar">
-        <div class="search-container" style="padding: 1rem;">
-            <input type="text" id="patientSearch" placeholder="Search Patients..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <div class="search-container" style="padding: 1rem; border-bottom: 1px solid #eee;">
+            <input type="text" id="patientSearch" placeholder="Search Patients..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-family:'Montserrat';">
         </div>
         <div class="patient-list" id="patientList">
             </div>
     </aside>
 
     <main id="mainContent">
-        <div id="defaultDashboard" style="padding: 3rem;">
-            <h1 style="font-weight: 800; font-size: 2.5rem; margin:0;">Practice Overview</h1>
+        <div id="defaultDashboard" style="padding: 4rem;">
+            <h1 style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);">Summit Musculoskeletal Group</h1>
+            <p style="color:var(--text-muted); font-weight:600; margin-top:0.5rem;">Practice Performance Overview</p>
             
             <div class="stats-container">
                 <div class="stat-item">
@@ -58,9 +59,13 @@
 
         <div id="patientView" class="hidden">
             <div class="detail-header">
-                <div style="font-size: 1.5rem; font-weight: 700;" id="vName">Patient Name</div>
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 800;" id="vName">Patient Name</div>
+                    <div style="margin-top:5px; font-weight:600; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:4px; display:inline-block;">
+                        Next Visit: <span id="vNextVisit">March 12, 2026</span>
+                    </div>
+                </div>
                 <div class="header-meta">ID: <span id="vId"></span></div>
-                <div class="header-meta">EMR: <span id="vEmr"></span></div>
                 <div class="header-meta">DOB: <span id="vDob"></span></div>
                 <div class="header-meta">Age: <span id="vAge"></span></div>
             </div>
@@ -70,7 +75,6 @@
                 <div class="tab">Evaluation & Treatment</div>
                 <div class="tab">Documents</div>
                 <div class="tab">Imaging</div>
-                <div class="tab">Messages</div>
                 <div class="tab">Analytics</div>
             </div>
 
@@ -78,18 +82,23 @@
                 <div class="left-col">
                     <div class="data-section">
                         <h3>Evaluation & Management (At-a-glance)</h3>
-                        <div style="display:flex; gap: 3rem; margin-top: 1rem;">
-                            <div><span class="stat-label">Height</span><br><b id="vHeight">70</b></div>
-                            <div><span class="stat-label">Weight</span><br><b id="vWeight">206</b></div>
-                            <div><span class="stat-label">BMI</span><br><b id="vBmi">29.60</b></div>
-                            <div><span class="stat-label">Latest ADX Code</span><br><b id="vAdx">Level V</b></div>
+                        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+                            <div class="at-a-glance-item"><span class="stat-label">Height</span><b id="vHeight">70</b></div>
+                            <div class="at-a-glance-item"><span class="stat-label">Weight</span><b id="vWeight">206</b></div>
+                            <div class="at-a-glance-item"><span class="stat-label">BMI</span><b id="vBmi">29.60</b></div>
+                            <div class="at-a-glance-item"><span class="stat-label">Latest ADX Code</span><b id="vAdx">Level V</b></div>
                         </div>
                     </div>
 
-                    <div class="data-section" style="margin-top:2rem;">
-                        <h3>Clinical History</h3>
-                        <p><strong>Medications:</strong> <span class="text-muted">None currently listed.</span></p>
-                        <p><strong>Work History:</strong> <span id="vWork">Full Time (Restricted)</span></p>
+                    <div class="data-section">
+                        <h3>Visit History (MSK Pathway)</h3>
+                        <table class="visit-table">
+                            <thead>
+                                <tr><th>Date</th><th>Procedure / Milestone</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="vHistory">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -97,35 +106,67 @@
                     <div class="data-section">
                         <h3>Quick Actions</h3>
                         <div class="btn-group">
-                            <button style="background:var(--primary-navy); color:white; padding:10px; border:none; border-radius:4px; cursor:pointer; font-weight:700;">Add Visit</button>
-                            <button style="background:transparent; border:1px solid var(--primary-navy); padding:10px; border-radius:4px; font-weight:700;">Message</button>
+                            <button class="btn btn-primary">Add Visit</button>
+                            <button class="btn btn-outline">Add Note</button>
+                            <button class="btn btn-outline">Message</button>
+                            <button class="btn btn-outline">Upload Images</button>
                         </div>
                     </div>
                     
-                    <div class="data-section" style="margin-top:2rem;">
+                    <div class="data-section">
+                        <h3>Active Diagnosis</h3>
+                        <p id="vDiagnosis" style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p>
+                    </div>
+
+                    <div class="data-section">
                         <h3>Allergies</h3>
-                        <ul style="font-size: 0.9rem; padding-left: 1.2rem;">
+                        <ul style="font-size: 0.9rem; padding-left: 1.2rem; color:var(--secondary-red); font-weight:600;">
                             <li>Penicillins (Active)</li>
                             <li>Codeine (Active)</li>
                         </ul>
                     </div>
                 </div>
             </div>
-            <button onclick="showDashboard()" style="margin: 2rem; cursor:pointer;">← Back to Overview</button>
+            <button onclick="showDashboard()" style="margin: 0 3rem 3rem 3rem; cursor:pointer;" class="btn btn-outline">← Back to Overview</button>
         </div>
     </main>
 </div>
 
 <script>
     const patients = [
-        { id: "DAAB6673", emr: "106620075", name: "Elizabeth Blackwell", dob: "8/27/1974", age: 51, lastVisit: "Feb 24, 2026", h: "70", w: "206", bmi: "29.60", adx: "Admission Assessment", work: "Full Time (Restricted)" },
-        { id: "JS123456", emr: "106620076", name: "Jonas Salk", dob: "10/28/1914", age: 111, lastVisit: "Feb 22, 2026", h: "68", w: "185", bmi: "28.1", adx: "Level IV", work: "Retired" },
-        { id: "VA987654", emr: "106620077", name: "Virginia Apgar", dob: "6/07/1909", age: 116, lastVisit: "Feb 19, 2026", h: "64", w: "140", bmi: "24.0", adx: "Procedure", work: "Active" },
-        { id: "CD555444", emr: "106620078", name: "Charles Drew", dob: "6/03/1904", age: 121, lastVisit: "Feb 15, 2026", h: "72", w: "210", bmi: "28.5", adx: "Consultation", work: "Restricted" },
-        { id: "SF111222", emr: "106620079", name: "Sigmund Freud", dob: "5/06/1856", age: 169, lastVisit: "Jan 30, 2026", h: "67", w: "160", bmi: "25.1", adx: "Assessment", work: "N/A" },
-        { id: "MC333222", emr: "106620080", name: "Marie Curie", dob: "11/07/1867", age: 158, lastVisit: "Jan 25, 2026", h: "62", w: "130", bmi: "23.8", adx: "Imaging Review", work: "Full Time" },
-        { id: "LP444333", emr: "106620081", name: "Louis Pasteur", dob: "12/27/1822", age: 203, lastVisit: "Jan 20, 2026", h: "66", w: "175", bmi: "28.2", adx: "Procedure", work: "Retired" },
-        { id: "RF555666", emr: "106620082", name: "Rosalind Franklin", dob: "7/25/1920", age: 105, lastVisit: "Jan 15, 2026", h: "65", w: "145", bmi: "24.1", adx: "Consultation", work: "Full Time" }
+        { id: "DAAB6673", name: "Elizabeth Blackwell", next: "Mar 12, 2026", lastVisit: "Feb 24, 2026", dob: "8/27/1974", age: 51, h: "70", w: "206", bmi: "29.60", adx: "Follow-up" },
+        { id: "JS123456", name: "Jonas Salk", next: "Mar 14, 2026", lastVisit: "Feb 22, 2026", dob: "10/28/1914", age: 111, h: "68", w: "185", bmi: "28.1", adx: "Post-Op" },
+        { id: "VA987654", name: "Virginia Apgar", next: "Mar 15, 2026", lastVisit: "Feb 19, 2026", dob: "6/07/1909", age: 116, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval" },
+        { id: "CD555444", name: "Charles Drew", next: "Mar 18, 2026", lastVisit: "Feb 15, 2026", dob: "6/03/1904", age: 121, h: "72", w: "210", bmi: "28.5", adx: "Injection" },
+        { id: "SF111222", name: "Sigmund Freud", next: "Mar 20, 2026", lastVisit: "Jan 30, 2026", dob: "5/06/1856", age: 169, h: "67", w: "160", bmi: "25.1", adx: "Imaging" },
+        { id: "MC333222", name: "Marie Curie", next: "Mar 22, 2026", lastVisit: "Jan 25, 2026", dob: "11/07/1867", age: 158, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval" },
+        { id: "LP444333", name: "Louis Pasteur", next: "Mar 25, 2026", lastVisit: "Jan 20, 2026", dob: "12/27/1822", age: 203, h: "66", w: "175", bmi: "28.2", adx: "Surgery" },
+        { id: "RF555666", name: "Rosalind Franklin", next: "Mar 28, 2026", lastVisit: "Jan 15, 2026", dob: "7/25/1920", age: 105, h: "65", w: "145", bmi: "24.1", adx: "Follow-up" },
+        { id: "FN1", name: "Florence Nightingale", next: "Apr 01, 2026", lastVisit: "Jan 10, 2026", dob: "5/12/1820", age: 205, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval" },
+        { id: "JL1", name: "Joseph Lister", next: "Apr 03, 2026", lastVisit: "Jan 05, 2026", dob: "4/05/1827", age: 198, h: "69", w: "170", bmi: "25.1", adx: "Post-Op" },
+        { id: "CB1", name: "Clara Barton", next: "Apr 05, 2026", lastVisit: "Jan 02, 2026", dob: "12/25/1821", age: 204, h: "63", w: "125", bmi: "22.1", adx: "Follow-up" },
+        { id: "AF1", name: "Alexander Fleming", next: "Apr 08, 2026", lastVisit: "Dec 28, 2025", dob: "8/06/1881", age: 144, h: "67", w: "165", bmi: "25.8", adx: "Injection" },
+        { id: "EJ1", name: "Edward Jenner", next: "Apr 10, 2026", lastVisit: "Dec 25, 2025", dob: "5/17/1749", age: 276, h: "68", w: "180", bmi: "27.4", adx: "Surgery" },
+        { id: "GM1", name: "Gregor Mendel", next: "Apr 12, 2026", lastVisit: "Dec 20, 2025", dob: "7/20/1822", age: 203, h: "66", w: "155", bmi: "25.0", adx: "Imaging" },
+        { id: "WH1", name: "William Harvey", next: "Apr 15, 2026", lastVisit: "Dec 15, 2025", dob: "4/01/1578", age: 447, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval" },
+        { id: "AV1", name: "Andreas Vesalius", next: "Apr 18, 2026", lastVisit: "Dec 10, 2025", dob: "12/31/1514", age: 511, h: "70", w: "190", bmi: "27.3", adx: "Follow-up" },
+        { id: "H1", name: "Hippocrates", next: "Apr 20, 2026", lastVisit: "Dec 05, 2025", dob: "460 BC", age: 2486, h: "66", w: "150", bmi: "24.2", adx: "Post-Op" },
+        { id: "G1", name: "Galen", next: "Apr 22, 2026", lastVisit: "Dec 01, 2025", dob: "129 AD", age: 1897, h: "67", w: "160", bmi: "25.1", adx: "Imaging" },
+        { id: "AH1", name: "Alice Hamilton", next: "Apr 25, 2026", lastVisit: "Nov 28, 2025", dob: "2/27/1869", age: 157, h: "64", w: "130", bmi: "22.3", adx: "Initial Eval" },
+        { id: "HT1", name: "Helen Taussig", next: "Apr 28, 2026", lastVisit: "Nov 25, 2025", dob: "5/24/1898", age: 127, h: "65", w: "140", bmi: "23.3", adx: "Follow-up" },
+        { id: "GE1", name: "Gertrude Elion", next: "May 01, 2026", lastVisit: "Nov 20, 2025", dob: "1/23/1918", age: 108, h: "63", w: "120", bmi: "21.3", adx: "Injection" },
+        { id: "RLM1", name: "Rita Levi-Montalcini", next: "May 05, 2026", lastVisit: "Nov 15, 2025", dob: "4/22/1909", age: 116, h: "62", w: "115", bmi: "21.0", adx: "Post-Op" },
+        { id: "GC1", name: "Gerty Cori", next: "May 10, 2026", lastVisit: "Nov 10, 2025", dob: "8/15/1896", age: 129, h: "64", w: "135", bmi: "23.2", adx: "Surgery" },
+        { id: "JW1", name: "Jane Cooke Wright", next: "May 15, 2026", lastVisit: "Nov 05, 2025", dob: "11/20/1919", age: 106, h: "66", w: "150", bmi: "24.2", adx: "Follow-up" },
+        { id: "DW1", name: "Daniel Hale Williams", next: "May 20, 2026", lastVisit: "Nov 01, 2025", dob: "1/18/1856", age: 170, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval" }
+    ];
+
+    const mskHistory = [
+        { date: "Feb 24, 2026", proc: "Post-Op Check (Discectomy)", status: "Completed" },
+        { date: "Feb 10, 2026", proc: "Procedure: Lumbar Discectomy (L4-L5)", status: "Completed" },
+        { date: "Jan 15, 2026", proc: "Epidural Steroid Injection", status: "Completed" },
+        { date: "Jan 02, 2026", proc: "Diagnostic: MRI Lumbar Spine", status: "Completed" },
+        { date: "Dec 15, 2025", proc: "Initial Consultation / Physical Exam", status: "Completed" }
     ];
 
     function renderList() {
@@ -133,31 +174,33 @@
         listContainer.innerHTML = patients.map(p => `
             <div class="patient-item" id="p-${p.id}" onclick="viewPatient('${p.id}')">
                 <span class="patient-name">${p.name}</span>
-                <span class="last-visit">Last Visit: ${p.lastVisit}</span>
+                <span class="last-visit">Last Seen: ${p.lastVisit}</span>
             </div>
         `).join('');
     }
 
     function viewPatient(id) {
         const p = patients.find(pat => pat.id === id);
-        
-        // UI State Transitions
         document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('active'));
         document.getElementById(`p-${id}`).classList.add('active');
         document.getElementById('defaultDashboard').classList.add('hidden');
         document.getElementById('patientView').classList.remove('hidden');
         
-        // Map Data
         document.getElementById('vName').innerText = p.name;
+        document.getElementById('vNextVisit').innerText = p.next;
         document.getElementById('vId').innerText = p.id;
-        document.getElementById('vEmr').innerText = p.emr;
         document.getElementById('vDob').innerText = p.dob;
         document.getElementById('vAge').innerText = p.age;
         document.getElementById('vHeight').innerText = p.h;
         document.getElementById('vWeight').innerText = p.w;
         document.getElementById('vBmi').innerText = p.bmi;
         document.getElementById('vAdx').innerText = p.adx;
-        document.getElementById('vWork').innerText = p.work;
+
+        // Populate MSK History
+        const histContainer = document.getElementById('vHistory');
+        histContainer.innerHTML = mskHistory.map(h => `
+            <tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>
+        `).join('');
     }
 
     function showDashboard() {
