@@ -36,7 +36,7 @@
             <div class="stats-container">
                 <div class="stat-item">
                     <span class="stat-label">Patients</span>
-                    <span class="stat-value">1,284</span>
+                    <span class="stat-value">134</span>
                     <a href="#" class="see-more">View Patient Report →</a>
                 </div>
                 <div class="stat-item">
@@ -51,7 +51,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Active Diagnoses</span>
-                    <span class="stat-value">3,102</span>
+                    <span class="stat-value">255</span>
                     <a href="#" class="see-more">View Clinical Data →</a>
                 </div>
             </div>
@@ -62,8 +62,7 @@
                 <div>
                     <div style="font-size: 1.8rem; font-weight: 800;" id="vName">Patient Name</div>
                     <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;" id="vNextContainer">
-                        Next Visit: <span id="vNextVisit"></span>
-                    </div>
+                        </div>
                 </div>
                 <div class="header-meta">ID: <span id="vId"></span></div>
                 <div class="header-meta">DOB: <span id="vDob"></span></div>
@@ -114,7 +113,7 @@
                     
                     <div class="data-section">
                         <h3>Active Diagnoses</h3>
-                        <p id="vDiagnosis" style="font-weight:700; color:var(--primary-navy); margin-bottom:5px;">M54.16 - Radiculopathy, lumbar region</p>
+                        <p style="font-weight:700; color:var(--primary-navy); margin-bottom:5px;">M54.16 - Radiculopathy, lumbar region</p>
                         <p style="font-weight:700; color:var(--primary-navy);">M51.26 - Other intervertebral disc displacement</p>
                     </div>
 
@@ -133,32 +132,30 @@
 </div>
 
 <script>
+    // Normalized ages 25-70
     const patients = [
-        { id: "DAAB6673", name: "Elizabeth Blackwell", lastVisit: "Feb 24, 2026", next: "Mar 12, 2026", dob: "8/27/1974", age: 51, h: "70", w: "206", bmi: "29.60", adx: "Follow-up", sched: false },
-        { id: "JS123456", name: "Jonas Salk", lastVisit: "Feb 22, 2026", next: "", dob: "10/28/1914", age: 111, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
-        { id: "VA987654", name: "Virginia Apgar", lastVisit: "Feb 19, 2026", next: "", dob: "6/07/1909", age: 116, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval", sched: true },
-        { id: "CD555444", name: "Charles Drew", lastVisit: "Feb 15, 2026", next: "Mar 18, 2026", dob: "6/03/1904", age: 121, h: "72", w: "210", bmi: "28.5", adx: "Injection", sched: false },
-        { id: "SF111222", name: "Sigmund Freud", lastVisit: "Jan 30, 2026", next: "", dob: "5/06/1856", age: 169, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
-        { id: "MC333222", name: "Marie Curie", lastVisit: "Jan 25, 2026", next: "", dob: "11/07/1867", age: 158, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval", sched: true },
-        { id: "LP444333", name: "Louis Pasteur", lastVisit: "Jan 20, 2026", next: "Mar 25, 2026", dob: "12/27/1822", age: 203, h: "66", w: "175", bmi: "28.2", adx: "Surgery", sched: false },
-        { id: "RF555666", name: "Rosalind Franklin", lastVisit: "Jan 15, 2026", next: "", dob: "7/25/1920", age: 105, h: "65", w: "145", bmi: "24.1", adx: "Follow-up", sched: true },
-        { id: "FN1", name: "Florence Nightingale", lastVisit: "Jan 10, 2026", next: "", dob: "5/12/1820", age: 205, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval", sched: true },
-        { id: "JL1", name: "Joseph Lister", lastVisit: "Jan 05, 2026", next: "", dob: "4/05/1827", age: 198, h: "69", w: "170", bmi: "25.1", adx: "Post-Op", sched: true },
-        { id: "CB1", name: "Clara Barton", lastVisit: "Jan 02, 2026", next: "", dob: "12/25/1821", age: 204, h: "63", w: "125", bmi: "22.1", adx: "Follow-up", sched: true },
-        { id: "AF1", name: "Alexander Fleming", lastVisit: "Dec 28, 2025", next: "Apr 08, 2026", dob: "8/06/1881", age: 144, h: "67", w: "165", bmi: "25.8", adx: "Injection", sched: false },
-        { id: "EJ1", name: "Edward Jenner", lastVisit: "Dec 25, 2025", next: "", dob: "5/17/1749", age: 276, h: "68", w: "180", bmi: "27.4", adx: "Surgery", sched: true },
-        { id: "GM1", name: "Gregor Mendel", lastVisit: "Dec 20, 2025", next: "", dob: "7/20/1822", age: 203, h: "66", w: "155", bmi: "25.0", adx: "Imaging", sched: true },
-        { id: "WH1", name: "William Harvey", lastVisit: "Dec 15, 2025", next: "", dob: "4/01/1578", age: 447, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval", sched: true },
-        { id: "AV1", name: "Andreas Vesalius", lastVisit: "Dec 10, 2025", next: "", dob: "12/31/1514", age: 511, h: "70", w: "190", bmi: "27.3", adx: "Follow-up", sched: true },
-        { id: "H1", name: "Hippocrates", lastVisit: "Dec 05, 2025", next: "", dob: "460 BC", age: 2486, h: "66", w: "150", bmi: "24.2", adx: "Post-Op", sched: true },
-        { id: "G1", name: "Galen", lastVisit: "Dec 01, 2025", next: "", dob: "129 AD", age: 1897, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
-        { id: "AH1", name: "Alice Hamilton", lastVisit: "Nov 28, 2025", next: "Apr 25, 2026", dob: "2/27/1869", age: 157, h: "64", w: "130", bmi: "22.3", adx: "Initial Eval", sched: false },
-        { id: "HT1", name: "Helen Taussig", lastVisit: "Nov 25, 2025", next: "", dob: "5/24/1898", age: 127, h: "65", w: "140", bmi: "23.3", adx: "Follow-up", sched: true },
-        { id: "GE1", name: "Gertrude Elion", lastVisit: "Nov 20, 2025", next: "", dob: "1/23/1918", age: 108, h: "63", w: "120", bmi: "21.3", adx: "Injection", sched: true },
-        { id: "RLM1", name: "Rita Levi-Montalcini", lastVisit: "Nov 15, 2025", next: "", dob: "4/22/1909", age: 116, h: "62", w: "115", bmi: "21.0", adx: "Post-Op", sched: true },
-        { id: "GC1", name: "Gerty Cori", lastVisit: "Nov 10, 2025", next: "May 10, 2026", dob: "8/15/1896", age: 129, h: "64", w: "135", bmi: "23.2", adx: "Surgery", sched: false },
-        { id: "JW1", name: "Jane Cooke Wright", lastVisit: "Nov 05, 2025", next: "", dob: "11/20/1919", age: 106, h: "66", w: "150", bmi: "24.2", adx: "Follow-up", sched: true },
-        { id: "DW1", name: "Daniel Hale Williams", lastVisit: "Nov 01, 2025", next: "", dob: "1/18/1856", age: 170, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval", sched: true }
+        { id: "DAAB6673", name: "Elizabeth Blackwell", lastVisit: "Feb 24, 2026", next: "Mar 12, 2026", dob: "8/27/1984", age: 41, h: "70", w: "206", bmi: "29.60", adx: "Follow-up", sched: false },
+        { id: "JS123456", name: "Jonas Salk", lastVisit: "Feb 22, 2026", next: "", dob: "10/28/1975", age: 50, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
+        { id: "VA987654", name: "Virginia Apgar", lastVisit: "Feb 19, 2026", next: "", dob: "6/07/1981", age: 44, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval", sched: true },
+        { id: "CD555444", name: "Charles Drew", lastVisit: "Feb 15, 2026", next: "Mar 18, 2026", dob: "6/03/1992", age: 33, h: "72", w: "210", bmi: "28.5", adx: "Injection", sched: false },
+        { id: "SF111222", name: "Sigmund Freud", lastVisit: "Jan 30, 2026", next: "", dob: "5/06/1966", age: 59, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
+        { id: "MC333222", name: "Marie Curie", lastVisit: "Jan 25, 2026", next: "", dob: "11/07/1989", age: 36, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval", sched: true },
+        { id: "LP444333", name: "Louis Pasteur", lastVisit: "Jan 20, 2026", next: "Mar 25, 2026", dob: "12/27/1978", age: 47, h: "66", w: "175", bmi: "28.2", adx: "Surgery", sched: false },
+        { id: "RF555666", name: "Rosalind Franklin", lastVisit: "Jan 15, 2026", next: "", dob: "7/25/1990", age: 35, h: "65", w: "145", bmi: "24.1", adx: "Follow-up", sched: true },
+        { id: "FN1", name: "Florence Nightingale", lastVisit: "Jan 10, 2026", next: "", dob: "5/12/1985", age: 40, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval", sched: true },
+        { id: "JL1", name: "Joseph Lister", lastVisit: "Jan 05, 2026", next: "", dob: "4/05/1972", age: 53, h: "69", w: "170", bmi: "25.1", adx: "Post-Op", sched: true },
+        { id: "CB1", name: "Clara Barton", lastVisit: "Jan 02, 2026", next: "", dob: "12/25/1983", age: 42, h: "63", w: "125", bmi: "22.1", adx: "Follow-up", sched: true },
+        { id: "AF1", name: "Alexander Fleming", lastVisit: "Dec 28, 2025", next: "Apr 08, 2026", dob: "8/06/1995", age: 30, h: "67", w: "165", bmi: "25.8", adx: "Injection", sched: false },
+        { id: "EJ1", name: "Edward Jenner", lastVisit: "Dec 25, 2025", next: "", dob: "5/17/1960", age: 65, h: "68", w: "180", bmi: "27.4", adx: "Surgery", sched: true },
+        { id: "GM1", name: "Gregor Mendel", lastVisit: "Dec 20, 2025", next: "", dob: "7/20/1979", age: 46, h: "66", w: "155", bmi: "25.0", adx: "Imaging", sched: true },
+        { id: "WH1", name: "William Harvey", lastVisit: "Dec 15, 2025", next: "", dob: "4/01/1988", age: 37, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval", sched: true },
+        { id: "AV1", name: "Andreas Vesalius", lastVisit: "Dec 10, 2025", next: "", dob: "12/31/1974", age: 51, h: "70", w: "190", bmi: "27.3", adx: "Follow-up", sched: true },
+        { id: "HT1", name: "Helen Taussig", lastVisit: "Nov 25, 2025", next: "", dob: "5/24/1994", age: 31, h: "65", w: "140", bmi: "23.3", adx: "Follow-up", sched: true },
+        { id: "GE1", name: "Gertrude Elion", lastVisit: "Nov 20, 2025", next: "", dob: "1/23/1982", age: 43, h: "63", w: "120", bmi: "21.3", adx: "Injection", sched: true },
+        { id: "RLM1", name: "Rita Levi-Montalcini", lastVisit: "Nov 15, 2025", next: "", dob: "4/22/1987", age: 38, h: "62", w: "115", bmi: "21.0", adx: "Post-Op", sched: true },
+        { id: "GC1", name: "Gerty Cori", lastVisit: "Nov 10, 2025", next: "May 10, 2026", dob: "8/15/1971", age: 54, h: "64", w: "135", bmi: "23.2", adx: "Surgery", sched: false },
+        { id: "JW1", name: "Jane Cooke Wright", lastVisit: "Nov 05, 2025", next: "", dob: "11/20/1986", age: 39, h: "66", w: "150", bmi: "24.2", adx: "Follow-up", sched: true },
+        { id: "DW1", name: "Daniel Hale Williams", lastVisit: "Nov 01, 2025", next: "", dob: "1/18/1977", age: 48, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval", sched: true }
     ];
 
     const mskHistory = [
@@ -195,18 +192,20 @@
         document.getElementById('vBmi').innerText = p.bmi;
         document.getElementById('vAdx').innerText = p.adx;
 
-        const nextEl = document.getElementById('vNextVisit');
+        const nextContainer = document.getElementById('vNextContainer');
         if (p.sched) {
-            nextEl.innerHTML = `<a class="schedule-link">Schedule Next Visit →</a>`;
+            // Remove "Next Visit:" label and just show link
+            nextContainer.innerHTML = `<a class="schedule-link">Schedule Next Visit →</a>`;
         } else {
-            nextEl.innerText = p.next;
+            // Include "Next Visit:" label
+            nextContainer.innerHTML = `Next Visit: <span id="vNextVisit">${p.next}</span>`;
         }
 
         document.getElementById('vHistory').innerHTML = mskHistory.map(h => `
             <tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>
         `).join('');
 
-        // Ensure we scroll to the top of the detail page when clicking a patient
+        // Ensure content scrolls to top on selection
         document.getElementById('mainContent').scrollTop = 0;
     }
 
