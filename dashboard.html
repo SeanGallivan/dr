@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+    <title>ADX | Patient Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+   
+</head>
+<body>
+
+<header>
+    <div class="logo-area">ADX <span style="font-weight:300">| CLINICAL</span></div>
+    <nav>
+        <a href="#">Dashboard</a>
+        <a href="#">Network Physicians</a>
+        <a href="#">Billing</a>
+        <a href="#" style="color:var(--secondary-red)">Sign Out</a>
+    </nav>
+</header>
+
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="search-container">
+            <input type="text" id="patientSearch" placeholder="Search patients..." aria-label="Search patients">
+        </div>
+        <div class="patient-list" id="patientList">
+            </div>
+    </aside>
+
+    <main id="mainContent">
+        <div id="defaultDashboard">
+            <h1 style="margin-top:0">Practice Overview</h1>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Active Patients</span>
+                    <span class="stat-value">1,284</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Monthly Billing</span>
+                    <span class="stat-value">$42,850</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Pending Claims</span>
+                    <span class="stat-value">18</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="patientView" class="hidden">
+            <button class="btn btn-outline" onclick="showDashboard()" style="margin-bottom: 1rem;">← Back to Overview</button>
+            <h1 id="viewPatientName" style="margin-bottom: 0;">Patient Name</h1>
+            <p id="viewLastVisit" style="color:#666">Last Visit: Date</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Patient Status</span>
+                    <span class="stat-value" style="font-size: 1.5rem;">Active / Referred</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Visits</span>
+                    <span class="stat-value" style="font-size: 1.5rem;">12</span>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary">Add Visit</button>
+                <button class="btn btn-outline">Send Message</button>
+                <button class="btn btn-outline">Add Note</button>
+                <button class="btn btn-outline">Upload Images</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const patients = [
+        { id: 1, name: "Dr. Elizabeth Blackwell", lastVisit: "Feb 24, 2026", billing: "$4,200" },
+        { id: 2, name: "Dr. Jonas Salk", lastVisit: "Feb 22, 2026", billing: "$1,150" },
+        { id: 3, name: "Dr. Virginia Apgar", lastVisit: "Feb 19, 2026", billing: "$890" },
+        { id: 4, name: "Dr. Charles Drew", lastVisit: "Feb 15, 2026", billing: "$2,300" },
+        { id: 5, name: "Dr. Sigmund Freud", lastVisit: "Jan 30, 2026", billing: "$600" }
+    ];
+
+    function renderList() {
+        const listContainer = document.getElementById('patientList');
+        listContainer.innerHTML = patients.map(p => `
+            <div class="patient-item" onclick="viewPatient(${p.id})">
+                <span class="patient-name">${p.name}</span>
+                <span class="last-visit">Last Visit: ${p.lastVisit}</span>
+            </div>
+        `).join('');
+    }
+
+    function viewPatient(id) {
+        const patient = patients.find(p => p.id === id);
+        document.getElementById('defaultDashboard').classList.add('hidden');
+        document.getElementById('patientView').classList.remove('hidden');
+        
+        document.getElementById('viewPatientName').innerText = patient.name;
+        document.getElementById('viewLastVisit').innerText = `Last Visit: ${patient.lastVisit}`;
+    }
+
+    function showDashboard() {
+        document.getElementById('defaultDashboard').classList.remove('hidden');
+        document.getElementById('patientView').classList.add('hidden');
+    }
+
+    renderList();
+</script>
+
+</body>
+</html>
