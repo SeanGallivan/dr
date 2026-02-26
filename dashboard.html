@@ -21,8 +21,8 @@
 
 <div class="wrapper">
     <aside class="sidebar">
-        <div class="search-container" style="padding: 1rem; border-bottom: 1px solid #eee;">
-            <input type="text" id="patientSearch" placeholder="Search Patients..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-family:'Montserrat';">
+        <div class="search-container">
+            <input type="text" id="patientSearch" placeholder="Search Patients...">
         </div>
         <div class="patient-list" id="patientList">
             </div>
@@ -61,8 +61,8 @@
             <div class="detail-header">
                 <div>
                     <div style="font-size: 1.8rem; font-weight: 800;" id="vName">Patient Name</div>
-                    <div style="margin-top:5px; font-weight:600; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:4px; display:inline-block;">
-                        Next Visit: <span id="vNextVisit">March 12, 2026</span>
+                    <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;" id="vNextContainer">
+                        Next Visit: <span id="vNextVisit"></span>
                     </div>
                 </div>
                 <div class="header-meta">ID: <span id="vId"></span></div>
@@ -82,7 +82,7 @@
                 <div class="left-col">
                     <div class="data-section">
                         <h3>Evaluation & Management (At-a-glance)</h3>
-                        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 2rem;">
                             <div class="at-a-glance-item"><span class="stat-label">Height</span><b id="vHeight">70</b></div>
                             <div class="at-a-glance-item"><span class="stat-label">Weight</span><b id="vWeight">206</b></div>
                             <div class="at-a-glance-item"><span class="stat-label">BMI</span><b id="vBmi">29.60</b></div>
@@ -91,13 +91,12 @@
                     </div>
 
                     <div class="data-section">
-                        <h3>Visit History (MSK Pathway)</h3>
+                        <h3>Visit History</h3>
                         <table class="visit-table">
                             <thead>
                                 <tr><th>Date</th><th>Procedure / Milestone</th><th>Status</th></tr>
                             </thead>
-                            <tbody id="vHistory">
-                                </tbody>
+                            <tbody id="vHistory"></tbody>
                         </table>
                     </div>
                 </div>
@@ -114,8 +113,9 @@
                     </div>
                     
                     <div class="data-section">
-                        <h3>Active Diagnosis</h3>
-                        <p id="vDiagnosis" style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p>
+                        <h3>Active Diagnoses</h3>
+                        <p id="vDiagnosis" style="font-weight:700; color:var(--primary-navy); margin-bottom:5px;">M54.16 - Radiculopathy, lumbar region</p>
+                        <p style="font-weight:700; color:var(--primary-navy);">M51.26 - Other intervertebral disc displacement</p>
                     </div>
 
                     <div class="data-section">
@@ -127,38 +127,38 @@
                     </div>
                 </div>
             </div>
-            <button onclick="showDashboard()" style="margin: 0 3rem 3rem 3rem; cursor:pointer;" class="btn btn-outline">← Back to Overview</button>
+            <button onclick="showDashboard()" style="margin: 0 3rem 4rem 3rem; cursor:pointer;" class="btn btn-outline">← Back to Overview</button>
         </div>
     </main>
 </div>
 
 <script>
     const patients = [
-        { id: "DAAB6673", name: "Elizabeth Blackwell", next: "Mar 12, 2026", lastVisit: "Feb 24, 2026", dob: "8/27/1974", age: 51, h: "70", w: "206", bmi: "29.60", adx: "Follow-up" },
-        { id: "JS123456", name: "Jonas Salk", next: "Mar 14, 2026", lastVisit: "Feb 22, 2026", dob: "10/28/1914", age: 111, h: "68", w: "185", bmi: "28.1", adx: "Post-Op" },
-        { id: "VA987654", name: "Virginia Apgar", next: "Mar 15, 2026", lastVisit: "Feb 19, 2026", dob: "6/07/1909", age: 116, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval" },
-        { id: "CD555444", name: "Charles Drew", next: "Mar 18, 2026", lastVisit: "Feb 15, 2026", dob: "6/03/1904", age: 121, h: "72", w: "210", bmi: "28.5", adx: "Injection" },
-        { id: "SF111222", name: "Sigmund Freud", next: "Mar 20, 2026", lastVisit: "Jan 30, 2026", dob: "5/06/1856", age: 169, h: "67", w: "160", bmi: "25.1", adx: "Imaging" },
-        { id: "MC333222", name: "Marie Curie", next: "Mar 22, 2026", lastVisit: "Jan 25, 2026", dob: "11/07/1867", age: 158, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval" },
-        { id: "LP444333", name: "Louis Pasteur", next: "Mar 25, 2026", lastVisit: "Jan 20, 2026", dob: "12/27/1822", age: 203, h: "66", w: "175", bmi: "28.2", adx: "Surgery" },
-        { id: "RF555666", name: "Rosalind Franklin", next: "Mar 28, 2026", lastVisit: "Jan 15, 2026", dob: "7/25/1920", age: 105, h: "65", w: "145", bmi: "24.1", adx: "Follow-up" },
-        { id: "FN1", name: "Florence Nightingale", next: "Apr 01, 2026", lastVisit: "Jan 10, 2026", dob: "5/12/1820", age: 205, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval" },
-        { id: "JL1", name: "Joseph Lister", next: "Apr 03, 2026", lastVisit: "Jan 05, 2026", dob: "4/05/1827", age: 198, h: "69", w: "170", bmi: "25.1", adx: "Post-Op" },
-        { id: "CB1", name: "Clara Barton", next: "Apr 05, 2026", lastVisit: "Jan 02, 2026", dob: "12/25/1821", age: 204, h: "63", w: "125", bmi: "22.1", adx: "Follow-up" },
-        { id: "AF1", name: "Alexander Fleming", next: "Apr 08, 2026", lastVisit: "Dec 28, 2025", dob: "8/06/1881", age: 144, h: "67", w: "165", bmi: "25.8", adx: "Injection" },
-        { id: "EJ1", name: "Edward Jenner", next: "Apr 10, 2026", lastVisit: "Dec 25, 2025", dob: "5/17/1749", age: 276, h: "68", w: "180", bmi: "27.4", adx: "Surgery" },
-        { id: "GM1", name: "Gregor Mendel", next: "Apr 12, 2026", lastVisit: "Dec 20, 2025", dob: "7/20/1822", age: 203, h: "66", w: "155", bmi: "25.0", adx: "Imaging" },
-        { id: "WH1", name: "William Harvey", next: "Apr 15, 2026", lastVisit: "Dec 15, 2025", dob: "4/01/1578", age: 447, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval" },
-        { id: "AV1", name: "Andreas Vesalius", next: "Apr 18, 2026", lastVisit: "Dec 10, 2025", dob: "12/31/1514", age: 511, h: "70", w: "190", bmi: "27.3", adx: "Follow-up" },
-        { id: "H1", name: "Hippocrates", next: "Apr 20, 2026", lastVisit: "Dec 05, 2025", dob: "460 BC", age: 2486, h: "66", w: "150", bmi: "24.2", adx: "Post-Op" },
-        { id: "G1", name: "Galen", next: "Apr 22, 2026", lastVisit: "Dec 01, 2025", dob: "129 AD", age: 1897, h: "67", w: "160", bmi: "25.1", adx: "Imaging" },
-        { id: "AH1", name: "Alice Hamilton", next: "Apr 25, 2026", lastVisit: "Nov 28, 2025", dob: "2/27/1869", age: 157, h: "64", w: "130", bmi: "22.3", adx: "Initial Eval" },
-        { id: "HT1", name: "Helen Taussig", next: "Apr 28, 2026", lastVisit: "Nov 25, 2025", dob: "5/24/1898", age: 127, h: "65", w: "140", bmi: "23.3", adx: "Follow-up" },
-        { id: "GE1", name: "Gertrude Elion", next: "May 01, 2026", lastVisit: "Nov 20, 2025", dob: "1/23/1918", age: 108, h: "63", w: "120", bmi: "21.3", adx: "Injection" },
-        { id: "RLM1", name: "Rita Levi-Montalcini", next: "May 05, 2026", lastVisit: "Nov 15, 2025", dob: "4/22/1909", age: 116, h: "62", w: "115", bmi: "21.0", adx: "Post-Op" },
-        { id: "GC1", name: "Gerty Cori", next: "May 10, 2026", lastVisit: "Nov 10, 2025", dob: "8/15/1896", age: 129, h: "64", w: "135", bmi: "23.2", adx: "Surgery" },
-        { id: "JW1", name: "Jane Cooke Wright", next: "May 15, 2026", lastVisit: "Nov 05, 2025", dob: "11/20/1919", age: 106, h: "66", w: "150", bmi: "24.2", adx: "Follow-up" },
-        { id: "DW1", name: "Daniel Hale Williams", next: "May 20, 2026", lastVisit: "Nov 01, 2025", dob: "1/18/1856", age: 170, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval" }
+        { id: "DAAB6673", name: "Elizabeth Blackwell", lastVisit: "Feb 24, 2026", next: "Mar 12, 2026", dob: "8/27/1974", age: 51, h: "70", w: "206", bmi: "29.60", adx: "Follow-up", sched: false },
+        { id: "JS123456", name: "Jonas Salk", lastVisit: "Feb 22, 2026", next: "", dob: "10/28/1914", age: 111, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
+        { id: "VA987654", name: "Virginia Apgar", lastVisit: "Feb 19, 2026", next: "", dob: "6/07/1909", age: 116, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval", sched: true },
+        { id: "CD555444", name: "Charles Drew", lastVisit: "Feb 15, 2026", next: "Mar 18, 2026", dob: "6/03/1904", age: 121, h: "72", w: "210", bmi: "28.5", adx: "Injection", sched: false },
+        { id: "SF111222", name: "Sigmund Freud", lastVisit: "Jan 30, 2026", next: "", dob: "5/06/1856", age: 169, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
+        { id: "MC333222", name: "Marie Curie", lastVisit: "Jan 25, 2026", next: "", dob: "11/07/1867", age: 158, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval", sched: true },
+        { id: "LP444333", name: "Louis Pasteur", lastVisit: "Jan 20, 2026", next: "Mar 25, 2026", dob: "12/27/1822", age: 203, h: "66", w: "175", bmi: "28.2", adx: "Surgery", sched: false },
+        { id: "RF555666", name: "Rosalind Franklin", lastVisit: "Jan 15, 2026", next: "", dob: "7/25/1920", age: 105, h: "65", w: "145", bmi: "24.1", adx: "Follow-up", sched: true },
+        { id: "FN1", name: "Florence Nightingale", lastVisit: "Jan 10, 2026", next: "", dob: "5/12/1820", age: 205, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval", sched: true },
+        { id: "JL1", name: "Joseph Lister", lastVisit: "Jan 05, 2026", next: "", dob: "4/05/1827", age: 198, h: "69", w: "170", bmi: "25.1", adx: "Post-Op", sched: true },
+        { id: "CB1", name: "Clara Barton", lastVisit: "Jan 02, 2026", next: "", dob: "12/25/1821", age: 204, h: "63", w: "125", bmi: "22.1", adx: "Follow-up", sched: true },
+        { id: "AF1", name: "Alexander Fleming", lastVisit: "Dec 28, 2025", next: "Apr 08, 2026", dob: "8/06/1881", age: 144, h: "67", w: "165", bmi: "25.8", adx: "Injection", sched: false },
+        { id: "EJ1", name: "Edward Jenner", lastVisit: "Dec 25, 2025", next: "", dob: "5/17/1749", age: 276, h: "68", w: "180", bmi: "27.4", adx: "Surgery", sched: true },
+        { id: "GM1", name: "Gregor Mendel", lastVisit: "Dec 20, 2025", next: "", dob: "7/20/1822", age: 203, h: "66", w: "155", bmi: "25.0", adx: "Imaging", sched: true },
+        { id: "WH1", name: "William Harvey", lastVisit: "Dec 15, 2025", next: "", dob: "4/01/1578", age: 447, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval", sched: true },
+        { id: "AV1", name: "Andreas Vesalius", lastVisit: "Dec 10, 2025", next: "", dob: "12/31/1514", age: 511, h: "70", w: "190", bmi: "27.3", adx: "Follow-up", sched: true },
+        { id: "H1", name: "Hippocrates", lastVisit: "Dec 05, 2025", next: "", dob: "460 BC", age: 2486, h: "66", w: "150", bmi: "24.2", adx: "Post-Op", sched: true },
+        { id: "G1", name: "Galen", lastVisit: "Dec 01, 2025", next: "", dob: "129 AD", age: 1897, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
+        { id: "AH1", name: "Alice Hamilton", lastVisit: "Nov 28, 2025", next: "Apr 25, 2026", dob: "2/27/1869", age: 157, h: "64", w: "130", bmi: "22.3", adx: "Initial Eval", sched: false },
+        { id: "HT1", name: "Helen Taussig", lastVisit: "Nov 25, 2025", next: "", dob: "5/24/1898", age: 127, h: "65", w: "140", bmi: "23.3", adx: "Follow-up", sched: true },
+        { id: "GE1", name: "Gertrude Elion", lastVisit: "Nov 20, 2025", next: "", dob: "1/23/1918", age: 108, h: "63", w: "120", bmi: "21.3", adx: "Injection", sched: true },
+        { id: "RLM1", name: "Rita Levi-Montalcini", lastVisit: "Nov 15, 2025", next: "", dob: "4/22/1909", age: 116, h: "62", w: "115", bmi: "21.0", adx: "Post-Op", sched: true },
+        { id: "GC1", name: "Gerty Cori", lastVisit: "Nov 10, 2025", next: "May 10, 2026", dob: "8/15/1896", age: 129, h: "64", w: "135", bmi: "23.2", adx: "Surgery", sched: false },
+        { id: "JW1", name: "Jane Cooke Wright", lastVisit: "Nov 05, 2025", next: "", dob: "11/20/1919", age: 106, h: "66", w: "150", bmi: "24.2", adx: "Follow-up", sched: true },
+        { id: "DW1", name: "Daniel Hale Williams", lastVisit: "Nov 01, 2025", next: "", dob: "1/18/1856", age: 170, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval", sched: true }
     ];
 
     const mskHistory = [
@@ -187,7 +187,6 @@
         document.getElementById('patientView').classList.remove('hidden');
         
         document.getElementById('vName').innerText = p.name;
-        document.getElementById('vNextVisit').innerText = p.next;
         document.getElementById('vId').innerText = p.id;
         document.getElementById('vDob').innerText = p.dob;
         document.getElementById('vAge').innerText = p.age;
@@ -196,11 +195,19 @@
         document.getElementById('vBmi').innerText = p.bmi;
         document.getElementById('vAdx').innerText = p.adx;
 
-        // Populate MSK History
-        const histContainer = document.getElementById('vHistory');
-        histContainer.innerHTML = mskHistory.map(h => `
+        const nextEl = document.getElementById('vNextVisit');
+        if (p.sched) {
+            nextEl.innerHTML = `<a class="schedule-link">Schedule Next Visit →</a>`;
+        } else {
+            nextEl.innerText = p.next;
+        }
+
+        document.getElementById('vHistory').innerHTML = mskHistory.map(h => `
             <tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>
         `).join('');
+
+        // Ensure we scroll to the top of the detail page when clicking a patient
+        document.getElementById('mainContent').scrollTop = 0;
     }
 
     function showDashboard() {
