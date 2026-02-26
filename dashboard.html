@@ -9,38 +9,47 @@
 </head>
 <body>
 
-<header>
-    <div class="logo-area" onclick="switchMode('patients')">Derived Results</div>
-    <nav id="topNav">
-        <a onclick="switchMode('patients')" id="nav-patients" class="active">Dashboard</a>
-        <a onclick="switchMode('practices')" id="nav-practices">Practices</a>
+<a href="#mainContent" class="skip-link">Skip to main content</a>
+
+<header role="banner">
+    <a href="#" class="logo-area" onclick="switchMode('patients')" aria-label="Derived Results Home">Derived Results</a>
+    <nav id="topNav" aria-label="Main Navigation">
+        <a href="javascript:void(0)" onclick="switchMode('patients')" id="nav-patients" class="active" aria-current="page">Dashboard</a>
+        <a href="javascript:void(0)" onclick="switchMode('practices')" id="nav-practices">Practices</a>
         <a href="#" style="color:var(--secondary-red); margin-left: 4rem;">Sign Out</a>
     </nav>
 </header>
 
 <div class="wrapper">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Search and Filter">
         <div class="search-container">
+            <label for="searchBox" class="sr-only">Search</label>
             <input type="text" id="searchBox" placeholder="Search Patients...">
-            <button id="addBtn" class="btn btn-primary hidden">+ Add New Practice</button>
+            
+            <button id="addBtn" class="btn btn-primary hidden" aria-label="Add New Practice">+ Add New Practice</button>
         </div>
-        <div class="list-container" id="sidebarList">
-            </div>
+        
+        <nav class="list-container" id="sidebarList" aria-label="Entity List">
+            </nav>
     </aside>
 
-    <main id="mainContent">
+    <main id="mainContent" role="main" tabindex="-1">
         <div id="overviewContainer" class="view-section">
             <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
             <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.5rem;"></p>
             <div class="stats-container" id="dashStats"></div>
         </div>
 
-        <div id="detailContainer" class="hidden">
+        <section id="detailContainer" class="hidden" aria-labelledby="vName">
             <div id="detailHeader" class="detail-header"></div>
-            <div id="detailTabs" class="tab-bar"></div>
+            <div id="detailTabs" class="tab-bar" role="tablist"></div>
+            
             <div class="content-grid" id="detailBody"></div>
-            <button onclick="clearSelection()" style="margin: 0 3rem 4rem 3rem;" class="btn btn-outline">← Back to Overview</button>
-        </div>
+            
+            <button onclick="clearSelection()" style="margin: 0 3rem 4rem 3rem;" class="btn btn-outline">
+                <span aria-hidden="true">←</span> Back to Overview
+            </button>
+        </section>
     </main>
 </div>
 
@@ -52,66 +61,26 @@
         { id: "P2", name: "Jonas Salk", last: "Feb 22, 2026", next: "", dob: "10/28/1975", age: 50, h: "68", w: "185", bmi: "28.1", adx: "Post-Op", sched: true },
         { id: "P3", name: "Virginia Apgar", last: "Feb 19, 2026", next: "", dob: "6/07/1981", age: 44, h: "64", w: "140", bmi: "24.0", adx: "Initial Eval", sched: true },
         { id: "P4", name: "Charles Drew", last: "Feb 15, 2026", next: "Mar 18, 2026", dob: "6/03/1992", age: 33, h: "72", w: "210", bmi: "28.5", adx: "Injection", sched: false },
-        { id: "P5", name: "Sigmund Freud", last: "Jan 30, 2026", next: "", dob: "5/06/1966", age: 59, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true },
-        { id: "P6", name: "Marie Curie", last: "Jan 25, 2026", next: "", dob: "11/07/1989", age: 36, h: "62", w: "130", bmi: "23.8", adx: "Initial Eval", sched: true },
-        { id: "P7", name: "Louis Pasteur", last: "Jan 20, 2026", next: "Mar 25, 2026", dob: "12/27/1978", age: 47, h: "66", w: "175", bmi: "28.2", adx: "Surgery", sched: false },
-        { id: "P8", name: "Rosalind Franklin", last: "Jan 15, 2026", next: "", dob: "7/25/1990", age: 35, h: "65", w: "145", bmi: "24.1", adx: "Follow-up", sched: true },
-        { id: "P9", name: "Florence Nightingale", last: "Jan 10, 2026", next: "", dob: "5/12/1985", age: 40, h: "64", w: "135", bmi: "23.2", adx: "Initial Eval", sched: true },
-        { id: "P10", name: "Joseph Lister", last: "Jan 05, 2026", next: "", dob: "4/05/1972", age: 53, h: "69", w: "170", bmi: "25.1", adx: "Post-Op", sched: true },
-        { id: "P11", name: "Clara Barton", last: "Jan 02, 2026", next: "", dob: "12/25/1983", age: 42, h: "63", w: "125", bmi: "22.1", adx: "Follow-up", sched: true },
-        { id: "P12", name: "Alexander Fleming", last: "Dec 28, 2025", next: "Apr 08, 2026", dob: "8/06/1995", age: 30, h: "67", w: "165", bmi: "25.8", adx: "Injection", sched: false },
-        { id: "P13", name: "Edward Jenner", last: "Dec 25, 2025", next: "", dob: "5/17/1960", age: 65, h: "68", w: "180", bmi: "27.4", adx: "Surgery", sched: true },
-        { id: "P14", name: "Gregor Mendel", last: "Dec 20, 2025", next: "", dob: "7/20/1979", age: 46, h: "66", w: "155", bmi: "25.0", adx: "Imaging", sched: true },
-        { id: "P15", name: "William Harvey", last: "Dec 15, 2025", next: "", dob: "4/01/1988", age: 37, h: "65", w: "145", bmi: "24.1", adx: "Initial Eval", sched: true },
-        { id: "P16", name: "Andreas Vesalius", last: "Dec 10, 2025", next: "", dob: "12/31/1974", age: 51, h: "70", w: "190", bmi: "27.3", adx: "Follow-up", sched: true },
-        { id: "P17", name: "Helen Taussig", last: "Nov 25, 2025", next: "", dob: "5/24/1994", age: 31, h: "65", w: "140", bmi: "23.3", adx: "Follow-up", sched: true },
-        { id: "P18", name: "Gertrude Elion", last: "Nov 20, 2025", next: "", dob: "1/23/1982", age: 43, h: "63", w: "120", bmi: "21.3", adx: "Injection", sched: true },
-        { id: "P19", name: "Rita Levi-Montalcini", last: "Nov 15, 2025", next: "", dob: "4/22/1987", age: 38, h: "62", w: "115", bmi: "21.0", adx: "Post-Op", sched: true },
-        { id: "P20", name: "Gerty Cori", last: "Nov 10, 2025", next: "May 10, 2026", dob: "8/15/1971", age: 54, h: "64", w: "135", bmi: "23.2", adx: "Surgery", sched: false },
-        { id: "P21", name: "Jane Cooke Wright", last: "Nov 05, 2025", next: "", dob: "11/20/1986", age: 39, h: "66", w: "150", bmi: "24.2", adx: "Follow-up", sched: true },
-        { id: "P22", name: "Daniel Hale Williams", last: "Nov 01, 2025", next: "", dob: "1/18/1977", age: 48, h: "71", w: "200", bmi: "27.9", adx: "Initial Eval", sched: true },
-        { id: "P23", name: "Alice Hamilton", last: "Oct 25, 2025", next: "", dob: "2/27/1980", age: 45, h: "64", w: "130", bmi: "22.3", adx: "Follow-up", sched: true },
-        { id: "P24", name: "Rebecca Lee Crumpler", last: "Oct 15, 2025", next: "", dob: "2/08/1983", age: 42, h: "63", w: "128", bmi: "22.5", adx: "Initial Eval", sched: true },
-        { id: "P25", name: "Mary Edwards Walker", last: "Oct 05, 2025", next: "Mar 30, 2026", dob: "11/26/1976", age: 49, h: "62", w: "118", bmi: "21.6", adx: "Follow-up", sched: false }
+        { id: "P5", name: "Sigmund Freud", last: "Jan 30, 2026", next: "", dob: "5/06/1966", age: 59, h: "67", w: "160", bmi: "25.1", adx: "Imaging", sched: true }
     ];
 
     const practices = [
         { id: "PR1", name: "Summit Musculoskeletal", days: "14.2" },
         { id: "PR2", name: "Northside Chiropractic", days: "18.5" },
-        { id: "PR3", name: "Downtown Wellness", days: "11.0" },
-        { id: "PR4", name: "Peak Orthopedics", days: "15.1" },
-        { id: "PR5", name: "Valley Spine Center", days: "19.2" },
-        { id: "PR6", name: "Joint & Nerve Institute", days: "12.4" },
-        { id: "PR7", name: "West End Physical Therapy", days: "9.8" },
-        { id: "PR8", name: "Empire Pain Management", days: "22.1" },
-        { id: "PR9", name: "Lakeside Rehab", days: "14.0" },
-        { id: "PR10", name: "Coastal Sports Med", days: "16.5" },
-        { id: "PR11", name: "Metro Neuro & Spine", days: "13.2" },
-        { id: "PR12", name: "Highland Chiropractic", days: "17.8" },
-        { id: "PR13", name: "City Ortho Group", days: "20.5" },
-        { id: "PR14", name: "Greenway Wellness", days: "10.2" },
-        { id: "PR15", name: "Main Street Specialists", days: "14.9" },
-        { id: "PR16", name: "Mountain View Pain", days: "15.5" },
-        { id: "PR17", name: "Southside SurgiCenter", days: "24.0" },
-        { id: "PR18", name: "River Valley MSK", days: "12.9" }
-    ];
-
-    const mskHistory = [
-        { date: "Feb 24, 2026", proc: "Post-Op Check (Discectomy)", status: "Completed" },
-        { date: "Feb 10, 2026", proc: "Procedure: Lumbar Discectomy (L4-L5)", status: "Completed" },
-        { date: "Jan 15, 2026", proc: "Epidural Steroid Injection", status: "Completed" },
-        { date: "Jan 02, 2026", proc: "Diagnostic: MRI Lumbar Spine", status: "Completed" },
-        { date: "Dec 15, 2025", proc: "Initial Consultation / Exam", status: "Completed" }
+        { id: "PR3", name: "Downtown Wellness", days: "11.0" }
     ];
 
     function switchMode(mode) {
         currentMode = mode;
-        document.querySelectorAll('#topNav a').forEach(a => a.classList.remove('active'));
+        document.querySelectorAll('#topNav a').forEach(a => {
+            a.classList.remove('active');
+            a.removeAttribute('aria-current');
+        });
         document.getElementById(`nav-${mode}`).classList.add('active');
+        document.getElementById(`nav-${mode}`).setAttribute('aria-current', 'page');
         
         const search = document.getElementById('searchBox');
         const addBtn = document.getElementById('addBtn');
-        
         search.placeholder = mode === 'patients' ? "Search Patients..." : "Search Practices...";
         addBtn.classList.toggle('hidden', mode === 'patients');
         
@@ -124,10 +93,10 @@
         const list = document.getElementById('sidebarList');
         const items = currentMode === 'patients' ? patients : practices;
         list.innerHTML = items.map(i => `
-            <div class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}">
+            <button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}" aria-label="View details for ${i.name}">
                 <span class="item-main">${i.name}</span>
                 <span class="item-sub">${currentMode === 'patients' ? 'Last Seen: ' + i.last : 'Avg Days to 1st Visit: ' + i.days}</span>
-            </div>
+            </button>
         `).join('');
     }
 
@@ -139,24 +108,28 @@
             title.innerText = "Summit Musculoskeletal Group";
             sub.innerText = "Practice Performance Overview";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Report →</a></div>
-                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Financials →</a></div>
-                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Clinical →</a></div>
-            `;
+                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span></div>
+                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span></div>
+                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span></div>`;
         } else {
             title.innerText = "Network Practices";
             sub.innerText = "Global Practice Distribution";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Manage Network →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Patient Map →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142,000</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Network Revenue →</a></div>
-            `;
+                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span></div>
+                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span></div>
+                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142k</span></div>`;
         }
     }
 
     function selectItem(id) {
-        document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(`item-${id}`).classList.add('active');
+        document.querySelectorAll('.list-item').forEach(i => {
+            i.classList.remove('active');
+            i.removeAttribute('aria-selected');
+        });
+        const activeItem = document.getElementById(`item-${id}`);
+        activeItem.classList.add('active');
+        activeItem.setAttribute('aria-selected', 'true');
+        
         document.getElementById('overviewContainer').classList.add('hidden');
         document.getElementById('detailContainer').classList.remove('hidden');
         
@@ -166,90 +139,16 @@
 
         if (currentMode === 'patients') {
             const p = patients.find(i => i.id === id);
-            header.innerHTML = `
-                <div>
-                    <div style="font-size:1.8rem; font-weight:800;">${p.name}</div>
-                    <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;">
-                        ${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}
-                    </div>
-                </div>
-                <div class="header-meta">ID: ${p.id}</div>
-                <div class="header-meta">DOB: ${p.dob}</div>
-                <div class="header-meta">Age: ${p.age}</div>`;
-            
-            tabs.innerHTML = `<div class="tab active">Information</div><div class="tab">Evaluation & Treatment</div><div class="tab">Imaging</div><div class="tab">Messages</div>`;
-            
-            body.innerHTML = `
-                <div class="left-col">
-                    <div class="data-section">
-                        <h3>Evaluation & Management (At-a-glance)</h3>
-                        <div class="at-a-glance-grid">
-                            <div class="glance-item"><span class="stat-label">Height</span><b>${p.h}</b></div>
-                            <div class="glance-item"><span class="stat-label">Weight</span><b>${p.w}</b></div>
-                            <div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div>
-                            <div class="glance-item"><span class="stat-label">ADX Code</span><b>${p.adx}</b></div>
-                        </div>
-                    </div>
-                    <div class="data-section">
-                        <h3>Visit History</h3>
-                        <table class="table-custom">
-                            <thead><tr><th>Date</th><th>Procedure</th><th>Status</th></tr></thead>
-                            <tbody>${mskHistory.map(h => `<tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="right-col">
-                    <div class="data-section">
-                        <h3>Quick Actions</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" style="width:auto;">Add Visit</button>
-                            <button class="btn btn-outline">Add Note</button>
-                            <button class="btn btn-outline">Message</button>
-                        </div>
-                    </div>
-                    <div class="data-section">
-                        <h3>Active Diagnoses</h3>
-                        <p style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p>
-                        <p style="font-weight:700; color:var(--primary-navy);">M51.26 - Disc displacement</p>
-                    </div>
-                </div>`;
+            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:8px;">${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}</div></div><div class="header-meta">Age: ${p.age}</div>`;
+            tabs.innerHTML = `<button class="tab active" role="tab" aria-selected="true">Information</button><button class="tab" role="tab">Clinical</button>`;
+            body.innerHTML = `<div class="data-section"><h3>At-a-glance</h3><div class="at-a-glance-grid"><div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div><div class="glance-item"><span class="stat-label">Code</span><b>${p.adx}</b></div></div></div>`;
         } else {
             const pr = practices.find(i => i.id === id);
-            header.innerHTML = `<div><div style="font-size:1.8rem; font-weight:800;">${pr.name}</div><div style="margin-top:5px; opacity:0.8;">Average Pipeline: ${pr.days} Days to 1st Visit</div></div>`;
-            tabs.innerHTML = `<div class="tab active">Roster</div><div class="tab">Performance</div><div class="tab">Billing</div>`;
-            body.innerHTML = `
-                <div class="left-col">
-                    <div class="data-section">
-                        <h3>Practice Physicians</h3>
-                        <table class="table-custom">
-                            <thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead>
-                            <tbody>
-                                <tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr>
-                                <tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="right-col">
-                    <div class="data-section">
-                        <h3>Practice Actions</h3>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" style="width:auto;">Message Practice</button>
-                            <button class="btn btn-outline">View Patients</button>
-                            <button class="btn btn-outline">Edit Practice</button>
-                        </div>
-                    </div>
-                    <div class="data-section">
-                        <h3>Administrative Staff</h3>
-                        <ul style="font-weight:600; font-size:0.9rem;">
-                            <li>Marty McGraw (Ops)</li>
-                            <li>Chris (Records)</li>
-                            <li>Rosie (Records)</li>
-                        </ul>
-                    </div>
-                </div>`;
+            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${pr.name}</h2><div style="margin-top:5px; opacity:0.8;">Pipeline: ${pr.days} Days</div></div>`;
+            tabs.innerHTML = `<button class="tab active" role="tab">Roster</button><button class="tab" role="tab">Billing</button>`;
+            body.innerHTML = `<div class="data-section"><h3>Physicians</h3><p>Dr. Brad Vilims, Dr. Loyal</p></div>`;
         }
-        document.getElementById('mainContent').scrollTop = 0;
+        document.getElementById('mainContent').focus(); // Move focus to content for accessibility
     }
 
     function clearSelection() {
