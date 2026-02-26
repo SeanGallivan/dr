@@ -17,6 +17,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow: hidden; /* Prevents double scrollbars on the body */
 }
 
 header {
@@ -27,6 +28,7 @@ header {
     justify-content: space-between;
     border-bottom: 3px solid var(--primary-navy);
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    flex-shrink: 0;
 }
 
 .logo-area {
@@ -50,17 +52,37 @@ nav a {
     display: grid;
     grid-template-columns: 320px 1fr;
     flex: 1;
-    overflow: hidden;
+    overflow: hidden; /* Vital for sidebar and main to scroll independently */
 }
 
+/* --- Sidebar: Scrollable Fixed --- */
 .sidebar {
     background: white;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
-.patient-list { overflow-y: auto; flex: 1; }
+.search-container {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+#patientSearch {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Montserrat';
+    box-sizing: border-box; /* Fixes the width overflow */
+}
+
+.patient-list { 
+    overflow-y: auto; 
+    flex: 1; 
+}
 
 .patient-item {
     padding: 1.2rem 1.5rem;
@@ -69,6 +91,7 @@ nav a {
     transition: background 0.2s;
 }
 
+.patient-item:hover { background: #fafafa; }
 .patient-item.active { 
     background: var(--active-gray); 
     border-left: 6px solid var(--primary-navy); 
@@ -77,11 +100,19 @@ nav a {
 .patient-name { font-weight: 700; display: block; color: var(--primary-navy); }
 .last-visit { font-size: 0.8rem; color: var(--text-muted); }
 
-/* --- Dashboard Stats: Increased Spacing --- */
+/* --- Main Content: Scrollable Fixed --- */
+main {
+    overflow-y: auto;
+    height: 100%;
+    background: var(--bg-gray);
+}
+
+/* --- Dashboard Stats: Wrapping Logic --- */
 .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 4rem; /* Increased gap between metrics */
+    /* Grid wraps to fewer columns as space narrows */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
     margin: 3rem 0;
 }
 
@@ -91,11 +122,11 @@ nav a {
 }
 
 .stat-value {
-    font-size: 3.5rem; /* Slightly larger */
+    font-size: 3.2rem;
     font-weight: 800;
     display: block;
-    line-height: 1.2;
-    margin: 1rem 0; /* Added space between title and number */
+    line-height: 1.1;
+    margin: 1rem 0;
 }
 
 .stat-label {
@@ -112,17 +143,18 @@ nav a {
     text-decoration: none;
     font-weight: 700;
     display: block;
-    margin-top: 1rem; /* Added space between number and link */
+    margin-top: 1rem;
 }
 
 /* --- Patient Detail Layout --- */
 .detail-header {
     background: var(--primary-navy);
     color: white;
-    padding: 1.5rem 2.5rem;
+    padding: 2rem 3rem;
     display: flex;
     gap: 3rem;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .header-meta { font-size: 0.85rem; opacity: 0.9; }
@@ -132,6 +164,9 @@ nav a {
     background: #e2e8f0;
     padding: 0 2rem;
     border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .tab {
@@ -139,7 +174,6 @@ nav a {
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    color: var(--text-muted);
 }
 
 .tab.active {
@@ -151,54 +185,33 @@ nav a {
 .content-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 4rem; /* Increased spacing between sections */
+    gap: 4rem;
     padding: 3rem;
 }
 
 .data-section {
-    margin-bottom: 3rem; /* Spacing between major blocks */
+    margin-bottom: 4rem;
 }
 
 .data-section h3 {
     border-bottom: 2px solid var(--primary-navy);
     padding-bottom: 0.8rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     font-size: 1.1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.at-a-glance-item {
-    margin-bottom: 1.5rem; /* Vertical space for content */
-}
-
+.at-a-glance-item { margin-bottom: 2rem; }
 .at-a-glance-item b {
     display: block;
-    margin-top: 0.5rem; /* Space between title and value */
-    font-size: 1.2rem;
+    margin-top: 0.8rem;
+    font-size: 1.3rem;
 }
 
-/* --- Visit History Table --- */
-.visit-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-.visit-table th {
-    text-align: left;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.visit-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.9rem;
-}
+.visit-table { width: 100%; border-collapse: collapse; }
+.visit-table th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border-color); }
+.visit-table td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
 
 .btn-group { display: flex; gap: 12px; margin-top: 1.5rem; flex-wrap: wrap; }
 .btn { padding: 12px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; }
@@ -206,3 +219,4 @@ nav a {
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
 
 .hidden { display: none; }
+.schedule-link { color: #fff; font-weight: 700; text-decoration: underline; cursor: pointer; }
