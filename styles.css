@@ -10,18 +10,23 @@
     --header-height: 80px;
 }
 
+/* 1. Viewport Lockdown */
 html, body {
     height: 100vh;
     width: 100vw;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Lock the viewport */
+    overflow: hidden; /* Prevents body-level scrolling */
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-gray);
 }
 
-body { display: flex; flex-direction: column; }
+body {
+    display: flex;
+    flex-direction: column;
+}
 
+/* 2. Fixed Header */
 header {
     height: var(--header-height);
     background: white;
@@ -41,7 +46,7 @@ header {
     color: var(--primary-navy);
     letter-spacing: -1px;
     text-transform: uppercase;
-    cursor: pointer; /* Makes it feel like a link */
+    cursor: pointer;
 }
 
 nav a {
@@ -55,38 +60,81 @@ nav a {
 
 nav a.active { color: var(--primary-navy); border-bottom: 2px solid var(--primary-navy); padding-bottom: 5px; }
 
+/* 3. The Layout Wrapper */
 .wrapper {
-    display: grid;
-    grid-template-columns: 320px 1fr;
+    display: flex;
     height: calc(100vh - var(--header-height));
-    flex: 1;
+    width: 100%;
     overflow: hidden;
 }
 
-/* --- Sidebar Scrolling --- */
+/* 4. Sidebar: Scrollable List */
 .sidebar {
+    width: 320px;
     background: white;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     height: 100%;
+    flex-shrink: 0;
 }
 
-.search-container { padding: 1.5rem; border-bottom: 1px solid #eee; flex-shrink: 0; }
-#searchBox { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Montserrat'; box-sizing: border-box; margin-bottom: 10px; }
-.add-link { font-size: 0.75rem; font-weight: 700; color: var(--primary-navy); text-decoration: none; text-transform: uppercase; }
+.search-container {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
 
-.list-container { flex: 1; overflow-y: auto; background: white; }
-.list-item { padding: 1.2rem 1.5rem; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-.list-item.active { background: var(--active-gray); border-left: 6px solid var(--primary-navy); }
+#searchBox {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Montserrat';
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.list-container {
+    flex: 1;
+    overflow-y: auto; /* FORCES SIDEBAR SCROLL */
+    background: white;
+}
+
+.list-item {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.list-item.active { 
+    background: var(--active-gray); 
+    border-left: 6px solid var(--primary-navy); 
+}
+
 .item-main { font-weight: 700; display: block; color: var(--primary-navy); }
 .item-sub { font-size: 0.8rem; color: var(--text-muted); }
 
-/* --- Main Content Scrolling --- */
-main { height: 100%; overflow-y: auto; background: var(--bg-gray); display: flex; flex-direction: column; }
+/* 5. Main Content: Scrollable Area */
+main {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto; /* FORCES CONTENT SCROLL */
+    background: var(--bg-gray);
+    display: flex;
+    flex-direction: column;
+}
 
 .view-section { padding: 4rem; }
-.stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin: 3rem 0; }
+
+/* --- Stats Grid --- */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+    margin: 3rem 0;
+}
+
 .stat-item { border-left: 1px solid var(--border-color); padding-left: 2rem; }
 .stat-value { font-size: 3.2rem; font-weight: 800; display: block; line-height: 1.2; margin: 1rem 0; }
 .stat-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
@@ -95,24 +143,34 @@ main { height: 100%; overflow-y: auto; background: var(--bg-gray); display: flex
 .detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3rem; display: flex; gap: 4rem; align-items: center; flex-shrink: 0; }
 .header-meta { font-size: 0.85rem; opacity: 0.9; }
 
-.tab-bar { display: flex; background: #e2e8f0; padding: 0 2rem; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; }
+.tab-bar {
+    display: flex;
+    background: #e2e8f0;
+    padding: 0 2rem;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
 .tab { padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .tab.active { background: white; color: var(--primary-navy); border-bottom: 2px solid var(--primary-navy); }
 
 .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; }
-.data-section { margin-bottom: 3.5rem; }
-.data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; }
+.data-section { margin-bottom: 4rem; }
+.data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; margin-bottom: 2rem; font-size: 1.1rem; text-transform: uppercase; }
 
 .at-a-glance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 2rem; margin-top: 1rem; }
-.glance-item b { display: block; margin-top: 0.8rem; font-size: 1.3rem; }
+.glance-item b { display: block; margin-top: 1rem; font-size: 1.4rem; }
 
 .table-custom { width: 100%; border-collapse: collapse; }
 .table-custom th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border-color); }
 .table-custom td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
 
-.btn-group { display: flex; gap: 12px; margin-top: 1.5rem; flex-wrap: wrap; }
-.btn { padding: 12px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; }
-.btn-primary { background: var(--primary-navy); color: white; }
+/* --- Buttons --- */
+.btn { padding: 12px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; transition: transform 0.1s; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--primary-navy); color: white; width: 100%; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
 
 .hidden { display: none; }
