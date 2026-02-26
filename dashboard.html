@@ -25,7 +25,7 @@
         <div class="search-container">
             <label for="searchBox" class="sr-only">Search</label>
             <input type="text" id="searchBox" placeholder="Search Patients...">
-            <button id="addBtn" class="btn btn-primary hidden" style="width:100%; margin-top:10px;">+ Add New Practice</button>
+            <button id="addBtn" class="btn btn-primary hidden" style="width:100%;">+ Add New Practice</button>
         </div>
         <nav class="list-container" id="sidebarList" aria-label="Entity List"></nav>
     </aside>
@@ -33,7 +33,7 @@
     <main id="mainContent" role="main" tabindex="-1">
         <div id="overviewContainer" class="view-section">
             <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
-            <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.5rem;"></p>
+            <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.8rem;"></p>
             <div class="stats-container" id="dashStats"></div>
         </div>
 
@@ -41,7 +41,7 @@
             <div id="detailHeader" class="detail-header"></div>
             <div id="detailTabs" class="tab-bar" role="tablist"></div>
             <div class="content-grid" id="detailBody"></div>
-            <button onclick="clearSelection()" style="margin: 0 3rem 4rem 3rem;" class="btn btn-outline">← Back to Overview</button>
+            <button onclick="clearSelection()" style="margin: 0 4rem 5rem 4rem;" class="btn btn-outline">← Back to Overview</button>
         </section>
     </main>
 </div>
@@ -139,16 +139,16 @@
             title.innerText = "Summit Musculoskeletal Group";
             sub.innerText = "Practice Performance Overview";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">View Report →</a></div>
-                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">View Financials →</a></div>
-                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">View Clinical →</a></div>`;
+                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">View Report →</a></div>
+                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">View Financials →</a></div>
+                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">View Clinical →</a></div>`;
         } else {
             title.innerText = "Network Practices";
             sub.innerText = "Global Practice Distribution";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">Manage Network →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">Patient Map →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142,000</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.7rem;">Revenue Dashboard →</a></div>`;
+                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">Manage Network →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">Patient Map →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142k</span><a href="#" class="stat-label" style="text-decoration:none; font-size:0.75rem;">Revenue Dashboard →</a></div>`;
         }
     }
 
@@ -165,16 +165,16 @@
 
         if (currentMode === 'patients') {
             const p = patients.find(i => i.id === id);
-            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;">${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}</div></div><div class="header-meta">ID: ${p.id}</div><div class="header-meta">DOB: ${p.dob}</div><div class="header-meta">Age: ${p.age}</div>`;
+            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:10px; font-weight:600; background:rgba(255,255,255,0.2); padding:8px 14px; border-radius:4px; display:inline-block;">${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}</div></div><div class="header-meta">ID: ${p.id}</div><div class="header-meta">DOB: ${p.dob}</div><div class="header-meta">Age: ${p.age}</div>`;
             tabs.innerHTML = `<button class="tab active" role="tab" aria-selected="true">Information</button><button class="tab" role="tab">Evaluation & Treatment</button><button class="tab" role="tab">Imaging</button>`;
             body.innerHTML = `
                 <div class="left-col"><div class="data-section"><h3>Evaluation & Management (At-a-glance)</h3><div class="at-a-glance-grid"><div class="glance-item"><span class="stat-label">Height</span><b>${p.h}</b></div><div class="glance-item"><span class="stat-label">Weight</span><b>${p.w}</b></div><div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div><div class="glance-item"><span class="stat-label">ADX Code</span><b>${p.adx}</b></div></div></div><div class="data-section"><h3>Visit History</h3><table class="table-custom"><thead><tr><th>Date</th><th>Procedure</th><th>Status</th></tr></thead><tbody>${mskHistory.map(h => `<tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>`).join('')}</tbody></table></div></div>
-                <div class="right-col"><div class="data-section"><h3>Quick Actions</h3><div class="btn-group"><button class="btn btn-primary">Add Visit</button><button class="btn btn-outline" style="margin-top:10px;">Add Note</button><button class="btn btn-outline" style="margin-top:10px;">Message</button></div></div><div class="data-section"><h3>Active Diagnoses</h3><p style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p><p style="font-weight:700; color:var(--primary-navy);">M51.26 - Disc displacement</p></div></div>`;
+                <div class="right-col"><div class="data-section"><h3>Quick Actions</h3><div class="btn-group"><button class="btn btn-primary">Add Visit</button><button class="btn btn-outline" style="margin-top:15px;">Add Note</button><button class="btn btn-outline" style="margin-top:15px;">Message</button></div></div><div class="data-section"><h3>Active Diagnoses</h3><p style="font-weight:700; color:var(--primary-navy); font-size:1.1rem; margin-bottom:8px;">M54.16 - Radiculopathy, lumbar region</p><p style="font-weight:700; color:var(--primary-navy); font-size:1.1rem;">M51.26 - Disc displacement</p></div></div>`;
         } else {
             const pr = practices.find(i => i.id === id);
             header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${pr.name}</h2><div style="margin-top:5px; opacity:0.8;">Average Pipeline: ${pr.days} Days to 1st Visit</div></div>`;
             tabs.innerHTML = `<button class="tab active" role="tab">Roster</button><button class="tab" role="tab">Performance</button>`;
-            body.innerHTML = `<div class="left-col"><div class="data-section"><h3>Practice Physicians</h3><table class="table-custom"><thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead><tbody><tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr><tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr></tbody></table></div></div><div class="right-col"><div class="data-section"><h3>Practice Actions</h3><div class="btn-group"><button class="btn btn-primary">Message Practice</button><button class="btn btn-outline" style="margin-top:10px;">View Patients</button><button class="btn btn-outline" style="margin-top:10px;">Edit Practice</button></div></div><div class="data-section"><h3>Administrative Staff</h3><ul style="font-weight:600; font-size:0.9rem;"><li>Marty McGraw (Ops)</li><li>Chris (Records)</li><li>Rosie (Records)</li></ul></div></div>`;
+            body.innerHTML = `<div class="left-col"><div class="data-section"><h3>Practice Physicians</h3><table class="table-custom"><thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead><tbody><tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr><tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr></tbody></table></div></div><div class="right-col"><div class="data-section"><h3>Practice Actions</h3><div class="btn-group"><button class="btn btn-primary">Message Practice</button><button class="btn btn-outline" style="margin-top:15px;">View Patients</button><button class="btn btn-outline" style="margin-top:15px;">Edit Practice</button></div></div><div class="data-section"><h3>Administrative Staff</h3><ul style="font-weight:600; font-size:1.1rem;"><li>Marty McGraw (Ops)</li><li>Chris (Records)</li><li>Rosie (Records)</li></ul></div></div>`;
         }
         document.getElementById('mainContent').scrollTop = 0;
         document.getElementById('mainContent').focus();
