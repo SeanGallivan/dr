@@ -1,0 +1,186 @@
+/* --- ADX Prototype Design System --- */
+:root {
+    --primary-navy: #002D72;
+    --secondary-red: #D6001C;
+    --bg-gray: #f8f9fa;
+    --border-color: #e0e0e0;
+    --text-dark: #333;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* --- Header: Enlarged & Professional --- */
+header {
+    background: var(--white);
+    padding: 1.8rem 3rem; /* Slightly larger padding for "breathability" */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--primary-navy);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.logo-area {
+    font-weight: 700;
+    font-size: 2.2rem; /* Increased size */
+    color: var(--primary-navy);
+    letter-spacing: -1.5px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text-dark);
+    margin-left: 2.5rem;
+    font-weight: 600;
+    font-size: 1.2rem; /* Professional font size */
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: var(--primary-navy);
+}
+
+/* --- Layout Structure --- */
+.wrapper {
+    display: grid;
+    grid-template-columns: 380px 1fr; /* Slightly wider sidebar for readability */
+    flex: 1;
+    overflow: hidden;
+}
+
+/* --- Sidebar: Patient List --- */
+.sidebar {
+    background: var(--white);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    padding: 1.5rem;
+    background: #fdfdfd;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#patientSearch {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-family: 'Montserrat';
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+#patientSearch:focus {
+    border-color: var(--primary-navy);
+    outline: none;
+}
+
+.patient-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.patient-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.patient-item:hover {
+    background: #f4f7fa;
+}
+
+.patient-item.active {
+    border-left: 8px solid var(--primary-navy);
+    background: #eef2f7;
+}
+
+.patient-name {
+    font-weight: 700;
+    display: block;
+    font-size: 1.1rem;
+    color: var(--primary-navy);
+}
+
+.last-visit {
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 6px;
+    display: block;
+}
+
+/* --- Main Content Area --- */
+main {
+    padding: 3.5rem; /* Increased whitespace */
+    overflow-y: auto;
+}
+
+/* --- High-End Stat Cards (Strategy Style) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+}
+
+.stat-value {
+    font-size: 3.2rem; /* Large, bold numbers */
+    font-weight: 800;
+    color: var(--primary-navy);
+    display: block;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #aaa;
+}
+
+/* --- Action Buttons --- */
+.action-bar {
+    margin-top: 3rem;
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-family: 'Montserrat';
+    transition: transform 0.1s;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary { background: var(--primary-navy); color: var(--white); }
+.btn-outline { border: 2px solid var(--primary-navy); color: var(--primary-navy); background: transparent; }
+
+.hidden { display: none; }
