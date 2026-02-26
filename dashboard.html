@@ -22,9 +22,10 @@
     <aside class="sidebar">
         <div class="search-container">
             <input type="text" id="searchBox" placeholder="Search Patients...">
-            <a href="#" id="addLink" class="hidden">+ Add New Practice</a>
+            <button id="addBtn" class="btn btn-primary hidden">+ Add New Practice</button>
         </div>
-        <div class="list-container" id="sidebarList"></div>
+        <div class="list-container" id="sidebarList">
+            </div>
     </aside>
 
     <main id="mainContent">
@@ -107,10 +108,13 @@
         currentMode = mode;
         document.querySelectorAll('#topNav a').forEach(a => a.classList.remove('active'));
         document.getElementById(`nav-${mode}`).classList.add('active');
+        
         const search = document.getElementById('searchBox');
-        const addLink = document.getElementById('addLink');
+        const addBtn = document.getElementById('addBtn');
+        
         search.placeholder = mode === 'patients' ? "Search Patients..." : "Search Practices...";
-        addLink.classList.toggle('hidden', mode === 'patients');
+        addBtn.classList.toggle('hidden', mode === 'patients');
+        
         renderSidebar();
         renderDashboard();
         clearSelection();
@@ -135,17 +139,17 @@
             title.innerText = "Summit Musculoskeletal Group";
             sub.innerText = "Practice Performance Overview";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" class="add-link">View Report →</a></div>
-                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" class="add-link">View Financials →</a></div>
-                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" class="add-link">View Clinical →</a></div>
+                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">134</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Report →</a></div>
+                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Financials →</a></div>
+                <div class="stat-item"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">View Clinical →</a></div>
             `;
         } else {
             title.innerText = "Network Practices";
             sub.innerText = "Global Practice Distribution";
             stats.innerHTML = `
-                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span><a href="#" class="add-link">Manage Network →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" class="add-link">Patient Map →</a></div>
-                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142,000</span><a href="#" class="add-link">Network Revenue →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Practices</span><span class="stat-value">18</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Manage Network →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Patients</span><span class="stat-value">3,102</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Patient Map →</a></div>
+                <div class="stat-item"><span class="stat-label">Total Billing</span><span class="stat-value">$142,000</span><a href="#" style="font-size:0.75rem; font-weight:700; color:var(--primary-navy); text-decoration:none;">Network Revenue →</a></div>
             `;
         }
     }
@@ -155,24 +159,95 @@
         document.getElementById(`item-${id}`).classList.add('active');
         document.getElementById('overviewContainer').classList.add('hidden');
         document.getElementById('detailContainer').classList.remove('hidden');
+        
         const header = document.getElementById('detailHeader');
         const tabs = document.getElementById('detailTabs');
         const body = document.getElementById('detailBody');
 
         if (currentMode === 'patients') {
             const p = patients.find(i => i.id === id);
-            header.innerHTML = `<div><div style="font-size:1.8rem; font-weight:800;">${p.name}</div><div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;">${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}</div></div><div class="header-meta">ID: ${p.id}</div><div class="header-meta">DOB: ${p.dob}</div><div class="header-meta">Age: ${p.age}</div>`;
+            header.innerHTML = `
+                <div>
+                    <div style="font-size:1.8rem; font-weight:800;">${p.name}</div>
+                    <div style="margin-top:8px; font-weight:600; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:4px; display:inline-block;">
+                        ${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'Next Visit: ' + p.next}
+                    </div>
+                </div>
+                <div class="header-meta">ID: ${p.id}</div>
+                <div class="header-meta">DOB: ${p.dob}</div>
+                <div class="header-meta">Age: ${p.age}</div>`;
+            
             tabs.innerHTML = `<div class="tab active">Information</div><div class="tab">Evaluation & Treatment</div><div class="tab">Imaging</div><div class="tab">Messages</div>`;
+            
             body.innerHTML = `
-                <div class="left-col"><div class="data-section"><h3>Evaluation & Management (At-a-glance)</h3><div class="at-a-glance-grid"><div class="glance-item"><span class="stat-label">Height</span><b>${p.h}</b></div><div class="glance-item"><span class="stat-label">Weight</span><b>${p.w}</b></div><div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div><div class="glance-item"><span class="stat-label">ADX Code</span><b>${p.adx}</b></div></div></div><div class="data-section"><h3>Visit History</h3><table class="table-custom"><thead><tr><th>Date</th><th>Procedure</th><th>Status</th></tr></thead><tbody>${mskHistory.map(h => `<tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>`).join('')}</tbody></table></div></div>
-                <div class="right-col"><div class="data-section"><h3>Quick Actions</h3><div class="btn-group"><button class="btn btn-primary">Add Visit</button><button class="btn btn-outline">Add Note</button><button class="btn btn-outline">Message</button></div></div><div class="data-section"><h3>Active Diagnoses</h3><p style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p><p style="font-weight:700; color:var(--primary-navy);">M51.26 - Disc displacement</p></div></div>`;
+                <div class="left-col">
+                    <div class="data-section">
+                        <h3>Evaluation & Management (At-a-glance)</h3>
+                        <div class="at-a-glance-grid">
+                            <div class="glance-item"><span class="stat-label">Height</span><b>${p.h}</b></div>
+                            <div class="glance-item"><span class="stat-label">Weight</span><b>${p.w}</b></div>
+                            <div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div>
+                            <div class="glance-item"><span class="stat-label">ADX Code</span><b>${p.adx}</b></div>
+                        </div>
+                    </div>
+                    <div class="data-section">
+                        <h3>Visit History</h3>
+                        <table class="table-custom">
+                            <thead><tr><th>Date</th><th>Procedure</th><th>Status</th></tr></thead>
+                            <tbody>${mskHistory.map(h => `<tr><td>${h.date}</td><td>${h.proc}</td><td style="color:green; font-weight:600;">${h.status}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <div class="data-section">
+                        <h3>Quick Actions</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" style="width:auto;">Add Visit</button>
+                            <button class="btn btn-outline">Add Note</button>
+                            <button class="btn btn-outline">Message</button>
+                        </div>
+                    </div>
+                    <div class="data-section">
+                        <h3>Active Diagnoses</h3>
+                        <p style="font-weight:700; color:var(--primary-navy);">M54.16 - Radiculopathy, lumbar region</p>
+                        <p style="font-weight:700; color:var(--primary-navy);">M51.26 - Disc displacement</p>
+                    </div>
+                </div>`;
         } else {
             const pr = practices.find(i => i.id === id);
             header.innerHTML = `<div><div style="font-size:1.8rem; font-weight:800;">${pr.name}</div><div style="margin-top:5px; opacity:0.8;">Average Pipeline: ${pr.days} Days to 1st Visit</div></div>`;
-            tabs.innerHTML = `<div class="tab active">Roster</div><div class="tab">Performance</div><div class="tab">Billing Entities</div>`;
+            tabs.innerHTML = `<div class="tab active">Roster</div><div class="tab">Performance</div><div class="tab">Billing</div>`;
             body.innerHTML = `
-                <div class="left-col"><div class="data-section"><h3>Practice Physicians</h3><table class="table-custom"><thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead><tbody><tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr><tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr></tbody></table></div></div>
-                <div class="right-col"><div class="data-section"><h3>Practice Actions</h3><div class="btn-group"><button class="btn btn-primary">Message Practice</button><button class="btn btn-outline">View Patients</button><button class="btn btn-outline">Edit Practice</button></div></div><div class="data-section"><h3>Administrative Staff</h3><ul style="font-weight:600; font-size:0.9rem;"><li>Marty McGraw (Ops)</li><li>Chris (Records)</li><li>Rosie (Records)</li></ul></div></div>`;
+                <div class="left-col">
+                    <div class="data-section">
+                        <h3>Practice Physicians</h3>
+                        <table class="table-custom">
+                            <thead><tr><th>Name</th><th>Specialty</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Dr. Brad Vilims</td><td>Pain Management</td><td>Active</td></tr>
+                                <tr><td>Dr. Loyal</td><td>Clinical Ops</td><td>Active</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <div class="data-section">
+                        <h3>Practice Actions</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" style="width:auto;">Message Practice</button>
+                            <button class="btn btn-outline">View Patients</button>
+                            <button class="btn btn-outline">Edit Practice</button>
+                        </div>
+                    </div>
+                    <div class="data-section">
+                        <h3>Administrative Staff</h3>
+                        <ul style="font-weight:600; font-size:0.9rem;">
+                            <li>Marty McGraw (Ops)</li>
+                            <li>Chris (Records)</li>
+                            <li>Rosie (Records)</li>
+                        </ul>
+                    </div>
+                </div>`;
         }
         document.getElementById('mainContent').scrollTop = 0;
     }
