@@ -1,32 +1,53 @@
-/* --- ADX Prototype Design System: Derived Results Edition --- */
+/* --- ADX Prototype Design System: WCAG 2.1 AA Refactor --- */
 :root {
     --primary-navy: #002D72;
     --secondary-red: #D6001C;
     --bg-gray: #f4f7f6;
     --border-color: #e0e0e0;
     --text-dark: #222;
-    --text-muted: #666;
+    --text-muted: #555; /* Darkened for better contrast */
     --active-gray: #e9ecef;
     --header-height: 80px;
 }
 
-/* 1. Viewport Lockdown */
+/* 1. Viewport & Accessibility Foundations */
 html, body {
     height: 100vh;
     width: 100vw;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevents body-level scrolling */
+    overflow: hidden;
     font-family: 'Montserrat', sans-serif;
     background-color: var(--bg-gray);
 }
 
-body {
-    display: flex;
-    flex-direction: column;
+body { display: flex; flex-direction: column; }
+
+/* Screen Reader Only class for labels */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
-/* 2. Fixed Header */
+/* Skip Link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--secondary-red);
+    color: white;
+    padding: 8px;
+    z-index: 200;
+}
+.skip-link:focus { top: 0; }
+
+/* 2. Header & Nav */
 header {
     height: var(--header-height);
     background: white;
@@ -47,6 +68,7 @@ header {
     letter-spacing: -1px;
     text-transform: uppercase;
     cursor: pointer;
+    text-decoration: none;
 }
 
 nav a {
@@ -55,92 +77,89 @@ nav a {
     margin-left: 2.5rem;
     font-weight: 700;
     font-size: 0.9rem;
-    cursor: pointer;
+    padding: 5px 0;
 }
 
-nav a.active { color: var(--primary-navy); border-bottom: 2px solid var(--primary-navy); padding-bottom: 5px; }
+nav a.active { 
+    color: var(--primary-navy); 
+    border-bottom: 3px solid var(--primary-navy); 
+}
 
-/* 3. The Layout Wrapper */
+/* 3. Layout Wrapper */
 .wrapper {
     display: flex;
     height: calc(100vh - var(--header-height));
     width: 100%;
-    overflow: hidden;
 }
 
-/* 4. Sidebar: Scrollable List */
+/* 4. Sidebar: Semantic Refactor */
 .sidebar {
     width: 320px;
     background: white;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    flex-shrink: 0;
 }
 
-.search-container {
-    padding: 1.5rem;
-    border-bottom: 1px solid #eee;
-    flex-shrink: 0;
-}
-
+.search-container { padding: 1.5rem; border-bottom: 1px solid #eee; }
 #searchBox {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 2px solid #ddd;
     border-radius: 6px;
     font-family: 'Montserrat';
     box-sizing: border-box;
     margin-bottom: 15px;
 }
 
-.list-container {
-    flex: 1;
-    overflow-y: auto; /* FORCES SIDEBAR SCROLL */
-    background: white;
+.list-container { flex: 1; overflow-y: auto; background: white; }
+
+/* List items as Buttons for keyboard focus */
+.list-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.2rem 1.5rem;
+    cursor: pointer;
+    display: block;
+    font-family: 'Montserrat';
 }
 
-.list-item {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-}
+.list-item:focus { outline: 2px solid var(--primary-navy); outline-offset: -2px; }
 
 .list-item.active { 
     background: var(--active-gray); 
     border-left: 6px solid var(--primary-navy); 
 }
 
-.item-main { font-weight: 700; display: block; color: var(--primary-navy); }
-.item-sub { font-size: 0.8rem; color: var(--text-muted); }
+.item-main { font-weight: 700; display: block; color: var(--primary-navy); font-size: 1rem; }
+.item-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
-/* 5. Main Content: Scrollable Area */
+/* 5. Main Content */
 main {
     flex: 1;
-    height: 100%;
-    overflow-y: auto; /* FORCES CONTENT SCROLL */
+    overflow-y: auto;
     background: var(--bg-gray);
-    display: flex;
-    flex-direction: column;
+    outline: none; /* Main gets focus via skip-link */
 }
 
 .view-section { padding: 4rem; }
 
-/* --- Stats Grid --- */
 .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 3rem;
     margin: 3rem 0;
 }
 
 .stat-item { border-left: 1px solid var(--border-color); padding-left: 2rem; }
-.stat-value { font-size: 3.2rem; font-weight: 800; display: block; line-height: 1.2; margin: 1rem 0; }
+.stat-value { font-size: 3.2rem; font-weight: 800; display: block; line-height: 1.2; margin: 0.5rem 0; }
 .stat-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
 
-/* --- Detail Layouts --- */
-.detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3rem; display: flex; gap: 4rem; align-items: center; flex-shrink: 0; }
+/* --- Detail Views --- */
+.detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3rem; display: flex; gap: 4rem; align-items: center; }
 .header-meta { font-size: 0.85rem; opacity: 0.9; }
 
 .tab-bar {
@@ -148,30 +167,40 @@ main {
     background: #e2e8f0;
     padding: 0 2rem;
     border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
-.tab { padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-.tab.active { background: white; color: var(--primary-navy); border-bottom: 2px solid var(--primary-navy); }
+.tab { 
+    padding: 1rem 1.5rem; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    font-family: 'Montserrat';
+}
+
+.tab.active { background: white; color: var(--primary-navy); border-bottom: 3px solid var(--primary-navy); }
 
 .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; }
-.data-section { margin-bottom: 4rem; }
-.data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; margin-bottom: 2rem; font-size: 1.1rem; text-transform: uppercase; }
-
-.at-a-glance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 2rem; margin-top: 1rem; }
-.glance-item b { display: block; margin-top: 1rem; font-size: 1.4rem; }
+.data-section { margin-bottom: 3.5rem; }
+.data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; }
 
 .table-custom { width: 100%; border-collapse: collapse; }
 .table-custom th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--border-color); }
 .table-custom td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
 
-/* --- Buttons --- */
-.btn { padding: 12px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; transition: transform 0.1s; }
-.btn:active { transform: scale(0.98); }
-.btn-primary { background: var(--primary-navy); color: white; width: 100%; }
+/* --- Interactive Elements --- */
+.btn { 
+    padding: 12px 24px; 
+    border-radius: 4px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-family: 'Montserrat'; 
+    border: none; 
+}
+
+.btn-primary { background: var(--primary-navy); color: white; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
 
 .hidden { display: none; }
-.schedule-link { color: #fff; font-weight: 800; text-decoration: underline; cursor: pointer; font-size: 1.1rem; }
+.schedule-link { color: #fff; font-weight: 800; text-decoration: underline; }
