@@ -61,7 +61,7 @@
             if (mode === 'patients') {
                 title.innerText = "Summit Musculoskeletal Group"; sub.innerText = "HQ Operations Dashboard";
                 content.innerHTML = TEMPLATES.practice(PRACTICES[0]);
-                content.querySelector('.back-link').style.display = 'none';
+                const bl = content.querySelector('.back-link'); if(bl) bl.style.display = 'none';
             } else {
                 title.innerText = "Network Management"; sub.innerText = "Global Practice Distribution";
                 content.innerHTML = `<div class="daily-grid"><div class="daily-stat"><span class="stat-label">Active Locations</span><span class="stat-value">18</span></div></div>`;
@@ -69,7 +69,9 @@
         }
         function selectItem(id) {
             document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(`item-${id}`).classList.add('active');
+            const activeItem = document.getElementById(`item-${id}`);
+            if(activeItem) activeItem.classList.add('active');
+            
             document.getElementById('overviewContainer').classList.add('hidden');
             document.getElementById('detailContainer').classList.remove('hidden');
             const h = document.getElementById('detailHeader');
@@ -81,12 +83,12 @@
                 const pr = PRACTICES.find(i => i.id === id);
                 h.innerHTML = `<div><h2 style="margin:0;">${pr.name}</h2></div>`; b.innerHTML = TEMPLATES.practice(pr);
             }
+            document.getElementById('mainContent').scrollTop = 0;
         }
         function clearSelection() {
             document.getElementById('overviewContainer').classList.remove('hidden');
             document.getElementById('detailContainer').classList.add('hidden');
         }
-        // Initial Load
         window.onload = () => switchMode('patients');
     </script>
 </body>
