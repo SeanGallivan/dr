@@ -1,4 +1,4 @@
-/* --- ADX Prototype: Master Data Vault (High-Density Clinical Edition) --- */
+/* --- ADX Prototype: Master Data Vault --- */
 const PATIENTS = [
     { 
         id: "P1", name: "Elizabeth Blackwell", dob: "8/27/1984", age: 41, 
@@ -15,6 +15,7 @@ const PATIENTS = [
         adherence: "100%", surgery: "Lumbar Discectomy (2026)", sub: "Last Seen: Feb 22" 
     }
 ];
+// Fill to 25 patients
 for(let i=3; i<=25; i++) { PATIENTS.push({...PATIENTS[0], id: "P"+i, name: "Patient Record #"+(100+i), sub: "Archive Record"}); }
 
 const PRACTICES = [
@@ -27,4 +28,5 @@ const PRACTICES = [
         pos: "$850", rvu: "310", lag: "2.4d", referrals: "12", ar: "$8,100", collection: "94.8%", denials: "4.5%", nps: "82"
     }
 ];
-for(let i=3; i<=18; i++) { PRACTICES.push({...PRACTICES[0], id: "PR"+i, name: "Network Clinic #"+i, density: (75+i)+"%", charts: (i%5).toString() }); }
+// Fill to 18 practices
+for(let i=3; i<=18; i++) { PRACTICES.push({...PRACTICES[0], id: "PR"+i, name: "Network Clinic #"+i, density: (75+i)+"%" }); }
