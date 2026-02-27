@@ -1,4 +1,4 @@
-/* --- ADX Prototype: Unified MSK Hierarchy Design System --- */
+/* --- ADX Prototype: Unified MSK Dashboard & High-Density Wizard --- */
 :root {
     --primary-navy: #002D72;
     --secondary-red: #D6001C;
@@ -6,11 +6,10 @@
     --border-color: #e0e0e0;
     --text-dark: #222;
     --text-muted: #555;
-    --active-gray: #e9ecef;
     --header-height: 80px;
 }
 
-/* 1. Viewport Lockdown: Prevents page-level bounce */
+/* 1. Global Layout Physics */
 html, body {
     height: 100vh;
     width: 100vw;
@@ -23,22 +22,6 @@ html, body {
 }
 
 body { display: flex; flex-direction: column; }
-
-/* Accessibility Landmarks */
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-.skip-link { position: absolute; top: -50px; left: 0; background: var(--secondary-red); color: white; padding: 10px; z-index: 200; }
-.skip-link:focus { top: 0; }
-
-.back-link { 
-    display: inline-block; 
-    margin-bottom: 2rem; 
-    font-weight: 700; 
-    color: var(--primary-navy); 
-    text-decoration: none; 
-    text-transform: uppercase; 
-    font-size: 0.85rem;
-    cursor: pointer;
-}
 
 /* 2. Fixed Header */
 header {
@@ -54,63 +37,131 @@ header {
     z-index: 100;
 }
 
-.logo-area { font-weight: 800; font-size: 1.8rem; color: var(--primary-navy); text-transform: uppercase; text-decoration: none; cursor: pointer; }
-
+.logo-area { font-weight: 800; font-size: 1.8rem; color: var(--primary-navy); text-transform: uppercase; cursor: pointer; text-decoration: none; }
 nav a { text-decoration: none; color: var(--text-dark); margin-left: 2.5rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
 nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primary-navy); padding-bottom: 5px; }
 
-/* 3. Independent Scroll Wrapper */
+/* 3. Wrapper & Sidebar */
 .wrapper { display: flex; height: calc(100vh - var(--header-height)); width: 100%; overflow: hidden; }
-
-/* 4. Sidebar Scroll */
 .sidebar { width: 340px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
-.search-container { padding: 1.5rem; border-bottom: 1px solid #eee; flex-shrink: 0; }
-#searchBox { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 6px; font-family: 'Montserrat'; box-sizing: border-box; }
-
-.list-container { flex: 1; overflow-y: auto; background: white; }
-.list-item { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid #f0f0f0; padding: 1.5rem; cursor: pointer; font-family: 'Montserrat'; }
-.list-item.active { background: var(--active-gray); border-left: 8px solid var(--primary-navy); }
-.item-main { font-weight: 700; display: block; color: var(--primary-navy); font-size: 1rem; }
+.search-container { padding: 1.5rem; border-bottom: 1px solid #eee; }
+#searchBox { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+.list-container { flex: 1; overflow-y: auto; }
+.list-item { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid #f0f0f0; padding: 1.5rem; cursor: pointer; }
+.list-item.active { background: #e9ecef; border-left: 8px solid var(--primary-navy); }
+.item-main { font-weight: 700; display: block; color: var(--primary-navy); }
 .item-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
 
-/* 5. Main Content Scroll */
-main { flex: 1; height: 100%; overflow-y: auto; background: var(--bg-gray); display: flex; flex-direction: column; }
+/* 4. Main Content Area */
+main { flex: 1; height: 100%; overflow-y: auto; }
 .view-section { padding: 4rem; }
 
-/* 6. Hierarchical Data Components */
-.section-header { margin-bottom: 2.5rem; border-bottom: 2px solid var(--primary-navy); padding-bottom: 1rem; }
-.section-header h3 { margin: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-navy); }
+/* 5. Hierarchical Data Display */
+.section-header { margin-bottom: 2rem; border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; }
+.section-header h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary-navy); }
 
-/* Daily (Encounter) Infographics */
-.daily-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 3rem; margin-bottom: 5rem; }
+.daily-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
 .daily-stat { border-left: 5px solid var(--primary-navy); padding-left: 1.5rem; }
 .daily-stat.alert { border-left-color: var(--secondary-red); }
-.daily-stat.alert .stat-value { color: var(--secondary-red); }
+.stat-value { font-size: 3rem; font-weight: 800; display: block; line-height: 1; margin: 0.8rem 0; }
+.stat-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
 
-.stat-value { font-size: 3.2rem; font-weight: 800; display: block; line-height: 1; margin: 1rem 0; }
-.stat-label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
-.stat-sub { font-size: 0.85rem; font-weight: 700; color: var(--primary-navy); margin-top: 5px; display: block; }
+.weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 5rem; background: #fff; padding: 2rem; border-radius: 8px; border: 1px solid #eee; }
+.weekly-stat .stat-value { font-size: 1.6rem; }
 
-/* Weekly Row (Productivity/Coordination) */
-.weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2.5rem; margin-bottom: 6rem; background: #fff; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; }
-.weekly-stat { border-right: 1px solid var(--border-color); padding-right: 1.5rem; }
-.weekly-stat:last-child { border-right: none; }
-.weekly-stat .stat-value { font-size: 2rem; margin: 0.6rem 0; }
-
-/* Monthly/Rare: Organized Tables */
-.table-container { margin-bottom: 6rem; }
+.table-container { margin-bottom: 5rem; }
 .table-custom { width: 100%; border-collapse: collapse; }
-.table-custom th { text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); padding: 14px; border-bottom: 2px solid var(--border-color); }
-.table-custom td { padding: 20px 14px; border-bottom: 1px solid #f0f0f0; font-size: 1.05rem; }
+.table-custom td, .table-custom th { padding: 15px; border-bottom: 1px solid #f0f0f0; text-align: left; }
+.table-custom.dense td { padding: 8px 15px; font-size: 0.9rem; }
 
-/* Detail Headers */
-.detail-header { background: var(--primary-navy); color: white; padding: 3rem 4rem; display: flex; gap: 5rem; align-items: center; flex-shrink: 0; }
-.header-meta { font-size: 0.95rem; opacity: 0.9; }
+/* 6. MODAL & WIZARD STYLES */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 45, 114, 0.85); /* ADX Navy with transparency */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
 
-/* Fixed Professional Buttons */
-.btn { padding: 14px 28px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; line-height: 1; display: inline-block; }
+.modal-content.high-density {
+    background: white;
+    width: 900px;
+    height: 650px;
+    border-radius: 12px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.wizard-sidebar {
+    width: 260px;
+    background: var(--primary-navy);
+    color: white;
+    padding: 3rem 2rem;
+    flex-shrink: 0;
+}
+
+.wizard-progress-item {
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.4;
+    position: relative;
+    padding-left: 15px;
+}
+
+.wizard-progress-item.active {
+    opacity: 1;
+    border-left: 3px solid white;
+}
+
+.wizard-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.wizard-footer {
+    padding: 1.5rem 3rem;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* High-Density Forms */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+.form-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: 'Montserrat';
+    font-size: 0.95rem;
+}
+.span-2 { grid-column: span 2; }
+
+.inherited-data-box {
+    background: #f0f4f8;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border-left: 5px solid var(--primary-navy);
+}
+
+.inheritance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+/* Buttons */
+.btn { padding: 14px 28px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; }
 .btn-primary { background: var(--primary-navy); color: white; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
+.back-link { display: inline-block; margin-bottom: 2rem; font-weight: 800; color: var(--primary-navy); text-decoration: none; cursor: pointer; font-size: 0.8rem; text-transform: uppercase; }
 
 .hidden { display: none; }
-.schedule-link { color: #fff; font-weight: 800; text-decoration: underline; cursor: pointer; font-size: 1.1rem; }
