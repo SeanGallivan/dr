@@ -2,28 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Derived Results | Clinical Hierarchy Dashboard</title>
+    <title>Derived Results | Clinical Hierarchy</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
+    <header role="banner">
         <a href="javascript:void(0)" class="logo-area" onclick="switchMode('patients')">Derived Results</a>
-        <nav id="topNav">
-            <a onclick="switchMode('patients')" id="nav-patients" class="active">Dashboard</a>
-            <a onclick="switchMode('practices')" id="nav-practices">Practices</a>
-        </nav>
+        <nav id="topNav"><a onclick="switchMode('patients')" id="nav-patients" class="active">Dashboard</a><a onclick="switchMode('practices')" id="nav-practices">Practices</a></nav>
     </header>
-
     <div class="wrapper">
         <aside class="sidebar">
-            <div class="search-container">
-                <input type="text" id="searchBox" placeholder="Search Patients...">
-                <button id="addBtn" class="btn btn-primary hidden" onclick="WIZARD.open()" style="width:100%; margin-top:15px;">+ Add New Practice</button>
-            </div>
+            <div class="search-container"><input type="text" id="searchBox" placeholder="Search Patients..."><button id="addBtn" class="btn btn-primary hidden" onclick="WIZARD.open()" style="width:100%; margin-top:15px;">+ Add New Practice</button></div>
             <nav class="list-container" id="sidebarList"></nav>
         </aside>
-
         <main id="mainContent">
             <div id="overviewContainer" class="view-section">
                 <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
@@ -32,16 +24,11 @@
             </div>
             <section id="detailContainer" class="hidden">
                 <div id="detailHeader" class="detail-header"></div>
-                <div id="detailBody" class="view-section" style="background:white; padding-top:2rem;">
-                    <div id="hierarchyTarget"></div>
-                </div>
+                <div id="detailBody" class="view-section" style="background:white; padding-top:2rem;"><div id="hierarchyTarget"></div></div>
             </section>
         </main>
     </div>
-
-    <script src="mock-data.js"></script>
-    <script src="templates.js"></script>
-    <script src="wizard.js"></script>
+    <script src="mock-data.js"></script><script src="templates.js"></script><script src="wizard.js"></script>
     <script>
         let mode = 'patients';
         function switchMode(m) {
@@ -52,47 +39,35 @@
             renderSidebar(); renderOverview(); clearSelection();
         }
         function renderSidebar() {
-            const list = document.getElementById('sidebarList');
-            const items = mode === 'patients' ? PATIENTS : PRACTICES;
-            list.innerHTML = items.map(i => `<button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}"><span class="item-main">${i.name}</span><span class="item-sub">${mode === 'patients' ? i.sub : 'Avg Pipeline: ' + i.days + ' Days'}</span></button>`).join('');
+            const list = document.getElementById('sidebarList'); const items = mode === 'patients' ? PATIENTS : PRACTICES;
+            list.innerHTML = items.map(i => `<button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}"><span class="item-main">${i.name}</span><span class="item-sub">${mode === 'patients' ? i.sub : 'Pipeline: ' + i.days + ' Days'}</span></button>`).join('');
         }
         function renderOverview() {
-            const title = document.getElementById('overviewTitle');
-            const sub = document.getElementById('overviewSub');
-            const content = document.getElementById('practiceContent');
+            const title = document.getElementById('overviewTitle'); const content = document.getElementById('practiceContent');
             if (mode === 'patients') {
-                title.innerText = "Summit Musculoskeletal Group"; sub.innerText = "HQ Operations Dashboard";
+                title.innerText = "Summit Musculoskeletal Group"; 
                 content.innerHTML = TEMPLATES.practice(PRACTICES[0]);
                 const bl = content.querySelector('.back-link'); if(bl) bl.style.display = 'none';
             } else {
-                title.innerText = "Network Management"; sub.innerText = "Global Practice Distribution";
+                title.innerText = "Network Management"; 
                 content.innerHTML = `<div class="daily-grid"><div class="daily-stat"><span class="stat-label">Active Locations</span><span class="stat-value">18</span></div></div>`;
             }
         }
         function selectItem(id) {
             document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
-            const activeItem = document.getElementById(`item-${id}`);
-            if(activeItem) activeItem.classList.add('active');
-            
-            document.getElementById('overviewContainer').classList.add('hidden');
-            document.getElementById('detailContainer').classList.remove('hidden');
-            const h = document.getElementById('detailHeader');
-            const b = document.getElementById('hierarchyTarget');
+            document.getElementById(`item-${id}`).classList.add('active');
+            document.getElementById('overviewContainer').classList.add('hidden'); document.getElementById('detailContainer').classList.remove('hidden');
+            const h = document.getElementById('detailHeader'); const b = document.getElementById('hierarchyTarget');
             if (mode === 'patients') {
                 const p = PATIENTS.find(i => i.id === id);
                 h.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:5px; font-weight:700; opacity:0.8;">DOB: ${p.dob} (Age: ${p.age})</div></div>`;
-                b.innerHTML = TEMPLATES.patient(p);
+                b.innerHTML = TEMPLATES.patientHierarchy(p);
             } else {
-                const pr = PRACTICES.find(i => i.id === id);
-                h.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${pr.name}</h2></div>`;
-                b.innerHTML = TEMPLATES.practice(pr);
+                const pr = PRACTICES.find(i => i.id === id); h.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${pr.name}</h2></div>`; b.innerHTML = TEMPLATES.practice(pr);
             }
             document.getElementById('mainContent').scrollTop = 0;
         }
-        function clearSelection() {
-            document.getElementById('overviewContainer').classList.remove('hidden');
-            document.getElementById('detailContainer').classList.add('hidden');
-        }
+        function clearSelection() { document.getElementById('overviewContainer').classList.remove('hidden'); document.getElementById('detailContainer').classList.add('hidden'); }
         window.onload = () => switchMode('patients');
     </script>
 </body>
