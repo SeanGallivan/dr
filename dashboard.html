@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Derived Results | Unified MSK Dashboard</title>
+    <title>Derived Results | Clinical Hierarchy Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -26,13 +26,15 @@
 
         <main id="mainContent">
             <div id="overviewContainer" class="view-section">
-                <h1 id="overviewTitle" style="font-weight:800; font-size:2.8rem; margin:0; color:var(--primary-navy);"></h1>
+                <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
                 <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.8rem;"></p>
                 <div id="practiceContent"></div>
             </div>
             <section id="detailContainer" class="hidden">
                 <div id="detailHeader" class="detail-header"></div>
-                <div id="detailBody" class="view-section" style="background:white; padding-top:2rem;"></div>
+                <div id="detailBody" class="view-section" style="background:white; padding-top:2rem;">
+                    <div id="hierarchyTarget"></div>
+                </div>
             </section>
         </main>
     </div>
@@ -75,13 +77,15 @@
             document.getElementById('overviewContainer').classList.add('hidden');
             document.getElementById('detailContainer').classList.remove('hidden');
             const h = document.getElementById('detailHeader');
-            const b = document.getElementById('detailBody');
+            const b = document.getElementById('hierarchyTarget');
             if (mode === 'patients') {
                 const p = PATIENTS.find(i => i.id === id);
-                h.innerHTML = `<div><h2 style="margin:0;">${p.name}</h2></div>`; b.innerHTML = TEMPLATES.patient(p);
+                h.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:5px; font-weight:700; opacity:0.8;">DOB: ${p.dob} (Age: ${p.age})</div></div>`;
+                b.innerHTML = TEMPLATES.patient(p);
             } else {
                 const pr = PRACTICES.find(i => i.id === id);
-                h.innerHTML = `<div><h2 style="margin:0;">${pr.name}</h2></div>`; b.innerHTML = TEMPLATES.practice(pr);
+                h.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${pr.name}</h2></div>`;
+                b.innerHTML = TEMPLATES.practice(pr);
             }
             document.getElementById('mainContent').scrollTop = 0;
         }
