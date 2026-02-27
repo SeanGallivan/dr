@@ -1,4 +1,4 @@
-/* --- ADX Prototype: Unified Hierarchy Design System --- */
+/* --- ADX Prototype: Unified MSK Hierarchy Design System --- */
 :root {
     --primary-navy: #002D72;
     --secondary-red: #D6001C;
@@ -10,6 +10,7 @@
     --header-height: 80px;
 }
 
+/* 1. Viewport Lockdown */
 html, body {
     height: 100vh;
     width: 100vw;
@@ -23,7 +24,6 @@ html, body {
 
 body { display: flex; flex-direction: column; }
 
-/* Accessibility & Utility */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 .skip-link { position: absolute; top: -50px; left: 0; background: var(--secondary-red); color: white; padding: 10px; z-index: 200; transition: top 0.2s; }
 .skip-link:focus { top: 0; }
@@ -39,7 +39,7 @@ body { display: flex; flex-direction: column; }
     cursor: pointer;
 }
 
-/* 1. Fixed Header */
+/* 2. Fixed Header */
 header {
     height: var(--header-height);
     background: white;
@@ -58,29 +58,30 @@ header {
 nav a { text-decoration: none; color: var(--text-dark); margin-left: 2.5rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
 nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primary-navy); padding-bottom: 5px; }
 
-/* 2. Layout Wrapper */
+/* 3. Layout Wrapper */
 .wrapper { display: flex; height: calc(100vh - var(--header-height)); width: 100%; overflow: hidden; }
 
-/* 3. Sidebar */
+/* 4. Sidebar: Independent Scroll */
 .sidebar { width: 340px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
 .search-container { padding: 1.5rem; border-bottom: 1px solid #eee; flex-shrink: 0; }
 #searchBox { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 6px; font-family: 'Montserrat'; box-sizing: border-box; margin-bottom: 15px; }
+
 .list-container { flex: 1; overflow-y: auto; background: white; }
 .list-item { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid #f0f0f0; padding: 1.5rem; cursor: pointer; font-family: 'Montserrat'; }
 .list-item.active { background: var(--active-gray); border-left: 8px solid var(--primary-navy); }
 .item-main { font-weight: 700; display: block; color: var(--primary-navy); font-size: 1rem; }
 .item-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
 
-/* 4. Main Scrollable Content */
+/* 5. Main Content: Independent Scroll */
 main { flex: 1; height: 100%; overflow-y: auto; background: var(--bg-gray); display: flex; flex-direction: column; }
 .view-section { padding: 4rem; }
 
-/* 5. Hierarchical Data Components */
+/* 6. Hierarchy UI Components */
 .section-header { margin-bottom: 2rem; border-bottom: 2px solid var(--primary-navy); padding-bottom: 0.8rem; }
 .section-header h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-navy); }
 
-/* Daily: High Impact Infographics */
-.daily-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2.5rem; margin-bottom: 4rem; }
+/* Daily Infographics */
+.daily-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2.5rem; margin-bottom: 4rem; }
 .daily-stat { border-left: 5px solid var(--primary-navy); padding-left: 1.5rem; }
 .daily-stat.alert { border-left-color: var(--secondary-red); }
 .daily-stat.alert .stat-value { color: var(--secondary-red); }
@@ -89,24 +90,25 @@ main { flex: 1; height: 100%; overflow-y: auto; background: var(--bg-gray); disp
 .stat-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 .stat-sub { font-size: 0.8rem; font-weight: 700; color: var(--primary-navy); }
 
-/* Weekly: Compact Infographics */
-.weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 5rem; background: #fff; padding: 2.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+/* Weekly Row */
+.weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 5rem; background: #fff; padding: 2.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
 .weekly-stat { border-right: 1px solid var(--border-color); padding-right: 1rem; }
 .weekly-stat:last-child { border-right: none; }
 .weekly-stat .stat-value { font-size: 1.8rem; margin: 0.5rem 0; }
 
-/* Monthly/Rare: Organized Tables */
+/* Tables */
 .table-container { margin-bottom: 5rem; }
 .table-custom { width: 100%; border-collapse: collapse; }
 .table-custom th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); padding: 12px; border-bottom: 2px solid var(--border-color); }
 .table-custom td { padding: 18px 12px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
 
-/* Entity Header */
+/* Entity Detail Components */
 .detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3.5rem; display: flex; gap: 4rem; align-items: center; flex-shrink: 0; }
 
-/* Interactive Elements */
+/* Buttons */
 .btn { padding: 14px 28px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; border: none; line-height: 1; display: inline-block; }
 .btn-primary { background: var(--primary-navy); color: white; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
 
 .hidden { display: none; }
+.schedule-link { color: #fff; font-weight: 800; text-decoration: underline; cursor: pointer; font-size: 1.1rem; }
