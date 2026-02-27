@@ -1,12 +1,47 @@
-/* --- ADX Master Data Vault --- */
+/* --- ADX Master Data Vault: Hierarchical Clinical Edition --- */
 const PATIENTS = [
-    { id: "P1", name: "Elizabeth Blackwell", dob: "8/27/1984", age: 41, complaint: "Chronic Lower Back Pain", allergies: "Penicillins", meds: "Naproxen 500mg", vitals: "128/82 | 72bpm", bmi: "24.4", adx: "M54.16 - Lumbar Radiculopathy", summary: "L4-L5 Stenosis. Continue PT.", pain: "7/10", orders: "1", adherence: "90%", surgery: "Appendectomy (2005)", sub: "Last Seen: Feb 24" },
-    { id: "P2", name: "Jonas Salk", dob: "10/28/1975", age: 50, complaint: "Post-Op Follow-up", allergies: "Latex", meds: "Oxycodone", vitals: "135/88 | 78bpm", bmi: "28.1", adx: "M51.26 - Disc Displacement", summary: "Incision healing well.", pain: "4/10", orders: "0", adherence: "100%", surgery: "Discectomy (2026)", sub: "Last Seen: Feb 22" }
+    { 
+        id: "P1", name: "Elizabeth Blackwell", dob: "8/27/1984", age: 41, 
+        // DAILY
+        problems: "L4-L5 Stenosis, Lumbar Radiculopathy",
+        complaint: "Increased radiating leg pain, 2 weeks",
+        allergies: "PENICILLINS (Severe)",
+        meds: "Naproxen 500mg, Gabapentin 300mg TID",
+        vitals: "BP 128/82 | HR 72 | WT 165 lbs",
+        lastVisit: "Feb 10: Initial Epidural Steroid Injection (ESI). Minimal relief.",
+        results: "MRI (Jan 15): Severe narrowing at L4-L5.",
+        // WEEKLY
+        functional: "Walking limited to 10 mins. Unable to lift >5lbs.",
+        pain: "7/10 (Trending Up from 5/10)",
+        orders: "EMG/Nerve Conduction Study, Physical Therapy Referral",
+        gaps: "Annual Wellness Exam overdue",
+        // MONTHLY
+        adherence: "90% (Consistently filling Gabapentin)",
+        response: "Mobility decreased 15% vs baseline",
+        billing: "All claims for Jan/Feb visits processed",
+        // RARELY
+        surgery: "Appendectomy (2005), Left Knee Scope (2012)",
+        family: "Father: Osteoarthritis. Mother: Spinal Fusion.",
+        archive: "Imaging from 2018 shows stable lumbar alignment.",
+        social: "Full-time Teacher. Non-smoker. Lives in 2-story home.",
+        sub: "Last Seen: Feb 24"
+    }
 ];
-for(let i=3; i<=25; i++) { PATIENTS.push({...PATIENTS[0], id: "P"+i, name: "Patient Record #"+(100+i), sub: "Archive Record"}); }
+// Fillers for scrolling logic
+for(let i=2; i<=25; i++) { PATIENTS.push({...PATIENTS[0], id: "P"+i, name: "Patient Record #"+(100+i), allergies: "None", sub: "Archive Record"}); }
 
 const PRACTICES = [
-    { id: "PR1", name: "Summit Musculoskeletal", days: "14.2", density: "92%", charts: "12", labs: "3", pos: "$1,250", rvu: "450", lag: "1.2d", referrals: "24", ar: "$14,200", collection: "96.2%" },
-    { id: "PR2", name: "Northside Chiropractic", days: "18.5", density: "78%", charts: "2", labs: "0", pos: "$850", rvu: "310", lag: "2.4d", referrals: "12", ar: "$8,100", collection: "94.8%" }
+    { 
+        id: "PR1", name: "Summit Musculoskeletal", 
+        // DAILY
+        density: "92%", noShow: "4%", charts: "12", pos: "$1,250", labs: "3",
+        // WEEKLY
+        rvu: "450 / 420 Target", lag: "1.2 Days", referrals: "24 New", hours: "160/150 Target",
+        // MONTHLY
+        ar: "$14,200 (>90 Days)", collection: "96.2%", denials: "3.1% (Incomplete Info)", mix: "65% Private / 35% Public", revenue: "$42,850 vs $38k Budget",
+        // RARELY
+        nps: "88 (World Class)", growth: "+5% Regional Share", compliance: "Audit Passed Oct 2025", equipment: "MRI Maintenance: Scheduled July 2026",
+        days: "14.2"
+    }
 ];
-for(let i=3; i<=18; i++) { PRACTICES.push({...PRACTICES[0], id: "PR"+i, name: "Network Clinic #"+i, density: (75+i)+"%" }); }
+for(let i=2; i<=18; i++) { PRACTICES.push({...PRACTICES[0], id: "PR"+i, name: "Network Clinic #"+i, days: "12.0"}); }
