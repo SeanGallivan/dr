@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derived Results | Summit Musculoskeletal Group</title>
+    <title>Derived Results | Unified MSK Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -34,15 +34,12 @@
         <div id="overviewContainer" class="view-section">
             <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
             <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.8rem;"></p>
-            
-            <div id="practiceContent">
-                </div>
+            <div id="practiceContent"></div>
         </div>
 
         <section id="detailContainer" class="hidden">
             <div id="detailHeader" class="detail-header"></div>
             <div id="detailContent" class="view-section" style="padding-top: 2rem; background:white;">
-                <a onclick="clearSelection()" class="back-link">← Back to Dashboard</a>
                 <div id="detailHierarchy"></div>
             </div>
         </section>
@@ -52,54 +49,61 @@
 <script>
     let currentMode = 'patients';
 
+    // 25 Patient Recovery
     const patients = [
-        { id: "P1", name: "Elizabeth Blackwell", last: "Feb 24, 2026", dob: "8/27/1984", age: 41, h: "70", w: "206", bmi: "29.60", adx: "M54.16", complaint: "Chronic Lower Back Pain", allergies: "Penicillins", meds: "Naproxen 500mg", vitals: "128/82", sched: false },
-        { id: "P2", name: "Jonas Salk", last: "Feb 22, 2026", dob: "10/28/1975", age: 50, h: "68", w: "185", bmi: "28.1", adx: "M51.26", complaint: "Post-Op Check (Lumbar)", allergies: "Latex", meds: "Oxycodone", vitals: "135/88", sched: true },
-        { id: "P3", name: "Virginia Apgar", last: "Feb 19, 2026", dob: "6/07/1981", age: 44, h: "64", w: "140", bmi: "24.0", adx: "M54.5", complaint: "Hip Flare-up", allergies: "None", meds: "Ibuprofen", vitals: "120/75", sched: true },
-        { id: "P4", name: "Charles Drew", last: "Feb 15, 2026", dob: "6/03/1992", age: 33, h: "72", w: "210", bmi: "28.5", adx: "M25.55", complaint: "Knee Pain", allergies: "None", meds: "None", vitals: "118/72", sched: false },
-        { id: "P5", name: "Sigmund Freud", last: "Jan 30, 2026", dob: "5/06/1966", age: 59, h: "67", w: "160", bmi: "25.1", adx: "M54.2", complaint: "Neck Pain", allergies: "Dust", meds: "Naproxen", vitals: "130/80", sched: true },
-        { id: "P6", name: "Marie Curie", last: "Jan 25, 2026", dob: "11/07/1989", age: 36, h: "62", w: "130", bmi: "23.8", adx: "M79.1", complaint: "Myalgia", allergies: "None", meds: "None", vitals: "115/70", sched: true },
-        { id: "P7", name: "Louis Pasteur", last: "Jan 20, 2026", dob: "12/27/1978", age: 47, h: "66", w: "175", bmi: "28.2", adx: "M51.1", complaint: "Disc displacement", allergies: "None", meds: "Gabapentin", vitals: "125/82", sched: false },
-        { id: "P8", name: "Rosalind Franklin", last: "Jan 15, 2026", dob: "7/25/1990", age: 35, h: "65", w: "145", bmi: "24.1", adx: "M54.5", complaint: "Back Pain", allergies: "Pollen", meds: "None", vitals: "110/68", sched: true },
-        { id: "P9", name: "Florence Nightingale", last: "Jan 10, 2026", dob: "5/12/1985", age: 40, h: "64", w: "135", bmi: "23.2", adx: "M54.16", complaint: "Radiculopathy", allergies: "None", meds: "Aspirin", vitals: "122/75", sched: true },
-        { id: "P10", name: "Joseph Lister", last: "Jan 05, 2026", dob: "4/05/1972", age: 53, h: "69", w: "170", bmi: "25.1", adx: "M54.12", complaint: "Cervical Pain", allergies: "None", meds: "None", vitals: "120/80", sched: true },
-        { id: "P11", name: "Clara Barton", last: "Jan 02, 2026", dob: "12/25/1983", age: 42, h: "63", w: "125", bmi: "22.1", adx: "M54.5", complaint: "Lower Back Pain", allergies: "None", meds: "Ibuprofen", vitals: "115/75", sched: true },
-        { id: "P12", name: "Alexander Fleming", last: "Dec 28, 2025", dob: "8/06/1995", age: 30, h: "67", w: "165", bmi: "25.8", adx: "M25.51", complaint: "Shoulder Pain", allergies: "None", meds: "None", vitals: "121/78", sched: false },
-        { id: "P13", name: "Edward Jenner", last: "Dec 25, 2025", dob: "5/17/1960", age: 65, h: "68", w: "180", bmi: "27.4", adx: "M54.1", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "130/85", sched: true },
-        { id: "P14", name: "Gregor Mendel", last: "Dec 20, 2025", dob: "7/20/1979", age: 46, h: "66", w: "155", bmi: "25.0", adx: "M54.16", complaint: "Radiculopathy", allergies: "None", meds: "None", vitals: "124/80", sched: true },
-        { id: "P15", name: "William Harvey", last: "Dec 15, 2025", dob: "4/01/1988", age: 37, h: "65", w: "145", bmi: "24.1", adx: "M54.5", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "118/72", sched: true },
-        { id: "P16", name: "Andreas Vesalius", last: "Dec 10, 2025", dob: "12/31/1974", age: 51, h: "70", w: "190", bmi: "27.3", adx: "M54.1", complaint: "Sciatica", allergies: "None", meds: "None", vitals: "128/82", sched: true },
-        { id: "P17", name: "Helen Taussig", last: "Nov 25, 2025", dob: "5/24/1994", age: 31, h: "65", w: "140", bmi: "23.3", adx: "M54.1", complaint: "Neck Pain", allergies: "None", meds: "None", vitals: "110/68", sched: true },
-        { id: "P18", name: "Gertrude Elion", last: "Nov 20, 2025", dob: "1/23/1982", age: 43, h: "63", w: "120", bmi: "21.3", adx: "M54.5", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "115/75", sched: true },
-        { id: "P19", name: "Rita Levi-Montalcini", last: "Nov 15, 2025", dob: "4/22/1987", age: 38, h: "62", w: "115", bmi: "21.0", adx: "M54.1", complaint: "Neck Pain", allergies: "None", meds: "None", vitals: "112/70", sched: true },
-        { id: "P20", name: "Gerty Cori", last: "Nov 10, 2025", dob: "8/15/1971", age: 54, h: "64", w: "135", bmi: "23.2", adx: "M54.1", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "120/80", sched: false },
-        { id: "P21", name: "Jane Cooke Wright", last: "Nov 05, 2025", dob: "11/20/1986", age: 39, h: "66", w: "150", bmi: "24.2", adx: "M54.5", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "118/75", sched: true },
-        { id: "P22", name: "Daniel Hale Williams", last: "Nov 01, 2025", dob: "1/18/1977", age: 48, h: "71", w: "200", bmi: "27.9", adx: "M54.1", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "125/80", sched: true },
-        { id: "P23", name: "Alice Hamilton", last: "Oct 25, 2025", dob: "2/27/1980", age: 45, h: "64", w: "130", bmi: "22.3", adx: "M54.1", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "120/75", sched: true },
-        { id: "P24", name: "Rebecca Lee Crumpler", last: "Oct 15, 2025", dob: "2/08/1983", age: 42, h: "63", w: "128", bmi: "22.5", adx: "M54.5", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "115/70", sched: true },
-        { id: "P25", name: "Mary Edwards Walker", last: "Oct 05, 2025", dob: "11/26/1976", age: 49, h: "62", w: "118", bmi: "21.6", adx: "M54.1", complaint: "Back Pain", allergies: "None", meds: "None", vitals: "112/68", sched: false }
+        { id: "P1", name: "Elizabeth Blackwell", last: "Feb 24, 2026", dob: "8/27/1984", age: 41, complaint: "Lower Back Pain", allergies: "Penicillins", meds: "Naproxen 500mg", vitals: "128/82 | 165 lbs", summary: "L4-L5 Stenosis. Continue PT.", sub: "Last Seen: Feb 24" },
+        { id: "P2", name: "Jonas Salk", last: "Feb 22, 2026", dob: "10/28/1975", age: 50, complaint: "Lumbar Follow-up", allergies: "Latex", meds: "Oxycodone", vitals: "135/88 | 185 lbs", summary: "Post-op check. Incision healing.", sub: "Last Seen: Feb 22" },
+        { id: "P3", name: "Virginia Apgar", last: "Feb 19, 2026", dob: "6/07/1981", age: 44, complaint: "Hip Flare-up", allergies: "None", meds: "Ibuprofen", vitals: "120/75 | 140 lbs", summary: "Bursitis suspected. Order MRI.", sub: "Last Seen: Feb 19" },
+        { id: "P4", name: "Charles Drew", last: "Feb 15, 2026", dob: "6/03/1992", age: 33, complaint: "Neck Stiffness", allergies: "Aspirin", meds: "None", vitals: "118/72 | 210 lbs", summary: "Cervical strain. Ergo assessment.", sub: "Last Seen: Feb 15" },
+        { id: "P5", name: "Sigmund Freud", last: "Jan 30, 2026", dob: "5/06/1966", age: 59, complaint: "Hand Numbness", allergies: "None", meds: "Gabapentin", vitals: "130/80 | 160 lbs", summary: "Carpal Tunnel. Wrist splinting.", sub: "Last Seen: Jan 30" }
     ];
+    // Add dummy patients to fill scroll
+    for(let i=6; i<=25; i++) { patients.push({...patients[0], id: "P"+i, name: "Patient Record #"+i, sub: "Archive Record"}); }
 
     const practices = [
         { id: "PR1", name: "Summit Musculoskeletal", days: "14.2" },
         { id: "PR2", name: "Northside Chiropractic", days: "18.5" },
         { id: "PR3", name: "Downtown Wellness", days: "11.0" },
-        { id: "PR4", name: "Peak Orthopedics", days: "15.1" },
-        { id: "PR5", name: "Valley Spine Center", days: "19.2" },
-        { id: "PR6", name: "Joint & Nerve Institute", days: "12.4" },
-        { id: "PR7", name: "West End Physical Therapy", days: "9.8" },
-        { id: "PR8", name: "Empire Pain Management", days: "22.1" },
-        { id: "PR9", name: "Lakeside Rehab", days: "14.0" },
-        { id: "PR10", name: "Coastal Sports Med", days: "16.5" },
-        { id: "PR11", name: "Metro Neuro & Spine", days: "13.2" },
-        { id: "PR12", name: "Highland Chiropractic", days: "17.8" },
-        { id: "PR13", name: "City Ortho Group", days: "20.5" },
-        { id: "PR14", name: "Greenway Wellness", days: "10.2" },
-        { id: "PR15", name: "Main Street Specialists", days: "14.9" },
-        { id: "PR16", name: "Mountain View Pain", days: "15.5" },
-        { id: "PR17", name: "Southside SurgiCenter", days: "24.0" },
-        { id: "PR18", name: "River Valley MSK", days: "12.9" }
+        { id: "PR4", name: "Peak Orthopedics", days: "15.1" }
     ];
+    for(let i=5; i<=18; i++) { practices.push({...practices[0], id: "PR"+i, name: "Clinic Location #"+i, days: "12.0"}); }
+
+    const practiceHierarchyHTML = `
+        <a onclick="clearSelection()" class="back-link">← Back to dashboard</a>
+        <div class="section-header"><h3>Daily Operations (Clinical Focus)</h3></div>
+        <div class="daily-grid">
+            <div class="daily-stat"><span class="stat-label">Slot Density</span><span class="stat-value">92%</span><span class="stat-sub">Utilization</span></div>
+            <div class="daily-stat alert"><span class="stat-label">Unsigned Charts</span><span class="stat-value">12</span><span class="stat-sub">Action Required</span></div>
+            <div class="daily-stat alert"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-sub">Pending Review</span></div>
+            <div class="daily-stat"><span class="stat-label">POS Collected</span><span class="stat-value">$1,250</span><span class="stat-sub">Daily Cash</span></div>
+        </div>
+        <div class="section-header"><h3>Weekly Performance</h3></div>
+        <div class="weekly-grid">
+            <div class="weekly-stat"><span class="stat-label">Work RVUs</span><span class="stat-value">450</span><span class="stat-sub">Target: 420</span></div>
+            <div class="weekly-stat"><span class="stat-label">Billing Lag</span><span class="stat-value">1.2d</span><span class="stat-sub">Avg Days</span></div>
+            <div class="weekly-stat"><span class="stat-label">New Referrals</span><span class="stat-value">24</span><span class="stat-sub">Healthy Pipeline</span></div>
+        </div>
+        <div class="table-container">
+            <div class="section-header"><h3>Monthly Revenue Cycle (Admin Focus)</h3></div>
+            <table class="table-custom">
+                <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Health</th></tr></thead>
+                <tbody>
+                    <tr><td>A/R Aging (>90)</td><td>$14,200</td><td>< $10k</td><td style="color:var(--secondary-red); font-weight:700;">Critical</td></tr>
+                    <tr><td>Net Collection Ratio</td><td>96.2%</td><td>95.0%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                    <tr><td>Claim Denial Rate</td><td>3.1%</td><td>< 5%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-container">
+            <div class="section-header"><h3>Strategic Marker Reports</h3></div>
+            <table class="table-custom" style="font-size:0.9rem;">
+                <thead><tr><th>Area</th><th>Frequency</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>Patient NPS Score</td><td>Annual</td><td>88 (World Class)</td></tr>
+                    <tr><td>Compliance Audit</td><td>Annual</td><td>Verified (Oct 2025)</td></tr>
+                </tbody>
+            </table>
+        </div>`;
 
     function switchMode(mode) {
         currentMode = mode;
@@ -119,64 +123,24 @@
         list.innerHTML = items.map(i => `
             <button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}">
                 <span class="item-main">${i.name}</span>
-                <span class="item-sub">${currentMode === 'patients' ? 'Last Seen: ' + i.last : 'Avg Days to 1st Visit: ' + i.days}</span>
+                <span class="item-sub">${currentMode === 'patients' ? i.sub : 'Avg Pipeline: ' + i.days + ' Days'}</span>
             </button>
         `).join('');
     }
-
-    const practiceHierarchyHTML = `
-        <a onclick="clearSelection()" class="back-link">← Back to Dashboard</a>
-        <div class="section-header"><h3>Daily Operations (Clinical Focus)</h3></div>
-        <div class="daily-grid">
-            <div class="daily-stat"><span class="stat-label">Slot Density</span><span class="stat-value">92%</span><span class="stat-sub">Utilization</span></div>
-            <div class="daily-stat alert"><span class="stat-label">Unsigned Charts</span><span class="stat-value">12</span><span class="stat-sub">Immediate Action</span></div>
-            <div class="daily-stat alert"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-sub">Review Required</span></div>
-            <div class="daily-stat"><span class="stat-label">No-Shows</span><span class="stat-value">4%</span><span class="stat-sub">Cancellation</span></div>
-            <div class="daily-stat"><span class="stat-label">POS Collected</span><span class="stat-value">$1,250</span><span class="stat-sub">Daily Cash</span></div>
-        </div>
-        <div class="section-header"><h3>Weekly Performance</h3></div>
-        <div class="weekly-grid">
-            <div class="weekly-stat"><span class="stat-label">wRVUs</span><span class="stat-value">450</span><span class="stat-sub">Target: 420</span></div>
-            <div class="weekly-stat"><span class="stat-label">Billing Lag</span><span class="stat-value">1.2d</span><span class="stat-sub">Avg Days</span></div>
-            <div class="weekly-stat"><span class="stat-label">New Referrals</span><span class="stat-value">24</span><span class="stat-sub">Source: Legal</span></div>
-            <div class="weekly-stat"><span class="stat-label">Staff Hours</span><span class="stat-value">160</span><span class="stat-sub">Against Volume</span></div>
-        </div>
-        <div class="table-container">
-            <div class="section-header"><h3>Monthly Revenue Cycle</h3></div>
-            <table class="table-custom">
-                <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr><td>A/R Aging (>90)</td><td>$14,200</td><td>< $10k</td><td style="color:var(--secondary-red); font-weight:700;">Critical</td></tr>
-                    <tr><td>Net Collection Ratio</td><td>96.2%</td><td>95.0%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
-                    <tr><td>Claim Denial Rate</td><td>3.1%</td><td>< 5%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="table-container">
-            <div class="section-header"><h3>Rare Marker Reports</h3></div>
-            <table class="table-custom" style="font-size:0.85rem;">
-                <thead><tr><th>Area</th><th>Update</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr><td>Patient NPS Score</td><td>Annual</td><td>88 (World Class)</td></tr>
-                    <tr><td>Compliance Audit</td><td>Annual</td><td>Passed (Oct 2025)</td></tr>
-                </tbody>
-            </table>
-        </div>`;
 
     function renderOverview() {
         const title = document.getElementById('overviewTitle');
         const sub = document.getElementById('overviewSub');
         const content = document.getElementById('practiceContent');
-
         if (currentMode === 'patients') {
             title.innerText = "Summit Musculoskeletal Group";
-            sub.innerText = "Practice Performance Overview";
+            sub.innerText = "HQ Operations Dashboard";
             content.innerHTML = practiceHierarchyHTML;
-            document.querySelector('.back-link').classList.add('hidden'); // Hide backlink on home
+            content.querySelector('.back-link').classList.add('hidden');
         } else {
             title.innerText = "Network Management";
-            sub.innerText = "Global Revenue Cycle Distribution";
-            content.innerHTML = `<div class="daily-grid"><div class="daily-stat"><span class="stat-label">Active Practices</span><span class="stat-value">18</span></div></div>`;
+            sub.innerText = "Global Practice Distribution";
+            content.innerHTML = `<div class="daily-grid"><div class="daily-stat"><span class="stat-label">Active Locations</span><span class="stat-value">18</span></div></div>`;
         }
     }
 
@@ -191,31 +155,29 @@
 
         if (currentMode === 'patients') {
             const p = patients.find(i => i.id === id);
-            header.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:10px; font-weight:600; background:rgba(255,255,255,0.2); padding:8px 14px; border-radius:4px; display:inline-block;">${p.sched ? '<a class="schedule-link">Schedule Next Visit →</a>' : 'DOB: ' + p.dob + ' (Age: ' + p.age + ')'}</div></div>`;
+            header.innerHTML = `<div><h2 style="margin:0; font-size:1.8rem;">${p.name}</h2><div style="margin-top:5px; opacity:0.8;">DOB: ${p.dob} (Age: ${p.age})</div></div><div class="header-meta">ID: ${p.id}</div>`;
+            
             hierarchy.innerHTML = `
+                <a onclick="clearSelection()" class="back-link">← Back to dashboard</a>
                 <div class="section-header"><h3>Daily Clinical Encounter</h3></div>
                 <div class="daily-grid">
-                    <div class="daily-stat"><span class="stat-label">Chief Complaint</span><span class="stat-value" style="font-size:1.4rem;">${p.complaint}</span></div>
-                    <div class="daily-stat alert"><span class="stat-label">Allergies</span><span class="stat-value" style="font-size:1.4rem;">${p.allergies}</span></div>
-                    <div class="daily-stat"><span class="stat-label">Vitals</span><span class="stat-value" style="font-size:1.4rem;">${p.vitals}</span><span class="stat-sub">Weight: ${p.w} lbs</span></div>
+                    <div class="daily-stat"><span class="stat-label">Chief Complaint</span><span class="stat-value" style="font-size:1.5rem;">${p.complaint}</span></div>
+                    <div class="daily-stat alert"><span class="stat-label">Allergies</span><span class="stat-value" style="font-size:1.5rem;">${p.allergies}</span></div>
+                    <div class="daily-stat"><span class="stat-label">Vitals</span><span class="stat-value" style="font-size:1.5rem;">${p.vitals}</span></div>
                 </div>
+                <div class="section-header"><h3>Weekly Care Coordination</h3></div>
                 <div class="weekly-grid">
-                    <div class="weekly-stat" style="grid-column: span 2;"><span class="stat-label">Active Problem List</span><p style="font-weight:700; font-size:1.2rem; margin:10px 0;">${p.adx} - Spinal Stenosis</p></div>
-                    <div class="weekly-stat" style="grid-column: span 2;"><span class="stat-label">Current Medications</span><p style="font-weight:700; margin-top:10px;">${p.meds}</p></div>
-                </div>
-                <div class="section-header"><h3>Weekly Coordination</h3></div>
-                <div class="daily-grid" style="grid-template-columns: 1fr 1fr;">
-                    <div class="daily-stat"><span class="stat-label">Pain Trending</span><span class="stat-value" style="font-size:2rem;">7/10</span><span class="stat-sub">PROMIS: 58</span></div>
-                    <div class="daily-stat"><span class="stat-label">Pending Orders</span><span class="stat-value" style="font-size:2rem;">1</span><span class="stat-sub">MRI Lumbar</span></div>
+                    <div class="weekly-stat" style="grid-column: span 2;"><span class="stat-label">Active Problem List</span><p style="font-weight:700; font-size:1.2rem; margin-top:10px;">L4-L5 Spinal Stenosis (M54.16)</p></div>
+                    <div class="weekly-stat"><span class="stat-label">Pain Trending</span><span class="stat-value">7/10</span></div>
                 </div>
                 <div class="table-container">
-                    <div class="section-header"><h3>Monthly & Rare Data</h3></div>
+                    <div class="section-header"><h3>Outcome Assessment & History</h3></div>
                     <table class="table-custom">
                         <thead><tr><th>Category</th><th>Details</th><th>Status</th></tr></thead>
                         <tbody>
-                            <tr><td>Medication Adherence</td><td>90% Refill Rate</td><td style="color:green; font-weight:700;">Compliant</td></tr>
+                            <tr><td>Medication Adherence</td><td>${p.meds} - Consistent</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                            <tr><td>Last Visit Summary</td><td>${p.summary}</td><td>Complete</td></tr>
                             <tr><td>Surgical History</td><td>Appendectomy (2005)</td><td>Archive</td></tr>
-                            <tr><td>Social History</td><td>Full-time Teacher. Non-smoker.</td><td>Stable</td></tr>
                         </tbody>
                     </table>
                 </div>`;
