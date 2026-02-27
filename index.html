@@ -26,7 +26,6 @@
     <script>
         function checkPass() {
             if (document.getElementById('gatePass').value === 'ADX2026') { 
-                localStorage.setItem('dr_access', 'true');
                 window.location.href = 'dashboard.html';
             } else {
                 document.getElementById('errorMsg').style.display = 'block';
