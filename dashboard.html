@@ -34,14 +34,13 @@
         <div id="overviewContainer" class="view-section">
             <h1 id="overviewTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
             <p id="overviewSub" style="color:var(--text-muted); font-weight:600; margin-top:0.8rem;"></p>
-            <div class="infographic-row" id="dashStats"></div>
+            <div id="dashStats"></div>
         </div>
 
         <section id="detailContainer" class="hidden" aria-labelledby="vName">
             <div id="detailHeader" class="detail-header"></div>
             <div id="detailTabs" class="tab-bar" role="tablist"></div>
-            <div id="detailBody" style="background:white;">
-                </div>
+            <div id="detailBody" style="background:white;"></div>
             <div style="padding: 4rem; background: var(--bg-gray);">
                 <button onclick="clearSelection()" class="btn btn-outline">← Back to Overview</button>
             </div>
@@ -95,23 +94,27 @@
     }
 
     function renderDashboard() {
+        const title = document.getElementById('overviewTitle');
+        const sub = document.getElementById('overviewSub');
         const stats = document.getElementById('dashStats');
         if (currentMode === 'patients') {
-            document.getElementById('overviewTitle').innerText = "Summit Musculoskeletal Group";
-            document.getElementById('overviewSub').innerText = "Clinical Performance Dashboard";
+            title.innerText = "Summit Musculoskeletal Group";
+            sub.innerText = "Practice Performance Overview";
             stats.innerHTML = `
-                <div class="daily-stat"><span class="stat-label">Total Patients</span><span class="stat-value">134</span></div>
-                <div class="daily-stat"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span></div>
-                <div class="daily-stat"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span></div>
-            `;
+                <div class="daily-grid">
+                    <div class="daily-stat"><span class="stat-label">Total Patients</span><span class="stat-value">134</span></div>
+                    <div class="daily-stat"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span></div>
+                    <div class="daily-stat"><span class="stat-label">Active Diagnoses</span><span class="stat-value">255</span></div>
+                </div>`;
         } else {
-            document.getElementById('overviewTitle').innerText = "Network Management";
-            document.getElementById('overviewSub').innerText = "Revenue Cycle Overview";
+            title.innerText = "Network Practices";
+            sub.innerText = "Global Revenue Cycle Distribution";
             stats.innerHTML = `
-                <div class="daily-stat"><span class="stat-label">Active Practices</span><span class="stat-value">18</span></div>
-                <div class="daily-stat"><span class="stat-label">Global A/R</span><span class="stat-value">$142k</span></div>
-                <div class="daily-stat"><span class="stat-label">Total Claims</span><span class="stat-value">1,204</span></div>
-            `;
+                <div class="daily-grid">
+                    <div class="daily-stat"><span class="stat-label">Total Practices</span><span class="stat-value">18</span></div>
+                    <div class="daily-stat"><span class="stat-label">Global A/R</span><span class="stat-value">$142k</span></div>
+                    <div class="daily-stat"><span class="stat-label">Total Claims</span><span class="stat-value">1,204</span></div>
+                </div>`;
         }
     }
 
@@ -128,54 +131,53 @@
         if (currentMode === 'patients') {
             const p = patients.find(i => i.id === id);
             header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${p.name}</h2></div>`;
-            tabs.innerHTML = `<button class="tab active">Clinical Information</button>`;
-            body.innerHTML = `<div class="content-grid"><div class="left-col"><div class="data-section"><h3>At-a-glance</h3><div class="at-a-glance-grid"><div class="glance-item"><span class="stat-label">BMI</span><b>${p.bmi}</b></div><div class="glance-item"><span class="stat-label">Code</span><b>${p.adx}</b></div></div></div></div></div>`;
+            tabs.innerHTML = `<button class="tab active">Clinical</button>`;
+            body.innerHTML = `<div style="padding:4rem;"><div class="section-header"><h3>At-a-glance</h3></div><div class="daily-grid"><div class="daily-stat"><span class="stat-label">BMI</span><span class="stat-value">${p.bmi}</span></div><div class="daily-stat"><span class="stat-label">Code</span><span class="stat-value">${p.adx}</span></div></div></div>`;
         } else {
             const pr = practices.find(i => i.id === id);
-            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${pr.name}</h2><div style="margin-top:10px; font-weight:700;">Performance & Revenue Cycle Report</div></div>`;
-            tabs.innerHTML = `<button class="tab active">Operations</button><button class="tab">Physicians</button><button class="tab">Billing</button>`;
+            header.innerHTML = `<div><h2 id="vName" style="margin:0; font-size:1.8rem;">${pr.name}</h2><div style="margin-top:10px; font-weight:700; opacity:0.8;">Integrated Practice Health Report</div></div>`;
+            tabs.innerHTML = `<button class="tab active">Operations & Revenue</button><button class="tab">Roster</button>`;
             
             body.innerHTML = `
                 <div style="padding: 4rem;">
-                    <div class="table-container"><h3>Daily Operations (Physician Priority)</h3></div>
-                    <div class="infographic-row">
-                        <div class="daily-stat"><span class="stat-label">Slot Density</span><span class="stat-value">92%</span><span class="stat-subtext">Schedule Utilization</span></div>
-                        <div class="daily-stat"><span class="stat-label">No-Shows</span><span class="stat-value">4%</span><span class="stat-subtext">Cancellation Rate</span></div>
-                        <div class="daily-stat critical"><span class="stat-label">Unsigned Charts</span><span class="stat-value">12</span><span class="stat-subtext">Immediate Action</span></div>
-                        <div class="daily-stat"><span class="stat-label">POS Collected</span><span class="stat-value">$1,250</span><span class="stat-subtext">Daily Cash Flow</span></div>
-                        <div class="daily-stat critical"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-subtext">Pending Review</span></div>
+                    <div class="section-header"><h3>Daily Operations (Clinical Focus)</h3></div>
+                    <div class="daily-grid">
+                        <div class="daily-stat"><span class="stat-label">Slot Density</span><span class="stat-value">92%</span><span class="stat-sub">Schedule Utilization</span></div>
+                        <div class="daily-stat"><span class="stat-label">No-Shows</span><span class="stat-value">4%</span><span class="stat-sub">Cancellation Rate</span></div>
+                        <div class="daily-stat critical"><span class="stat-label">Unsigned Charts</span><span class="stat-value">12</span><span class="stat-sub">Pending Documentation</span></div>
+                        <div class="daily-stat"><span class="stat-label">POS Collection</span><span class="stat-value">$1,250</span><span class="stat-sub">Daily Cash Flow</span></div>
+                        <div class="daily-stat critical"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-sub">Pending Review</span></div>
                     </div>
 
-                    <div class="table-container"><h3>Weekly Productivity</h3></div>
-                    <div class="infographic-row" style="gap:2rem;">
-                        <div class="weekly-stat"><span class="stat-label">wRVUs</span><span class="stat-value" style="font-size:2rem;">450</span><span class="stat-subtext">Target: 420</span></div>
-                        <div class="weekly-stat"><span class="stat-label">Billing Lag</span><span class="stat-value" style="font-size:2rem;">1.2d</span><span class="stat-subtext">Avg Days</span></div>
-                        <div class="weekly-stat"><span class="stat-label">New Referrals</span><span class="stat-value" style="font-size:2rem;">24</span><span class="stat-subtext">Healthy Pipeline</span></div>
-                        <div class="weekly-stat"><span class="stat-label">Staffing Ratio</span><span class="stat-value" style="font-size:2rem;">1:4</span><span class="stat-subtext">Staff per MD</span></div>
+                    <div class="section-header"><h3>Weekly Performance</h3></div>
+                    <div class="weekly-grid">
+                        <div class="weekly-stat"><span class="stat-label">Work RVUs</span><span class="stat-value">450</span><span class="stat-sub">Target: 420</span></div>
+                        <div class="weekly-stat"><span class="stat-label">Billing Lag</span><span class="stat-value">1.2d</span><span class="stat-sub">Avg Days</span></div>
+                        <div class="weekly-stat"><span class="stat-label">Referrals</span><span class="stat-value">24</span><span class="stat-sub">Source: PIP/Legal</span></div>
+                        <div class="weekly-stat"><span class="stat-label">Staff Hours</span><span class="stat-value">160</span><span class="stat-sub">Against Volume</span></div>
                     </div>
 
                     <div class="table-container">
-                        <h3>Monthly Revenue Cycle (Admin Priority)</h3>
+                        <div class="section-header"><h3>Monthly Revenue Cycle (Admin Focus)</h3></div>
                         <table class="table-custom">
-                            <thead><tr><th>Metric</th><th>Current Month</th><th>Target</th><th>Status</th></tr></thead>
+                            <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Health</th></tr></thead>
                             <tbody>
-                                <tr><td>A/R Aging (>90 Days)</td><td>$14,200</td><td>< $10,000</td><td style="color:var(--secondary-red); font-weight:700;">Needs Review</td></tr>
-                                <tr><td>Net Collection Ratio</td><td>96.2%</td><td>95.0%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                                <tr><td>A/R Aging (>90)</td><td>$14,200</td><td>< $10,000</td><td style="color:var(--secondary-red); font-weight:700;">Critical</td></tr>
+                                <tr><td>Net Collection Ratio</td><td>96.2%</td><td>95.0%</td><td style="color:green; font-weight:700;">Above Target</td></tr>
                                 <tr><td>Claim Denial Rate</td><td>3.1%</td><td>< 5.0%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
-                                <tr><td>Payer Mix (Private)</td><td>68%</td><td>65%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
-                                <tr><td>Net Practice Revenue</td><td>$42,850</td><td>$40,000</td><td style="color:green; font-weight:700;">Above Target</td></tr>
+                                <tr><td>Net Practice Revenue</td><td>$42,850</td><td>$40,000</td><td style="color:green; font-weight:700;">Profitable</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="table-container">
-                        <h3>Long-term Strategic Data</h3>
-                        <table class="table-custom" style="font-size: 0.85rem;">
-                            <thead><tr><th>Area</th><th>Update Frequency</th><th>Current Status</th></tr></thead>
+                        <div class="section-header"><h3>Strategic Marker Reports</h3></div>
+                        <table class="table-custom" style="font-size: 0.9rem;">
+                            <thead><tr><th>Area</th><th>Frequency</th><th>Current Status</th></tr></thead>
                             <tbody>
-                                <tr><td>Patient Satisfaction (NPS)</td><td>Rarely (Annual)</td><td>88 (World Class)</td></tr>
-                                <tr><td>Compliance Audit</td><td>Rarely (Annual)</td><td>Verified (Oct 2025)</td></tr>
-                                <tr><td>Equipment Lifecycle</td><td>Rarely (Annual)</td><td>MRI Maintenance Scheduled</td></tr>
+                                <tr><td>Patient NPS Score</td><td>Annual</td><td>88 (World Class)</td></tr>
+                                <tr><td>Compliance Audit</td><td>Annual</td><td>Passed (Oct 2025)</td></tr>
+                                <tr><td>Credentialing Status</td><td>Annual</td><td>All Providers Active</td></tr>
                             </tbody>
                         </table>
                     </div>
