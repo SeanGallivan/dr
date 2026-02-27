@@ -1,12 +1,11 @@
 /* --- ADX Prototype: Hierarchical UI Engine --- */
 const TEMPLATES = {
-    practice: (data) => `
-        <a onclick="clearSelection()" class="back-link">← Back to dashboard</a>
+    practiceHierarchy: (data) => `
         <div class="section-header"><h3>Daily Operations (Clinical Focus)</h3></div>
         <div class="daily-grid">
             <div class="daily-stat"><span class="stat-label">Slot Density</span><span class="stat-value">92%</span><span class="stat-sub">Utilization</span></div>
             <div class="daily-stat alert"><span class="stat-label">Unsigned Charts</span><span class="stat-value">12</span><span class="stat-sub">Action Required</span></div>
-            <div class="daily-stat alert"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-sub">Review Pending</span></div>
+            <div class="daily-stat alert"><span class="stat-label">Critical Labs</span><span class="stat-value">3</span><span class="stat-sub">Pending Review</span></div>
             <div class="daily-stat"><span class="stat-label">POS Collected</span><span class="stat-value">$1,250</span><span class="stat-sub">Daily Cash</span></div>
         </div>
         <div class="section-header"><h3>Weekly Performance</h3></div>
@@ -20,14 +19,24 @@ const TEMPLATES = {
             <table class="table-custom">
                 <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Health</th></tr></thead>
                 <tbody>
-                    <tr><td>A/R Aging (>90)</td><td>$14,200</td><td>< $10k</td><td style="color:var(--secondary-red); font-weight:700;">Critical</td></tr>
+                    <tr><td>A/R Aging (>90)</td><td>$14,200</td><td>< $10k</td><td style="color:#D6001C; font-weight:700;">Critical</td></tr>
                     <tr><td>Net Collection Ratio</td><td>96.2%</td><td>95.0%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                    <tr><td>Claim Denial Rate</td><td>3.1%</td><td>< 5%</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-container">
+            <div class="section-header"><h3>Strategic Marker Reports</h3></div>
+            <table class="table-custom" style="font-size:0.9rem;">
+                <thead><tr><th>Area</th><th>Frequency</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>Patient NPS Score</td><td>Annual</td><td>88 (World Class)</td></tr>
+                    <tr><td>Compliance Audit</td><td>Annual</td><td>Verified (Oct 2025)</td></tr>
                 </tbody>
             </table>
         </div>`,
 
-    patient: (p) => `
-        <a onclick="clearSelection()" class="back-link">← Back to dashboard</a>
+    patientHierarchy: (p) => `
         <div class="section-header"><h3>Daily Clinical Encounter</h3></div>
         <div class="daily-grid">
             <div class="daily-stat"><span class="stat-label">Chief Complaint</span><span class="stat-value" style="font-size:1.5rem;">${p.complaint}</span></div>
@@ -36,7 +45,7 @@ const TEMPLATES = {
         </div>
         <div class="section-header"><h3>Weekly Care Coordination</h3></div>
         <div class="weekly-grid">
-            <div class="weekly-stat" style="grid-column: span 2;"><span class="stat-label">Active Problem List</span><p style="font-weight:700; margin-top:10px;">${p.adx} - MSK Diagnosis</p></div>
+            <div class="weekly-stat" style="grid-column: span 2;"><span class="stat-label">Current Medications</span><p style="font-weight:700; margin-top:10px;">${p.meds}</p></div>
             <div class="weekly-stat"><span class="stat-label">Pain Trending</span><span class="stat-value">7/10</span></div>
         </div>
         <div class="table-container">
@@ -44,8 +53,9 @@ const TEMPLATES = {
             <table class="table-custom">
                 <thead><tr><th>Category</th><th>Details</th><th>Status</th></tr></thead>
                 <tbody>
-                    <tr><td>Medication Adherence</td><td>${p.meds} - Consistent</td><td style="color:green; font-weight:700;">Healthy</td></tr>
+                    <tr><td>Medication Adherence</td><td>Consistent Refill History</td><td style="color:green; font-weight:700;">Healthy</td></tr>
                     <tr><td>Last Visit Summary</td><td>${p.summary}</td><td>Complete</td></tr>
+                    <tr><td>Surgical History</td><td>Appendectomy (2005)</td><td>Archive</td></tr>
                 </tbody>
             </table>
         </div>`
