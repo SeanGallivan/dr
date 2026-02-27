@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Derived Results | Master Controller</title>
+    <meta charset="UTF-8"><title>Derived Results | Master controller</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,12 +11,12 @@
     </header>
     <div class="wrapper">
         <aside class="sidebar">
-            <div class="search-container"><input type="text" id="searchBox" placeholder="Search..."><button id="addBtn" class="btn btn-primary hidden" onclick="WIZARD.open()" style="width:100%; margin-top:15px;">+ Add New Practice</button></div>
+            <div class="search-container"><input type="text" id="searchBox" placeholder="Search..."><button id="addBtn" class="btn btn-primary hidden" onclick="WIZARD.open()" style="width:100%; margin-top:10px;">+ Add New Practice</button></div>
             <nav class="list-container" id="sidebarList"></nav>
         </aside>
         <main id="mainContent">
             <div id="overviewContainer" class="view-section">
-                <h1 id="vTitle" style="font-weight: 800; font-size: 2.8rem; margin:0; color:var(--primary-navy);"></h1>
+                <h1 id="vTitle" style="font-weight:800; font-size:2.8rem; margin:0; color:var(--primary-navy);"></h1>
                 <p id="vSub" style="color:var(--text-muted); font-weight:600; margin-top:0.8rem;"></p>
                 <div id="vContent"></div>
             </div>
@@ -37,16 +37,16 @@
         }
         function renderSidebar() {
             const list = document.getElementById('sidebarList'); const items = mode === 'patients' ? PATIENTS : PRACTICES;
-            list.innerHTML = items.map(i => `<button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}"><span class="item-main">${i.name}</span><span class="item-sub">${mode === 'patients' ? i.sub : 'Avg Pipeline: ' + i.days + ' Days'}</span></button>`).join('');
+            list.innerHTML = items.map(i => `<button class="list-item" onclick="selectItem('${i.id}')" id="item-${i.id}"><span class="item-main">${i.name}</span><span class="item-sub">${mode === 'patients' ? 'Patient Record' : 'Clinic Location'}</span></button>`).join('');
         }
         function renderOverview() {
             const t = document.getElementById('vTitle'); const s = document.getElementById('vSub'); const c = document.getElementById('vContent');
             if (mode === 'patients') {
-                t.innerText = "Network Management"; s.innerText = "Operational Pulse & Strategic Evolution";
-                c.innerHTML = TEMPLATES.network(NETWORK_STATS);
+                t.innerText = "Summit Musculoskeletal"; s.innerText = "HQ Clinical Operations";
+                c.innerHTML = TEMPLATES.practice(PRACTICES[0]);
             } else {
-                t.innerText = "Practice Management"; s.innerText = "Global Location Performance";
-                c.innerHTML = `<div class="daily-grid"><div class="daily-stat"><span class="stat-label">Active Locations</span><span class="stat-value">18</span></div></div>`;
+                t.innerText = "Network Management"; s.innerText = "Brad's Strategic Pulse";
+                c.innerHTML = TEMPLATES.network(NETWORK_STATS);
             }
         }
         function selectItem(id) {
@@ -56,16 +56,16 @@
             const h = document.getElementById('detailHeader'); const b = document.getElementById('detailBody');
             if (mode === 'patients') {
                 const p = PATIENTS.find(i => i.id === id);
-                h.innerHTML = `<div><h2 style="margin:0;">${p.name}</h2><div style="font-size:0.9rem; opacity:0.8; margin-top:5px;">DOB: ${p.dob} (Age: ${p.age})</div></div><div class="header-actions"><button class="btn btn-action">Add Note</button><button class="btn btn-action">Message</button><button class="btn btn-action">See Images</button></div>`;
+                h.innerHTML = `<div><h2 style="margin:0;">${p.name}</h2></div><div class="header-actions"><button class="btn btn-action">Add Note</button><button class="btn btn-action">Message</button></div>`;
                 b.innerHTML = TEMPLATES.patient(p);
             } else {
                 const pr = PRACTICES.find(i => i.id === id);
-                h.innerHTML = `<div><h2 style="margin:0;">${pr.name}</h2></div><div class="header-actions"><button class="btn btn-action">Run Report</button><button class="btn btn-action">Audit Billing</button><button class="btn btn-action">Staff Alert</button></div>`;
+                h.innerHTML = `<div><h2 style="margin:0;">${pr.name}</h2></div><div class="header-actions"><button class="btn btn-action">Audit</button></div>`;
                 b.innerHTML = TEMPLATES.practice(pr);
             }
         }
         function clearSelection() { document.getElementById('overviewContainer').classList.remove('hidden'); document.getElementById('detailContainer').classList.add('hidden'); }
-        switchMode('patients');
+        window.onload = () => switchMode('patients');
     </script>
 </body>
 </html>
