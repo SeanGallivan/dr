@@ -1,4 +1,4 @@
-/* --- ADX Prototype: Derived Results WCAG + High-End Spacing --- */
+/* --- ADX Prototype: Derived Results High-End Restoration --- */
 :root {
     --primary-navy: #002D72;
     --secondary-red: #D6001C;
@@ -10,7 +10,7 @@
     --header-height: 80px;
 }
 
-/* 1. Viewport & Scroll Logic */
+/* 1. Viewport & Scroll Control */
 html, body {
     height: 100vh;
     width: 100vw;
@@ -24,11 +24,12 @@ html, body {
 
 body { display: flex; flex-direction: column; }
 
+/* Accessibility Landmarks */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-.skip-link { position: absolute; top: -50px; left: 0; background: var(--secondary-red); color: white; padding: 10px; z-index: 200; transition: top 0.2s; }
+.skip-link { position: absolute; top: -50px; left: 0; background: var(--secondary-red); color: white; padding: 10px; z-index: 200; }
 .skip-link:focus { top: 0; }
 
-/* 2. Header */
+/* 2. Header & Top Nav */
 header {
     height: var(--header-height);
     background: white;
@@ -42,27 +43,12 @@ header {
     z-index: 100;
 }
 
-.logo-area {
-    font-weight: 800;
-    font-size: 1.8rem;
-    color: var(--primary-navy);
-    letter-spacing: -1px;
-    text-transform: uppercase;
-    text-decoration: none;
-    cursor: pointer;
-}
+.logo-area { font-weight: 800; font-size: 1.8rem; color: var(--primary-navy); text-transform: uppercase; text-decoration: none; cursor: pointer; }
 
-nav a {
-    text-decoration: none;
-    color: var(--text-dark);
-    margin-left: 2.5rem;
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 10px 0;
-}
-nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primary-navy); }
+nav a { text-decoration: none; color: var(--text-dark); margin-left: 2.5rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primary-navy); padding-bottom: 5px; }
 
-/* 3. Sidebar & Search */
+/* 3. The Wrapper Layout */
 .wrapper {
     display: flex;
     height: calc(100vh - var(--header-height));
@@ -70,8 +56,9 @@ nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primar
     overflow: hidden;
 }
 
+/* 4. Sidebar: Fixed Search + Scroll List */
 .sidebar {
-    width: 320px;
+    width: 340px;
     background: white;
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -94,34 +81,37 @@ nav a.active { color: var(--primary-navy); border-bottom: 3px solid var(--primar
     padding: 1.5rem;
     cursor: pointer;
     font-family: 'Montserrat';
+    display: block;
 }
+.list-item:focus { outline: 3px solid var(--primary-navy); outline-offset: -3px; }
 .list-item.active { background: var(--active-gray); border-left: 8px solid var(--primary-navy); }
 .item-main { font-weight: 700; display: block; color: var(--primary-navy); font-size: 1.05rem; }
 .item-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; }
 
-/* 4. Main Scroll Zone */
+/* 5. Main Content: Independent Scroll Area */
 main {
     flex: 1;
     height: 100%;
-    overflow-y: auto; /* Independent Scroll */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    background: var(--bg-gray);
 }
 
 .view-section { padding: 4rem; }
 
-/* Stats Display */
+/* Dashboard Metrics */
 .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 4rem;
     margin: 3rem 0;
 }
 .stat-item { border-left: 1px solid var(--border-color); padding-left: 2rem; }
-.stat-value { font-size: 3.5rem; font-weight: 800; display: block; line-height: 1; margin: 1.2rem 0; }
+.stat-value { font-size: 3.5rem; font-weight: 800; display: block; line-height: 1.2; margin: 1.2rem 0; }
 .stat-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
 
-/* Detail Headers */
+/* Entity Headers & Tabs */
 .detail-header { background: var(--primary-navy); color: white; padding: 2.5rem 3.5rem; display: flex; gap: 4rem; align-items: center; flex-shrink: 0; }
 .header-meta { font-size: 0.9rem; opacity: 0.9; }
 
@@ -137,9 +127,9 @@ main {
 .tab { padding: 1.2rem 1.8rem; font-size: 0.9rem; font-weight: 700; background: none; border: none; cursor: pointer; color: var(--text-muted); font-family: 'Montserrat'; }
 .tab.active { background: white; color: var(--primary-navy); border-bottom: 4px solid var(--primary-navy); }
 
-/* Data Spacing Fixes */
+/* Grid Spacing & Data Formatting */
 .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 5rem; padding: 3.5rem; }
-.data-section { margin-bottom: 5rem; } /* Vertical space between sections */
+.data-section { margin-bottom: 5rem; }
 .data-section h3 { border-bottom: 2px solid var(--primary-navy); padding-bottom: 1rem; margin-bottom: 2.5rem; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1.5px; }
 
 .at-a-glance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 3rem; }
@@ -149,19 +139,19 @@ main {
 .table-custom th { text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); padding: 12px; border-bottom: 2px solid var(--border-color); }
 .table-custom td { padding: 18px 12px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
 
-/* Button Padding Fixes */
+/* Fixed Button Padding */
 .btn { 
-    padding: 14px 28px; /* High-end padding */
+    padding: 14px 28px; 
     border-radius: 6px; 
     font-weight: 700; 
     cursor: pointer; 
     font-family: 'Montserrat'; 
     border: none;
-    line-height: 1.4;
     display: inline-block;
+    line-height: 1.4;
 }
-.btn-primary { background: var(--primary-navy); color: white; }
-.btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
+.btn-primary { background: var(--primary-navy); color: white; width: 100%; }
+.btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); width: auto; }
 
 .hidden { display: none; }
 .schedule-link { color: #fff; font-weight: 800; text-decoration: underline; cursor: pointer; font-size: 1.1rem; }
