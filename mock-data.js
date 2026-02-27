@@ -7,27 +7,26 @@ const PATIENTS = [
         complaint: "Increased radiating leg pain, 2 weeks",
         allergies: "PENICILLINS (Severe)",
         meds: "Naproxen 500mg, Gabapentin 300mg TID",
-        vitals: "BP 128/82 | HR 72 | WT 165 lbs",
-        lastVisit: "Feb 10: Initial Epidural Steroid Injection (ESI). Minimal relief.",
+        vitals: "128/82 | 72 | 165 lbs",
+        lastVisit: "Feb 10: Initial ESI. Minimal relief.",
         results: "MRI (Jan 15): Severe narrowing at L4-L5.",
         // WEEKLY
-        functional: "Walking limited to 10 mins. Unable to lift >5lbs.",
-        pain: "7/10 (Trending Up from 5/10)",
-        orders: "EMG/Nerve Conduction Study, Physical Therapy Referral",
-        gaps: "Annual Wellness Exam overdue",
+        functional: "Walking < 10 mins. No lifting > 5lbs.",
+        pain: "7/10 (Trending Up)",
+        orders: "EMG, PT Referral",
+        gaps: "Annual Wellness Overdue",
         // MONTHLY
-        adherence: "90% (Consistently filling Gabapentin)",
-        response: "Mobility decreased 15% vs baseline",
-        billing: "All claims for Jan/Feb visits processed",
+        adherence: "90% Compliance",
+        response: "-15% Mobility vs Baseline",
+        billing: "Feb Claims Processed",
         // RARELY
-        surgery: "Appendectomy (2005), Left Knee Scope (2012)",
+        surgery: "Appendectomy (2005), Left Knee (2012)",
         family: "Father: Osteoarthritis. Mother: Spinal Fusion.",
-        archive: "Imaging from 2018 shows stable lumbar alignment.",
-        social: "Full-time Teacher. Non-smoker. Lives in 2-story home.",
+        archive: "Imaging (2018) shows stable alignment.",
+        social: "Teacher. Non-smoker. 2-story home.",
         sub: "Last Seen: Feb 24"
     }
 ];
-// Fillers for scrolling logic
 for(let i=2; i<=25; i++) { PATIENTS.push({...PATIENTS[0], id: "P"+i, name: "Patient Record #"+(100+i), allergies: "None", sub: "Archive Record"}); }
 
 const PRACTICES = [
@@ -36,11 +35,11 @@ const PRACTICES = [
         // DAILY
         density: "92%", noShow: "4%", charts: "12", pos: "$1,250", labs: "3",
         // WEEKLY
-        rvu: "450 / 420 Target", lag: "1.2 Days", referrals: "24 New", hours: "160/150 Target",
+        rvu: "450 / 420", lag: "1.2 Days", referrals: "24 New", hours: "160/150",
         // MONTHLY
-        ar: "$14,200 (>90 Days)", collection: "96.2%", denials: "3.1% (Incomplete Info)", mix: "65% Private / 35% Public", revenue: "$42,850 vs $38k Budget",
+        ar: "$14.2k", collection: "96.2%", denials: "3.1%", mix: "65/35 Pvt/Pub", revenue: "$42.8k / $38k",
         // RARELY
-        nps: "88 (World Class)", growth: "+5% Regional Share", compliance: "Audit Passed Oct 2025", equipment: "MRI Maintenance: Scheduled July 2026",
+        nps: "88", growth: "+5% Share", compliance: "Audit Passed", equipment: "MRI Maint: July 2026",
         days: "14.2"
     }
 ];
