@@ -3,216 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derived Results | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta name="robots" content="noindex, nofollow">
+    <title>ADX | Derived Results Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .gate-card { background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 350px; border-top: 6px solid #002D72; }
+        h2 { color: #002D72; margin-bottom: 1rem; }
+        input { width: 100%; padding: 14px; margin: 20px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 14px; background: #002D72; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .error { color: #D6001C; font-size: 0.85rem; margin-top: 15px; display: none; }
+    </style>
 </head>
 <body>
-
-<header>
-    <div class="logo-area">Derived Results</div>
-    <nav>
-        <a href="#">Dashboard</a>
-        <button class="btn btn-primary" onclick="openWizard()" style="margin-left: 2rem;">+ New Physician</button>
-        <a href="#" style="color:var(--secondary-red)">Sign Out</a>
-    </nav>
-</header>
-
-<div class="wrapper">
-    <aside class="sidebar">
-        <div class="search-container" style="padding: 1rem;">
-            <input type="text" id="patientSearch" placeholder="Search Patients..." style="width:100%; padding:10px;">
-        </div>
-        <div class="patient-list" id="patientList"></div>
-    </aside>
-
-    <main id="mainContent">
-        <div id="defaultDashboard" style="padding: 3rem;">
-            <h1 style="font-weight: 800; font-size: 2.5rem; margin:0;">Practice Overview</h1>
-            <div class="stats-container">
-                <div class="stat-item"><span class="stat-label">Patients</span><span class="stat-value">1,284</span><a href="#" class="see-more">View Report →</a></div>
-                <div class="stat-item"><span class="stat-label">Monthly Billing</span><span class="stat-value">$42,850</span><a href="#" class="see-more">View Financials →</a></div>
-                <div class="stat-item"><span class="stat-label">Avg Days to First Visit</span><span class="stat-value">14.2</span><a href="#" class="see-more">View Pipeline →</a></div>
-            </div>
-        </div>
-
-        <div id="patientView" class="hidden">
-            <div class="detail-header">
-                <div style="font-size: 1.5rem; font-weight: 700;" id="vName">Patient Name</div>
-                <div class="header-meta">ID: <span id="vId"></span></div>
-                <div class="header-meta">DOB: <span id="vDob"></span></div>
-            </div>
-            <div class="tab-bar">
-                <div class="tab active">Information</div>
-                <div class="tab">Evaluation & Treatment</div>
-                <div class="tab">Imaging</div>
-            </div>
-            <div class="content-grid">
-                <div class="left-col">
-                    <div class="data-section">
-                        <h3>Evaluation & Management</h3>
-                        <div style="display:flex; gap: 3rem; margin-top: 1rem;">
-                            <div><span class="stat-label">BMI</span><br><b id="vBmi">29.60</b></div>
-                            <div><span class="stat-label">Latest ADX Code</span><br><b id="vAdx">Level V</b></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button onclick="showDashboard()" style="margin: 2rem; cursor:pointer;" class="btn btn-outline">← Back to Overview</button>
-        </div>
-    </main>
-</div>
-
-<div id="wizardModal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <div class="wizard-header">
-            <h2 style="margin:0">Onboard New Physician</h2>
-            <div class="step-indicator">
-                <div class="step-dot active" id="dot1"></div>
-                <div class="step-dot" id="dot2"></div>
-                <div class="step-dot" id="dot3"></div>
-            </div>
-        </div>
-
-        <div class="wizard-body">
-            <div id="step1">
-                <h3>1. Select Practice Location</h3>
-                <div class="form-group">
-                    <label>Company Branch</label>
-                    <select id="branchSelect" onchange="inheritBranchData()">
-                        <option value="">-- Search Branches --</option>
-                        <option value="b1">Northside Chiropractic (123 Main St)</option>
-                        <option value="b2">Downtown Wellness (456 Oak Ave)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Address (Auto-populated)</label>
-                    <input type="text" id="branchAddress" readonly style="background:#f0f0f0">
-                </div>
-            </div>
-
-            <div id="step2" class="hidden">
-                <h3>2. Physician Identity</h3>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group"><label>First Name</label><input type="text"></div>
-                    <div class="form-group"><label>Last Name</label><input type="text"></div>
-                </div>
-                <div class="form-group">
-                    <label>Specialty</label>
-                    <select>
-                        <option>Chiropractic Medicine</option>
-                        <option>Orthopedic Surgery</option>
-                        <option>Physical Therapy</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="step3" class="hidden">
-                <h3>3. Associated Support Staff</h3>
-                <p class="text-muted" style="font-size: 0.8rem;">Add users who need access to this physician's records.</p>
-                <div id="staffList">
-                    <div style="display:flex; gap:10px; margin-bottom:10px;">
-                        <input type="text" placeholder="Email Address">
-                        <select style="width:150px;"><option>Medical Asst</option><option>Billing</option></select>
-                    </div>
-                </div>
-                <button class="btn btn-outline" style="font-size: 0.7rem;" onclick="addStaffRow()">+ Add Another User</button>
-            </div>
-        </div>
-
-        <div class="wizard-footer">
-            <button class="btn btn-outline" onclick="closeWizard()">Cancel</button>
-            <div>
-                <button id="prevBtn" class="btn btn-outline hidden" onclick="changeStep(-1)">Back</button>
-                <button id="nextBtn" class="btn btn-primary" onclick="changeStep(1)">Next</button>
-            </div>
-        </div>
+    <div class="gate-card">
+        <h2>ADX Prototype</h2>
+        <p>Enter access code</p>
+        <input type="password" id="gatePass" placeholder="Access Code">
+        <button onclick="checkPass()">Unlock Environment</button>
+        <div id="errorMsg" class="error">Invalid Access Code.</div>
     </div>
-</div>
-
-<script>
-    const patients = [
-        { id: "DAAB6673", name: "Elizabeth Blackwell", dob: "8/27/1974", lastVisit: "Feb 24, 2026", bmi: "29.60", adx: "Admission Assessment" },
-        { id: "JS123456", name: "Jonas Salk", dob: "10/28/1914", lastVisit: "Feb 22, 2026", bmi: "28.1", adx: "Level IV" },
-        { id: "VA987654", name: "Virginia Apgar", dob: "6/07/1909", lastVisit: "Feb 19, 2026", bmi: "24.0", adx: "Procedure" }
-    ];
-
-    let currentStep = 1;
-
-    function openWizard() { document.getElementById('wizardModal').classList.remove('hidden'); }
-    function closeWizard() { document.getElementById('wizardModal').classList.add('hidden'); resetWizard(); }
-
-    function changeStep(n) {
-        document.getElementById(`step${currentStep}`).classList.add('hidden');
-        document.getElementById(`dot${currentStep}`).classList.remove('active');
-        currentStep += n;
-        
-        if (currentStep > 3) {
-            alert("Physician Created! Mock JSON sent to /ReferringPhysician/Index");
-            closeWizard();
-            return;
+    <script>
+        function checkPass() {
+            if (document.getElementById('gatePass').value === 'ADX2026') { 
+                localStorage.setItem('dr_access', 'true');
+                window.location.href = 'dashboard.html';
+            } else {
+                document.getElementById('errorMsg').style.display = 'block';
+            }
         }
-
-        document.getElementById(`step${currentStep}`).classList.remove('hidden');
-        document.getElementById(`dot${currentStep}`).classList.add('active');
-        
-        document.getElementById('prevBtn').classList.toggle('hidden', currentStep === 1);
-        document.getElementById('nextBtn').innerText = currentStep === 3 ? "Complete Onboarding" : "Next";
-    }
-
-    function inheritBranchData() {
-        const branch = document.getElementById('branchSelect').value;
-        const addrField = document.getElementById('branchAddress');
-        addrField.value = branch === 'b1' ? "123 Main St, Northside, NY" : (branch === 'b2' ? "456 Oak Ave, Downtown, NY" : "");
-    }
-
-    function addStaffRow() {
-        const row = document.createElement('div');
-        row.style.display = 'flex'; row.style.gap = '10px'; row.style.marginBottom = '10px';
-        row.innerHTML = `<input type="text" placeholder="Email Address"><select style="width:150px;"><option>Medical Asst</option><option>Billing</option></select>`;
-        document.getElementById('staffList').appendChild(row);
-    }
-
-    function renderList() {
-        document.getElementById('patientList').innerHTML = patients.map(p => `
-            <div class="patient-item" id="p-${p.id}" onclick="viewPatient('${p.id}')">
-                <span class="patient-name">${p.name}</span>
-                <span class="last-visit">Last Visit: ${p.lastVisit}</span>
-            </div>
-        `).join('');
-    }
-
-    function viewPatient(id) {
-        const p = patients.find(pat => pat.id === id);
-        document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`p-${id}`).classList.add('active');
-        document.getElementById('defaultDashboard').classList.add('hidden');
-        document.getElementById('patientView').classList.remove('hidden');
-        document.getElementById('vName').innerText = p.name;
-        document.getElementById('vId').innerText = p.id;
-        document.getElementById('vDob').innerText = p.dob;
-        document.getElementById('vBmi').innerText = p.bmi;
-        document.getElementById('vAdx').innerText = p.adx;
-    }
-
-    function showDashboard() {
-        document.getElementById('defaultDashboard').classList.remove('hidden');
-        document.getElementById('patientView').classList.add('hidden');
-        document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('active'));
-    }
-
-    function resetWizard() {
-        document.getElementById(`step${currentStep}`).classList.add('hidden');
-        currentStep = 1;
-        document.getElementById(`step1`).classList.remove('hidden');
-        document.getElementById('dot1').classList.add('active');
-        document.getElementById('dot2').classList.remove('active');
-        document.getElementById('dot3').classList.remove('active');
-        document.getElementById('prevBtn').classList.add('hidden');
-        document.getElementById('nextBtn').innerText = "Next";
-    }
-
-    renderList();
-</script>
+    </script>
 </body>
 </html>
