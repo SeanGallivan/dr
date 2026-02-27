@@ -1,4 +1,4 @@
-/* --- ADX Master Style: Gold Image Stabilization --- */
+/* --- ADX Master Style: Full Restoration --- */
 :root {
 --primary-navy: #002D72;
 --secondary-red: #D6001C;
@@ -74,3 +74,5 @@ select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;
 .btn-primary { background: var(--primary-navy); color: white; }
 .btn-action { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); font-size: 0.75rem; }
 .hidden { display: none; }
+
+/* --- END OF CSS --- */
