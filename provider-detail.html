@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX | Provider Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="overflow:auto;">
+    <a href="#detailBody" class="skip-link">Skip to main content</a>
+    <header>
+        <div class="header-brand">
+            <a class="logo-area" href="./index.html">ADX</a>
+            <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
+        </div>
+        <div class="reconciliation-badge">&#x2713; Verified against Derived Results</div>
+    </header>
+    <div id="detailHeader" class="detail-header"></div>
+    <main id="detailBody" class="adx-detail-body" tabindex="-1"></main>
+
+    <script src="./adx-data.js"></script>
+    <script src="./adx-config.js"></script>
+    <script>
+    (function () {
+        var params = new URLSearchParams(location.search);
+        var view = params.get("view") || "DR_BRAD";
+        var p = adxProvider(params.get("id")) || ADX_PROVIDERS[1];
+        function money(n){ return "$" + Number(n).toLocaleString(); }
+        function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+        function roleLabel(r){ return {admin:"Administrator",ipm:"IPM Physician",network:"Network Physician",specialty:"Specialist"}[r]||r; }
+
+        document.title = "ADX | " + p.name + " — Provider Detail";
+        document.getElementById("detailHeader").innerHTML =
+            '<div><h2 style="margin:0;">' + esc(p.name) + '</h2>' +
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + roleLabel(p.role) + ' · ' + esc(p.specialty) + '</div></div>' +
+            '<div class="header-actions"><button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(p.name) + '.\')">Message</button>' +
+            '<button class="btn btn-action" onclick="alert(\'Opens full provider record in Derived Results.\')">Open in DR</button></div>';
+
+        var n = ADX_NETWORK_NORMS;
+        var theirCases = ADX_CASES.filter(function(c){ return c.ipmId === p.id || (c.teamProviderIds||[]).indexOf(p.id) >= 0; });
+        var well = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) >= 3; });
+        var poorly = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) <= 1 || c.scheduling === "No-show"; });
+
+        var html = '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=weekly"><span aria-hidden="true">←</span> Back to dashboard</a>';
+
+        if (p.composite != null) {
+            var recomputed = computeComposite(p);
+            html +=
+                '<div class="section-header"><h3>Composite Score (RAS-style) <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR — swappable formula]</span></h3></div>' +
+                '<div class="clinical-scorecard">' +
+                    '<div class="scorecard-card"><div class="scorecard-label">Composite Score</div><div class="scorecard-value">' + p.composite + '</div><div class="scorecard-sub">Network avg: ' + n.composite + '</div></div>' +
+                    '<div class="scorecard-card"><div class="scorecard-label">Bonus Eligibility</div><div class="scorecard-value" style="font-size:1.6rem;">' + (p.bonusEligible ? "Eligible" : "Not yet") + '</div><div class="scorecard-sub">Threshold: ' + ADX_BONUS_THRESHOLD + '</div></div>' +
+                    '<div class="scorecard-card"><div class="scorecard-label">Recomputed (live formula)</div><div class="scorecard-value">' + recomputed + '</div><div class="scorecard-sub">computeComposite() — function weighted heaviest</div></div>' +
+                '</div>' +
+
+                '<div class="section-header"><h3>Score Components vs Network Norm</h3></div>' +
+                '<table class="table-custom"><thead><tr><th>Component</th><th>This Provider</th><th>Network Norm</th><th>Read</th></tr></thead><tbody>' +
+                    compRow("PIF Median Gain (weighted heaviest)", "+" + p.pifMedianGain.toFixed(1), "+" + (n.composite ? "3.4" : ""), p.pifMedianGain >= 3.4) +
+                    compRow("Return to Work", Math.round(p.returnToWork*100)+"%", Math.round(n.returnToWork*100)+"%", p.returnToWork >= n.returnToWork) +
+                    compRow("Avg Cost / Case", money(p.avgCostPerCase), money(n.avgCostPerCase), p.avgCostPerCase <= n.avgCostPerCase) +
+                    compRow("Avg Days in ADX", p.avgDaysInADX, n.avgDaysInADX, p.avgDaysInADX <= n.avgDaysInADX) +
+                '</tbody></table>';
+        }
+
+        html +=
+            '<div class="section-header"><h3>Patients Doing Well vs Poorly <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="deep-grid">' +
+                '<div class="deep-card" style="border-left:4px solid #0a8f2c;"><h4>Doing Well (' + well.length + ')</h4><p>' +
+                (well.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> — PIF +' + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
+                '<div class="deep-card alert-card"><h4>Needs Attention (' + poorly.length + ')</h4><p>' +
+                (poorly.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> — ' + (c.scheduling==="No-show"?"no-show":"PIF +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>All Cases (' + theirCases.length + ')</h3></div>' +
+            '<table class="adx-table"><thead><tr><th scope="col">Patient</th><th scope="col">Diagnosis</th><th scope="col">Running Total</th><th scope="col">PIF</th><th scope="col">Status</th></tr></thead><tbody>' +
+                theirCases.map(function(c){ return '<tr><td data-label="Patient"><a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a></td>' +
+                    '<td data-label="Diagnosis">' + esc(c.diagnosis) + '</td>' +
+                    '<td data-label="Running Total"><span class="adx-money">' + money(c.runningTotal) + '</span></td>' +
+                    '<td data-label="PIF">' + c.pifStart + '→' + c.pifCurrent + '</td>' +
+                    '<td data-label="Status">' + esc(c.status) + '</td></tr>'; }).join("") +
+            '</tbody></table>';
+
+        document.getElementById("detailBody").innerHTML = html;
+
+        function compRow(label, mine, norm, good){
+            return '<tr><td><b>' + label + '</b></td><td>' + mine + '</td><td>' + norm + '</td><td>' +
+                (good ? '<span class="adx-delta-good">▲ at/above norm</span>' : '<span class="adx-delta-bad">▼ below norm</span>') + '</td></tr>';
+        }
+    })();
+    </script>
+</body>
+</html>

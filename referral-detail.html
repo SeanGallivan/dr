@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX | Referral / Client Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="overflow:auto;">
+    <a href="#detailBody" class="skip-link">Skip to main content</a>
+    <header>
+        <div class="header-brand">
+            <a class="logo-area" href="./index.html">ADX</a>
+            <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
+        </div>
+        <div class="reconciliation-badge">&#x2713; Verified against Salesforce</div>
+    </header>
+    <div id="detailHeader" class="detail-header"></div>
+    <main id="detailBody" class="adx-detail-body" tabindex="-1"></main>
+
+    <script src="./adx-data.js"></script>
+    <script src="./adx-config.js"></script>
+    <script>
+    (function () {
+        var params = new URLSearchParams(location.search);
+        var view = params.get("view") || "DR_BRAD";
+        var cl = adxClient(params.get("id")) || ADX_CLIENTS[0];
+        function money(n){ return "$" + Number(n).toLocaleString(); }
+        function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+        document.title = "ADX | " + cl.name + " — Referral Detail";
+        document.getElementById("detailHeader").innerHTML =
+            '<div><h2 style="margin:0;">' + esc(cl.name) + '</h2>' +
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + esc(cl.type) + ' · Referral source / client · [Salesforce]</div></div>' +
+            '<div class="header-actions"><button class="btn btn-action" onclick="alert(\'Opens client record in Salesforce.\')">Open in Salesforce</button>' +
+            '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(cl.name) + '.\')">Message</button></div>';
+
+        var theirCases = ADX_CASES.filter(function(c){ return c.clientId === cl.id; });
+
+        var html = '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=weekly"><span aria-hidden="true">←</span> Back to dashboard</a>' +
+            '<div class="section-header"><h3>Client Summary <span style="font-size:0.62rem; font-weight:800; color:#888;">[Salesforce]</span></h3></div>' +
+            '<div class="daily-grid">' +
+                '<div class="daily-stat"><span class="stat-label">Total Referrals</span><span class="stat-value">' + cl.volume + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Active With ADX</span><span class="stat-value">' + cl.activeVolume + '</span></div>' +
+                '<div class="daily-stat" style="border-left-color:#0a8f2c;"><span class="stat-label">Revenue YTD</span><span class="stat-value" style="color:#0a8f2c;">' + money(cl.revenueYTD) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Partner Cash Value</span><span class="stat-value">' + money(cl.cashValue) + '</span></div>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>Lien Company &amp; Payer</h3></div>' +
+            '<div class="deep-grid" style="grid-template-columns:1fr 1fr;">' +
+                '<div class="deep-card"><h4>Lien Company</h4><p>' + esc(cl.lienCompany) + '</p></div>' +
+                '<div class="deep-card"><h4>Payer</h4><p>' + esc(cl.payer) + '</p></div>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>This Client&rsquo;s Cases ADX Is Seeing (' + theirCases.length + ')</h3></div>' +
+            (theirCases.length ?
+            '<table class="adx-table"><thead><tr><th scope="col">Beneficiary</th><th scope="col">Diagnosis</th><th scope="col">IPM</th><th scope="col">Running Total</th><th scope="col">Status</th></tr></thead><tbody>' +
+                theirCases.map(function(c){ return '<tr><td data-label="Beneficiary"><a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a></td>' +
+                    '<td data-label="Diagnosis">' + esc(c.diagnosis) + '</td>' +
+                    '<td data-label="IPM">' + esc(adxProvider(c.ipmId).name) + '</td>' +
+                    '<td data-label="Running Total"><span class="adx-money">' + money(c.runningTotal) + '</span></td>' +
+                    '<td data-label="Status">' + esc(c.status) + '</td></tr>'; }).join("") +
+            '</tbody></table>'
+            : '<p class="adx-sub">No active cases for this client in the current data set.</p>') +
+
+            '<p class="adx-source-note">Note: the employer-benefits market is firewalled out of this PI-side view — &ldquo;client&rdquo; can later include employer plans without blending the two markets. <strong>[Salesforce]</strong></p>';
+
+        document.getElementById("detailBody").innerHTML = html;
+    })();
+    </script>
+</body>
+</html>

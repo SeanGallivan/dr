@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX | Case Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="overflow:auto;">
+    <a href="#detailBody" class="skip-link">Skip to main content</a>
+    <header>
+        <div class="header-brand">
+            <a class="logo-area" href="./index.html">ADX</a>
+            <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
+        </div>
+        <div class="reconciliation-badge">&#x2713; Verified against Derived Results &amp; Salesforce</div>
+    </header>
+    <div id="detailHeader" class="detail-header"></div>
+    <main id="detailBody" class="adx-detail-body" tabindex="-1"></main>
+
+    <script src="./adx-data.js"></script>
+    <script src="./adx-config.js"></script>
+    <script>
+    (function () {
+        var params = new URLSearchParams(location.search);
+        var view = params.get("view") || "DR_BRAD";
+        var c = adxCase(params.get("id")) || ADX_CASES[0];
+        var ipm = adxProvider(c.ipmId);
+        var payer = adxPayer(c.payerId);
+        var client = adxClient(c.clientId);
+        var role = (adxProvider(view) || {}).role || "admin";
+        var term = role === "admin" ? "Beneficiary" : "Patient";
+        function money(n){ return "$" + Number(n).toLocaleString(); }
+        function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+        document.title = "ADX | " + c.beneficiary + " — Case Detail";
+        document.getElementById("detailHeader").innerHTML =
+            '<div><h2 style="margin:0;">' + esc(c.beneficiary) + (c.newIntake ? ' <span class="adx-pill adx-pill-new" style="vertical-align:middle;">NEW INTAKE</span>' : '') + '</h2>' +
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + '</div></div>' +
+            '<div class="header-actions">' +
+            '<button class="btn btn-action" onclick="alert(\'Opens full case record in Derived Results.\')">Open in DR</button>' +
+            '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Provider</button>' +
+            '<button class="btn btn-action" onclick="alert(\'Message sent to Dr. Brad.\')">Message Brad</button></div>';
+
+        var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
+        var gain = c.pifCurrent - c.pifStart;
+
+        var lienRow = (role === "admin")
+            ? '<div class="deep-card ' + (c.lienOnFile ? '' : 'alert-card') + '"><h4>Lien on File</h4><p>' +
+              (c.lienOnFile ? '<span class="adx-lien-ok">✓ Perfected lien on file</span>' : '<span class="adx-lien-missing">⚠ No perfected lien — treating at risk</span>') + '</p></div>'
+            : '';
+        var payerCard = (role === "admin" || role === "ipm")
+            ? '<div class="deep-card"><h4>Payer <span style="font-weight:600;">[Salesforce]</span></h4><p>' + esc(payer.name) + (payer.reminderRequired ? ' <span class="adx-pill adx-pill-warn">SLOW PAYER</span>' : '') + '</p></div>'
+            : '';
+
+        var html =
+            '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=daily"><span aria-hidden="true">←</span> Back to dashboard</a>' +
+            '<div class="visit-context">' +
+                '<span class="ctx-badge navy">' + esc(c.diagnosisStatus) + '</span>' +
+                '<span class="ctx-badge ' + (c.status === "Active" ? "green" : c.status === "Maintenance" ? "yellow" : "muted") + '">' + esc(c.status) + '</span>' +
+                '<span class="ctx-sep"></span>' +
+                '<span class="ctx-badge muted">IPM: ' + esc(ipm.name) + '</span>' +
+                '<span class="ctx-badge muted">Client: ' + esc(client.name) + '</span>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>' + esc(c.diagnosis) + '</h3></div>' +
+            '<div class="daily-grid">' +
+                '<div class="daily-stat"><span class="stat-label">Running Total Spent</span><span class="stat-value" style="font-size:2rem;">' + money(c.runningTotal) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">PIF Score (start → now)</span><span class="stat-value" style="font-size:2rem;">' + c.pifStart + ' → ' + c.pifCurrent + ' <span class="adx-pif-' + (gain>0?'up':gain<0?'down':'flat') + '" style="font-size:1rem;">' + (gain>0?'▲ +':gain<0?'▼ ':'▬ ') + gain + '</span></span><span style="font-size:0.7rem; color:#888;">Target: ' + c.pifTarget + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Aging</span><span class="stat-value" style="font-size:2rem;">' + c.agingDays + ' <span style="font-size:0.9rem;">days</span></span></div>' +
+                '<div class="daily-stat ' + (c.scheduling==="No-show"?"alert":"") + '"><span class="stat-label">Scheduling</span><span class="stat-value" style="font-size:1.5rem;">' + esc(c.scheduling) + '</span></div>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>Plan <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR — links to notes]</span></h3></div>' +
+            '<div class="inherited-data-box"><p style="margin:0; font-weight:600;">' + esc(c.planNote) + '</p>' +
+            '<div class="visit-actions" style="border-top:none; padding-bottom:0;">' +
+                '<button class="btn-visit primary" onclick="alert(\'Opens plan notes in Derived Results.\')">Open Plan Notes</button>' +
+                '<button class="btn-visit outline" onclick="alert(\'Flagged: get this moving.\')">Get This Moving</button>' +
+                (c.scheduling==="No-show" ? '<button class="btn-visit alert" onclick="alert(\'ADX notified of no-show.\')">Notify ADX of No-Show</button>' : '') +
+            '</div></div>' +
+
+            '<div class="section-header"><h3>Running Total — Cost Accumulation <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<table class="table-custom adx-cost-table">' +
+                '<thead><tr><th>Item</th><th>Source</th><th>Amount</th></tr></thead><tbody>' +
+                c.costBreakdown.map(function(x){ return '<tr><td>' + esc(x.item) + '</td><td><span class="adx-src-tag">[' + x.source + ']</span></td><td>' + money(x.amount) + '</td></tr>'; }).join("") +
+                '<tr class="adx-cost-total"><td><strong>Running Total</strong></td><td></td><td>' + money(costTotal) + '</td></tr>' +
+                '</tbody></table>' +
+
+            ((role==="admin"||role==="ipm") ?
+                '<div class="section-header"><h3>Performance vs Network</h3></div>' +
+                '<div class="deep-grid" style="grid-template-columns:1fr 1fr;">' +
+                    '<div class="deep-card ' + (c.vsNetworkDays>0?"alert-card":"") + '"><h4>Days in ADX vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkDays>0?"adx-warn-text":"") + '">' + (c.vsNetworkDays>=0?"+":"−") + Math.abs(c.vsNetworkDays) + ' days</p><span style="font-size:0.78rem; color:#888;">Network norm: ' + ADX_NETWORK_NORMS.avgDaysInADX + ' days</span></div>' +
+                    '<div class="deep-card ' + (c.vsNetworkCost>0?"alert-card":"") + '"><h4>Cost vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkCost>0?"adx-warn-text":"") + '">' + (c.vsNetworkCost>=0?"+":"−") + money(Math.abs(c.vsNetworkCost)).slice(1).replace("$","") + '</p><span style="font-size:0.78rem; color:#888;">Like-for-like comparable cases</span></div>' +
+                '</div>' : '') +
+
+            '<div class="section-header"><h3>Visit History <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR / FHIR]</span></h3></div>' +
+            '<ul class="adx-timeline">' +
+                c.visits.slice().reverse().map(function(v){ return '<li><div class="tl-date">' + esc(v.date) + ' <span class="adx-src-tag">[' + v.source + ']</span></div><div class="tl-note">' + esc(v.note) + '</div></li>'; }).join("") +
+            '</ul>' +
+
+            '<div class="section-header"><h3>Care Team &amp; Coverage</h3></div>' +
+            '<div class="deep-grid">' +
+                '<div class="deep-card"><h4>Assigned IPM (Coordinator)</h4><p><a class="adx-link" href="provider-detail.html?id=' + ipm.id + '&view=' + view + '">' + esc(ipm.name) + '</a> — ' + esc(ipm.specialty) + '</p></div>' +
+                '<div class="deep-card"><h4>Team Providers</h4><p>' + (c.teamProviderIds.map(function(id){ var p=adxProvider(id); return '<a class="adx-link" href="provider-detail.html?id=' + id + '&view=' + view + '">' + esc(p.name) + '</a>'; }).join("<br>") || "—") + '</p></div>' +
+                payerCard +
+                '<div class="deep-card"><h4>Referral Source / Client <span style="font-weight:600;">[Salesforce]</span></h4><p><a class="adx-link" href="referral-detail.html?id=' + client.id + '&view=' + view + '">' + esc(client.name) + '</a> — ' + esc(client.type) + '</p></div>' +
+                lienRow +
+            '</div>';
+
+        document.getElementById("detailBody").innerHTML = html;
+    })();
+    </script>
+</body>
+</html>

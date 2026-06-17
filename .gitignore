@@ -1,0 +1,19 @@
+# Tooling
+.claude/
+
+# Legacy Derived Results prototype files (kept locally for reference,
+# excluded from the focused ADX "dr" prototype repo)
+analytics.html
+sales-engine.html
+selector.html
+naming.html
+wizard.js
+router.js
+view-config.js
+templates.js
+mock-data.js
+mock-data-admin.js
+mock-data-researcher.js
+mock-data-sales.js
+mock-data-tpa.js
+branding.js

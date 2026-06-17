@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX | Network Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a href="#adxMain" class="skip-link">Skip to main content</a>
+    <header>
+        <div class="header-brand">
+            <a class="logo-area" href="./index.html">ADX</a>
+            <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
+        </div>
+        <nav id="topNav" aria-label="Tier navigation"></nav>
+        <div class="reconciliation-badge">&#x2713; Verified against Derived Results &amp; Salesforce</div>
+    </header>
+
+    <div class="wrapper">
+        <aside class="sidebar" aria-label="View-as provider navigation">
+            <div class="adx-current-view">
+                <span class="adx-current-label">Current view</span>
+                <span class="adx-current-title" id="adxRoleTitle"></span>
+                <span class="adx-current-who" id="adxRoleWho"></span>
+            </div>
+            <nav class="list-container" id="adxNav"></nav>
+        </aside>
+
+        <main tabindex="-1">
+            <div id="adxAlertBar" class="adx-alert-bar hidden" role="region" aria-label="Urgent alerts"></div>
+            <div id="adxMain" class="adx-content"><!-- rendered by adx-app.js --></div>
+        </main>
+    </div>
+
+    <div id="adxToast" class="adx-toast" role="status" aria-live="polite"></div>
+
+    <script src="./adx-data.js"></script>
+    <script src="./adx-config.js"></script>
+    <script src="./adx-app.js"></script>
+</body>
+</html>
