@@ -161,8 +161,8 @@ var ADXApp = (function () {
             case "actions":
                 var acts = '<button class="adx-actlink" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message doc about ' + esc(c.beneficiary) + '">Message Doc</button>';
                 acts += (c.scheduling === "No-show"
-                    ? '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
-                    : '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
+                    ? '<button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
+                    : '<button class="adx-actlink" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
                 return '<span class="adx-row-actions">' + acts + '</span>';
             default: return "";
         }
@@ -218,8 +218,7 @@ var ADXApp = (function () {
         nav.innerHTML = role.tiers.map(function (t) {
             var meta = ADX_TIERS[t];
             return '<a href="' + urlFor(pid, t) + '" id="tier-' + t + '" class="' + (t === tier ? "active" : "") + '"' +
-                   (t === tier ? ' aria-current="page"' : '') + '>' + meta.label +
-                   '<span class="tier-sub">' + meta.sub + '</span></a>';
+                   (t === tier ? ' aria-current="page"' : '') + '>' + meta.sub + '</a>';
         }).join("");
     }
 
@@ -230,6 +229,18 @@ var ADXApp = (function () {
         var role = getRole();
         var cols = visibleColumns();
         var cases = sortCases(statusFiltered(visibleCases()));
+
+        // When viewing the full list (All statuses), group by status in the order
+        // Inactive complete → Inactive incomplete → Maintenance → Active
+        // (flag/aging order preserved within each group via stable sort).
+        if (state.statusFilter === "__all__") {
+            var statusOrder = { "Inactive complete": 0, "Inactive incomplete": 1, "Maintenance": 2, "Active": 3 };
+            cases = cases.slice().sort(function (a, b) {
+                var pa = statusOrder.hasOwnProperty(a.status) ? statusOrder[a.status] : 9;
+                var pb = statusOrder.hasOwnProperty(b.status) ? statusOrder[b.status] : 9;
+                return pa - pb;
+            });
+        }
 
         var statusSel = '<label class="adx-status-select"><span class="adx-status-label">Status</span>' +
             '<select onchange="ADXApp.setStatus(this.value)">' +
@@ -251,7 +262,7 @@ var ADXApp = (function () {
         var header = '<div class="adx-daily-head">' +
             '<h2 class="adx-h2">Active Cases</h2>' +
             statusSel + '</div>' +
-            '<p class="adx-sub">' + esc(role.subtitle) + '</p>';
+            (role.subtitle ? '<p class="adx-sub">' + esc(role.subtitle) + '</p>' : '');
 
         var table = buildTable(cols, cases);
 
