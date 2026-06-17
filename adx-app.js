@@ -76,7 +76,6 @@ var ADXApp = (function () {
             case "vsNetworkDays": return c.vsNetworkDays;
             case "vsNetworkCost": return c.vsNetworkCost;
             case "pif":         return c.pifCurrent - c.pifStart;
-            case "lienOnFile":  return c.lienOnFile ? 1 : 0;
             default: return 0;
         }
     }
@@ -157,17 +156,13 @@ var ADXApp = (function () {
                 return '<span class="adx-pif">' + c.pifStart + '<span aria-hidden="true">→</span>' + c.pifCurrent +
                        ' <span class="adx-pif-' + dir + '">' + (gain > 0 ? "▲" : gain < 0 ? "▼" : "▬") + ' ' + (gain > 0 ? "+" : "") + gain + '</span></span>' +
                        '<span class="sr-only"> PIF improved from ' + c.pifStart + ' to ' + c.pifCurrent + '</span>';
-            case "lien":
-                return c.lienOnFile
-                    ? '<span class="adx-lien adx-lien-ok"><span aria-hidden="true">✓</span> On file</span>'
-                    : '<span class="adx-lien adx-lien-missing"><span aria-hidden="true">⚠</span> Missing</span>';
             case "flags":
                 return flagChips(c);
             case "actions":
                 var acts = '<button class="adx-actlink" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message doc about ' + esc(c.beneficiary) + '">Message Doc</button>';
                 acts += (c.scheduling === "No-show"
                     ? '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
-                    : '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink" onclick="ADXApp.action(\'message-brad\',\'' + c.id + '\')" aria-label="Message Brad about ' + esc(c.beneficiary) + '">Message Brad</button>');
+                    : '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
                 return '<span class="adx-row-actions">' + acts + '</span>';
             default: return "";
         }
@@ -316,19 +311,19 @@ var ADXApp = (function () {
         html += '<table class="adx-table"><thead><tr>' +
             '<th scope="col">Client (Referral Source)</th><th scope="col">Type</th>' +
             '<th scope="col">Volume</th><th scope="col">Active</th>' +
-            '<th scope="col">Revenue YTD</th><th scope="col">Lien Co. / Payer</th><th scope="col">Partner Cash Value</th></tr></thead><tbody>' +
+            '<th scope="col">Revenue YTD</th><th scope="col">Payer</th><th scope="col">Partner Cash Value</th></tr></thead><tbody>' +
             ADX_CLIENTS.map(function (cl) {
                 return '<tr><td data-label="Client"><a class="adx-link" href="' + referralDetailUrl(cl.id) + '">' + esc(cl.name) + '</a></td>' +
                     '<td data-label="Type">' + esc(cl.type) + '</td>' +
                     '<td data-label="Volume">' + cl.volume + '</td>' +
                     '<td data-label="Active">' + cl.activeVolume + '</td>' +
                     '<td data-label="Revenue YTD"><span class="adx-money">' + money(cl.revenueYTD) + '</span></td>' +
-                    '<td data-label="Lien / Payer">' + esc(cl.payer) + '</td>' +
+                    '<td data-label="Payer">' + esc(cl.payer) + '</td>' +
                     '<td data-label="Cash Value">' + money(cl.cashValue) + '</td></tr>';
             }).join("") + '</tbody></table>';
 
-        /* Provider productivity composite (RAS) */
-        html += sectionHead("Provider Productivity — Composite Score", "DR");
+        /* Doctor productivity composite (RAS) */
+        html += sectionHead("Doctor Productivity — Composite Score", "DR");
         html += '<p class="adx-sub" style="margin-top:-0.5rem;">Composite (RAS-style) score: PIF improvement (weighted heaviest), return-to-work, cost, and time. Computed at MBT; formula is isolated &amp; swappable.</p>';
         html += providerScoreTable(["ipm", "network"]);
 
@@ -366,20 +361,20 @@ var ADXApp = (function () {
         var rows = ADX_PROVIDERS.filter(function (p) { return roles.indexOf(p.role) >= 0 && p.composite != null; })
             .sort(function (a, b) { return b.composite - a.composite; });
         return '<table class="adx-table"><thead><tr>' +
-            '<th scope="col">Provider</th><th scope="col">Role</th>' +
+            '<th scope="col">Doctor</th><th scope="col">Role</th>' +
             '<th scope="col">Composite</th><th scope="col">PIF Median Gain</th>' +
             '<th scope="col">Return to Work</th><th scope="col">Avg Cost / Case</th>' +
             '<th scope="col">Avg Days in ADX</th><th scope="col">Bonus</th></tr></thead><tbody>' +
             rows.map(function (p, i) {
                 var tag = i === 0 ? ' <span class="adx-pill adx-pill-good">TOP</span>' : (i === rows.length - 1 ? ' <span class="adx-pill adx-pill-warn">BOTTOM</span>' : '');
-                return '<tr><td data-label="Provider"><a class="adx-link" href="' + providerDetailUrl(p.id) + '">' + esc(p.name) + '</a>' + tag + '</td>' +
+                return '<tr><td data-label="Doctor"><a class="adx-link" href="' + providerDetailUrl(p.id) + '">' + esc(p.name) + '</a>' + tag + '</td>' +
                     '<td data-label="Role">' + roleLabel(p.role) + '</td>' +
                     '<td data-label="Composite"><strong>' + p.composite + '</strong></td>' +
                     '<td data-label="PIF Gain">+' + p.pifMedianGain.toFixed(1) + '</td>' +
                     '<td data-label="RTW">' + Math.round(p.returnToWork * 100) + '%</td>' +
                     '<td data-label="Cost">' + money(p.avgCostPerCase) + '</td>' +
                     '<td data-label="Days">' + p.avgDaysInADX + '</td>' +
-                    '<td data-label="Bonus">' + (p.bonusEligible ? '<span class="adx-lien-ok">✓ Eligible</span>' : '<span class="adx-muted">—</span>') + '</td></tr>';
+                    '<td data-label="Bonus">' + (p.bonusEligible ? '<span class="adx-ok-text">✓ Eligible</span>' : '<span class="adx-muted">—</span>') + '</td></tr>';
             }).join("") + '</tbody></table>';
     }
 
@@ -408,7 +403,7 @@ var ADXApp = (function () {
 
         /* Payment aging — admin only */
         html += sectionHead("Payment Aging — Are Our Payers Paying On Time?", "Salesforce");
-        html += '<table class="adx-table"><thead><tr><th scope="col">Payer (Lien Company)</th><th scope="col">Outstanding</th><th scope="col">Avg Days to Pay</th><th scope="col">Status</th></tr></thead><tbody>' +
+        html += '<table class="adx-table"><thead><tr><th scope="col">Payer</th><th scope="col">Outstanding</th><th scope="col">Avg Days to Pay</th><th scope="col">Status</th></tr></thead><tbody>' +
             ADX_MONTHLY.paymentAging.map(function (a) {
                 var slow = a.avgDays > 60;
                 return '<tr class="' + (slow ? "adx-row-urgent" : "") + '"><td data-label="Payer">' + esc(a.payer) + '</td>' +
@@ -474,7 +469,7 @@ var ADXApp = (function () {
         var c = adxCase(caseId);
         var msg = {
             "message": "Message sent to " + adxProvider(c.ipmId).name + " re: " + c.beneficiary + ".",
-            "message-brad": "Message sent to Dr. Brad re: " + c.beneficiary + " — “Get this moving.”",
+            "move": "“Get this moving” — flagged to the care team for " + c.beneficiary + ".",
             "notify-adx": "ADX notified of no-show for " + c.beneficiary + "."
         }[type] || "Action recorded.";
         toast(msg);

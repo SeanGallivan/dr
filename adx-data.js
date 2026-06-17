@@ -5,20 +5,20 @@
    data calls at real endpoints. Field groups tagged to their real
    source per BRD section 9:
      [DR]         Derived Results  — clinical & billing
-     [Salesforce] referral, client, lien co., payer, revenue, aging
+     [Salesforce] referral, client, payer, revenue, aging
      [FHIR]       Practice EMR (Harris CareTracker) — calendar, no-shows
    Provider roster uses the real ADX physician network
    (adxcorp.net/physician-network).
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
-   PAYERS — lien funding companies that pay ADX.  [Salesforce]
+   PAYERS — funding companies that pay ADX.  [Salesforce]
 --------------------------------------------------------------------- */
 var ADX_PAYERS = [
     { id: "PAY1", name: "Pathway Funding",          paysOnTime: true,  avgDaysToPay: 34, reminderRequired: false },
     { id: "PAY2", name: "Meridian Legal Capital",   paysOnTime: true,  avgDaysToPay: 41, reminderRequired: false },
     { id: "PAY3", name: "Summit Case Funding",      paysOnTime: false, avgDaysToPay: 78, reminderRequired: true  },
-    { id: "PAY4", name: "Apex Lien Partners",       paysOnTime: false, avgDaysToPay: 96, reminderRequired: true  }
+    { id: "PAY4", name: "Apex Funding Partners",       paysOnTime: false, avgDaysToPay: 96, reminderRequired: true  }
 ];
 
 /* ---------------------------------------------------------------------
@@ -87,12 +87,12 @@ var ADX_NETWORK_NORMS = {
    REFERRAL SOURCES / CLIENTS  [Salesforce]
 --------------------------------------------------------------------- */
 var ADX_CLIENTS = [
-    { id: "CL1", name: "Harmon & Reyes Injury Law", type: "Attorney",     volume: 38, activeVolume: 14, revenueYTD: 1284000, lienCompany: "Pathway Funding",        payer: "Pathway Funding",        cashValue: 412000 },
-    { id: "CL2", name: "Delgado Trial Group",        type: "Attorney",     volume: 27, activeVolume: 9,  revenueYTD: 918000,  lienCompany: "Meridian Legal Capital", payer: "Meridian Legal Capital", cashValue: 286000 },
-    { id: "CL3", name: "Whitaker & Stone, LLP",      type: "Attorney",     volume: 22, activeVolume: 7,  revenueYTD: 742000,  lienCompany: "Summit Case Funding",    payer: "Summit Case Funding",    cashValue: 198000 },
-    { id: "CL4", name: "Crossroads Spine & Sport",   type: "Chiropractor", volume: 19, activeVolume: 6,  revenueYTD: 421000,  lienCompany: "Pathway Funding",        payer: "Pathway Funding",        cashValue: 134000 },
-    { id: "CL5", name: "Brennan Auto Injury Clinic", type: "Referring MD", volume: 15, activeVolume: 5,  revenueYTD: 356000,  lienCompany: "Apex Lien Partners",     payer: "Apex Lien Partners",     cashValue: 96000  },
-    { id: "CL6", name: "Quincy Vargas Law Office",   type: "Attorney",     volume: 11, activeVolume: 3,  revenueYTD: 244000,  lienCompany: "Meridian Legal Capital", payer: "Meridian Legal Capital", cashValue: 71000  }
+    { id: "CL1", name: "Harmon & Reyes Injury Law", type: "Attorney",     volume: 38, activeVolume: 14, revenueYTD: 1284000, payer: "Pathway Funding",        cashValue: 412000 },
+    { id: "CL2", name: "Delgado Trial Group",        type: "Attorney",     volume: 27, activeVolume: 9,  revenueYTD: 918000,  payer: "Meridian Legal Capital", cashValue: 286000 },
+    { id: "CL3", name: "Whitaker & Stone, LLP",      type: "Attorney",     volume: 22, activeVolume: 7,  revenueYTD: 742000,  payer: "Summit Case Funding",    cashValue: 198000 },
+    { id: "CL4", name: "Crossroads Spine & Sport",   type: "Chiropractor", volume: 19, activeVolume: 6,  revenueYTD: 421000,  payer: "Pathway Funding",        cashValue: 134000 },
+    { id: "CL5", name: "Brennan Auto Injury Clinic", type: "Referring MD", volume: 15, activeVolume: 5,  revenueYTD: 356000,  payer: "Apex Funding Partners",     cashValue: 96000  },
+    { id: "CL6", name: "Quincy Vargas Law Office",   type: "Attorney",     volume: 11, activeVolume: 3,  revenueYTD: 244000,  payer: "Meridian Legal Capital", cashValue: 71000  }
 ];
 
 /* ---------------------------------------------------------------------
@@ -107,7 +107,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI", "NET_DUHON"],
         payerId: "PAY1", clientId: "CL1",
-        runningTotal: 22850, agingDays: 52, lienOnFile: true,
+        runningTotal: 22850, agingDays: 52,
         scheduling: "Scheduled", lastVisit: "2026-06-09", nextVisit: "2026-06-23",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 3, vsNetworkCost: 3350,
@@ -134,7 +134,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_HATZ"],
         payerId: "PAY2", clientId: "CL2",
-        runningTotal: 18920, agingDays: 38, lienOnFile: true,
+        runningTotal: 18920, agingDays: 38,
         scheduling: "Scheduled", lastVisit: "2026-06-11", nextVisit: "2026-06-19",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -8, vsNetworkCost: -580,
@@ -160,7 +160,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY3", clientId: "CL3",
-        runningTotal: 34110, agingDays: 91, lienOnFile: true,
+        runningTotal: 34110, agingDays: 91,
         scheduling: "No-show", lastVisit: "2026-05-12", nextVisit: "2026-06-02",
         nextVisitFlag: true, unscheduledAgeDays: 15,
         vsNetworkDays: 28, vsNetworkCost: 11600,
@@ -187,7 +187,7 @@ var ADX_CASES = [
         status: "Active", newIntake: true,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_BAZAZ"],
         payerId: "PAY1", clientId: "CL4",
-        runningTotal: 2400, agingDays: 4, lienOnFile: true,
+        runningTotal: 2400, agingDays: 4,
         scheduling: "Unscheduled", lastVisit: "2026-06-13", nextVisit: null,
         nextVisitFlag: false, unscheduledAgeDays: 4,
         vsNetworkDays: -42, vsNetworkCost: -16800,
@@ -207,7 +207,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI", "NET_DUHON"],
         payerId: "PAY4", clientId: "CL5",
-        runningTotal: 41280, agingDays: 118, lienOnFile: true,
+        runningTotal: 41280, agingDays: 118,
         scheduling: "Seen", lastVisit: "2026-06-14", nextVisit: "2026-07-05",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 41, vsNetworkCost: 18900,
@@ -234,7 +234,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY2", clientId: "CL1",
-        runningTotal: 8650, agingDays: 22, lienOnFile: true,
+        runningTotal: 8650, agingDays: 22,
         scheduling: "Scheduled", lastVisit: "2026-06-12", nextVisit: "2026-06-26",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -19, vsNetworkCost: -7200,
@@ -258,7 +258,7 @@ var ADX_CASES = [
         status: "Maintenance", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_WHITE"],
         payerId: "PAY1", clientId: "CL2",
-        runningTotal: 27600, agingDays: 0, lienOnFile: true,
+        runningTotal: 27600, agingDays: 0,
         scheduling: "Seen", lastVisit: "2026-05-28", nextVisit: "2026-08-28",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 12, vsNetworkCost: 4100,
@@ -283,7 +283,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_YI"],
         payerId: "PAY3", clientId: "CL3",
-        runningTotal: 6120, agingDays: 29, lienOnFile: true,
+        runningTotal: 6120, agingDays: 29,
         scheduling: "Scheduled", lastVisit: "2026-06-10", nextVisit: "2026-06-24",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -14, vsNetworkCost: -5800,
@@ -305,7 +305,7 @@ var ADX_CASES = [
         status: "Inactive complete", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY1", clientId: "CL1",
-        runningTotal: 14200, agingDays: 0, lienOnFile: true,
+        runningTotal: 14200, agingDays: 0,
         scheduling: "Seen", lastVisit: "2026-05-30", nextVisit: null,
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -11, vsNetworkCost: -5300,
@@ -329,7 +329,7 @@ var ADX_CASES = [
         status: "Inactive incomplete", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY4", clientId: "CL5",
-        runningTotal: 9800, agingDays: 0, lienOnFile: true,
+        runningTotal: 9800, agingDays: 0,
         scheduling: "Unscheduled", lastVisit: "2026-04-26", nextVisit: null,
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 0, vsNetworkCost: 0,
@@ -351,7 +351,7 @@ var ADX_CASES = [
         status: "Active", newIntake: true,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY2", clientId: "CL6",
-        runningTotal: 1800, agingDays: 2, lienOnFile: true,
+        runningTotal: 1800, agingDays: 2,
         scheduling: "Scheduled", lastVisit: "2026-06-15", nextVisit: "2026-06-22",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -47, vsNetworkCost: -17700,
@@ -371,7 +371,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI", "NET_DUHON"],
         payerId: "PAY3", clientId: "CL3",
-        runningTotal: 19340, agingDays: 64, lienOnFile: true,
+        runningTotal: 19340, agingDays: 64,
         scheduling: "Scheduled", lastVisit: "2026-06-08", nextVisit: "2026-06-29",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 9, vsNetworkCost: 1200,
@@ -396,7 +396,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_BAZAZ", "NET_GHAZI"],
         payerId: "PAY1", clientId: "CL1",
-        runningTotal: 36750, agingDays: 73, lienOnFile: true,
+        runningTotal: 36750, agingDays: 73,
         scheduling: "Seen", lastVisit: "2026-06-13", nextVisit: "2026-06-27",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 5, vsNetworkCost: 2600,
@@ -421,7 +421,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY2", clientId: "CL2",
-        runningTotal: 11420, agingDays: 47, lienOnFile: true,
+        runningTotal: 11420, agingDays: 47,
         scheduling: "No-show", lastVisit: "2026-05-19", nextVisit: "2026-06-09",
         nextVisitFlag: true, unscheduledAgeDays: 8,
         vsNetworkDays: 2, vsNetworkCost: -400,
@@ -445,7 +445,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_HATZ"],
         payerId: "PAY1", clientId: "CL4",
-        runningTotal: 7240, agingDays: 19, lienOnFile: true,
+        runningTotal: 7240, agingDays: 19,
         scheduling: "Scheduled", lastVisit: "2026-06-11", nextVisit: "2026-06-25",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -22, vsNetworkCost: -8900,
@@ -467,7 +467,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
         payerId: "PAY3", clientId: "CL3",
-        runningTotal: 16880, agingDays: 81, lienOnFile: true,
+        runningTotal: 16880, agingDays: 81,
         scheduling: "Unscheduled", lastVisit: "2026-05-05", nextVisit: null,
         nextVisitFlag: true, unscheduledAgeDays: 43,
         vsNetworkDays: 17, vsNetworkCost: 3400,
@@ -490,7 +490,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_VILIMS", teamProviderIds: ["NET_HATZ"],
         payerId: "PAY1", clientId: "CL1",
-        runningTotal: 4100, agingDays: 16, lienOnFile: true,
+        runningTotal: 4100, agingDays: 16,
         scheduling: "Scheduled", lastVisit: "2026-06-09", nextVisit: "2026-06-23",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: -25, vsNetworkCost: -9100,
@@ -511,7 +511,7 @@ var ADX_CASES = [
         status: "Active", newIntake: false,
         ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_DUHON", "NET_GHAZI"],
         payerId: "PAY4", clientId: "CL5",
-        runningTotal: 29870, agingDays: 102, lienOnFile: true,
+        runningTotal: 29870, agingDays: 102,
         scheduling: "Seen", lastVisit: "2026-06-12", nextVisit: "2026-06-30",
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 33, vsNetworkCost: 9100,
@@ -557,13 +557,13 @@ var ADX_MONTHLY = {
         { payer: "Pathway Funding",        outstanding: 184000, avgDays: 34, status: "Current",  source: "Salesforce" },
         { payer: "Meridian Legal Capital", outstanding: 142000, avgDays: 41, status: "Current",  source: "Salesforce" },
         { payer: "Summit Case Funding",    outstanding: 96000,  avgDays: 78, status: "Slow — reminders required", source: "Salesforce" },
-        { payer: "Apex Lien Partners",     outstanding: 71000,  avgDays: 96, status: "Slow — escalate", source: "Salesforce" }
+        { payer: "Apex Funding Partners",     outstanding: 71000,  avgDays: 96, status: "Slow — escalate", source: "Salesforce" }
     ],
     portfolio: {
         faceValue: 4960000,
         realizationRate: 0.94,
         weightedValue: 4662400,
-        note: "ADX is guaranteed payment by the lien company regardless of case outcome — settlement probability is Pathway's concern, not ADX's. Shown for completeness."
+        note: "ADX is guaranteed payment by the funding company regardless of case outcome — settlement probability is the funder's concern, not ADX's. Shown for completeness."
     },
     caseMix: [
         { type: "Lumbar spine",  cases: 6, avgMargin: 0.31 },

@@ -444,9 +444,8 @@ a:focus-visible, button:focus-visible, select:focus-visible, .adx-nav-item:focus
 .adx-pif-down { color: var(--secondary-red); font-weight: 800; }
 .adx-pif-flat { color: #888; font-weight: 800; }
 
-.adx-lien { font-weight: 800; font-size: 0.78rem; white-space: nowrap; }
-.adx-lien-ok { color: #0a7d28; }
-.adx-lien-missing { color: var(--secondary-red); }
+.adx-ok-text { color: #0a7d28; font-weight: 800; }
+.adx-no-text { color: var(--secondary-red); font-weight: 800; }
 
 /* --- Flag chips (icon + text, never color alone). Three severity tiers. --- */
 .adx-flags-cell { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -500,7 +499,24 @@ a:focus-visible, button:focus-visible, select:focus-visible, .adx-nav-item:focus
 
 /* --- Detail pages --- */
 .adx-detail-body { padding: 2rem 2.5rem 3rem; max-width: 1100px; }
+/* Breathing room between detail sections (e.g. plan → running total, visit history → care team) */
+.adx-detail-body .section-header { margin-top: 2.4rem; }
 .adx-back { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: var(--primary-navy); text-decoration: none; font-size: 0.8rem; margin-bottom: 1.2rem; }
+
+/* Multiple diagnoses / episodes for one patient */
+.adx-episodes {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+    background: #eef2f8; border: 1px solid #d8e0ee; border-left: 4px solid var(--primary-navy);
+    border-radius: 8px; padding: 0.9rem 1.2rem; margin-bottom: 1.5rem;
+}
+.adx-episodes-label { font-size: 0.74rem; font-weight: 800; color: var(--primary-navy); margin-right: 0.3rem; }
+.adx-episode {
+    font-size: 0.76rem; font-weight: 700; text-decoration: none; color: var(--primary-navy);
+    background: #fff; border: 1px solid #cdd7e8; border-radius: 5px; padding: 4px 10px;
+}
+a.adx-episode:hover { background: var(--primary-navy); color: #fff; }
+.adx-episode.current { background: var(--primary-navy); color: #fff; border-color: var(--primary-navy); }
+.adx-episode-now { font-weight: 600; opacity: 0.8; }
 .adx-back:hover { text-decoration: underline; }
 .adx-cost-table td:last-child { text-align: right; font-weight: 800; color: var(--primary-navy); white-space: nowrap; }
 .adx-cost-total td { border-top: 2px solid var(--primary-navy); font-size: 0.95rem; }

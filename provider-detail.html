@@ -27,14 +27,13 @@
         var p = adxProvider(params.get("id")) || ADX_PROVIDERS[1];
         function money(n){ return "$" + Number(n).toLocaleString(); }
         function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-        function roleLabel(r){ return {admin:"Administrator",ipm:"IPM Physician",network:"Network Physician",specialty:"Specialist"}[r]||r; }
+        function roleLabel(r){ return {admin:"Administrator",ipm:"IPM Physician",network:"Network Physician"}[r]||r; }
 
-        document.title = "ADX | " + p.name + " — Provider Detail";
+        document.title = "ADX | " + p.name + " — Doctor Detail";
         document.getElementById("detailHeader").innerHTML =
             '<div><h2 style="margin:0;">' + esc(p.name) + '</h2>' +
-            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + roleLabel(p.role) + ' · ' + esc(p.specialty) + '</div></div>' +
-            '<div class="header-actions"><button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(p.name) + '.\')">Message</button>' +
-            '<button class="btn btn-action" onclick="alert(\'Opens full provider record in Derived Results.\')">Open in DR</button></div>';
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + roleLabel(p.role) + ' · ' + esc(p.specialty) + (p.org ? ' · ' + esc(p.org) : '') + '</div></div>' +
+            '<div class="header-actions"><button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(p.name) + '.\')">Message Doctor</button></div>';
 
         var n = ADX_NETWORK_NORMS;
         var theirCases = ADX_CASES.filter(function(c){ return c.ipmId === p.id || (c.teamProviderIds||[]).indexOf(p.id) >= 0; });
@@ -54,7 +53,7 @@
                 '</div>' +
 
                 '<div class="section-header"><h3>Score Components vs Network Norm</h3></div>' +
-                '<table class="table-custom"><thead><tr><th>Component</th><th>This Provider</th><th>Network Norm</th><th>Read</th></tr></thead><tbody>' +
+                '<table class="table-custom"><thead><tr><th>Component</th><th>This Doctor</th><th>Network Norm</th><th>Read</th></tr></thead><tbody>' +
                     compRow("PIF Median Gain (weighted heaviest)", "+" + p.pifMedianGain.toFixed(1), "+" + (n.composite ? "3.4" : ""), p.pifMedianGain >= 3.4) +
                     compRow("Return to Work", Math.round(p.returnToWork*100)+"%", Math.round(n.returnToWork*100)+"%", p.returnToWork >= n.returnToWork) +
                     compRow("Avg Cost / Case", money(p.avgCostPerCase), money(n.avgCostPerCase), p.avgCostPerCase <= n.avgCostPerCase) +

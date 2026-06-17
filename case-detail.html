@@ -34,13 +34,26 @@
         function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
         document.title = "ADX | " + c.beneficiary + " — Case Detail";
+
+        // A patient can have multiple diagnoses / episodes (same person, different case).
+        var allEpisodes = ADX_CASES.filter(function(x){ return x.beneficiary === c.beneficiary && x.dob === c.dob; })
+            .sort(function(a,b){ return a.id < b.id ? -1 : 1; });
+        var dxIndex = allEpisodes.findIndex(function(x){ return x.id === c.id; }) + 1;
+        var multiTag = allEpisodes.length > 1 ? ' · Diagnosis ' + dxIndex + ' of ' + allEpisodes.length : '';
+
         document.getElementById("detailHeader").innerHTML =
             '<div><h2 style="margin:0;">' + esc(c.beneficiary) + (c.newIntake ? ' <span class="adx-pill adx-pill-new" style="vertical-align:middle;">NEW INTAKE</span>' : '') + '</h2>' +
-            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + '</div></div>' +
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + multiTag + '</div></div>' +
             '<div class="header-actions">' +
-            '<button class="btn btn-action" onclick="alert(\'Opens full case record in Derived Results.\')">Open in DR</button>' +
-            '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Provider</button>' +
-            '<button class="btn btn-action" onclick="alert(\'Message sent to Dr. Brad.\')">Message Brad</button></div>';
+            '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
+
+        var episodesBox = allEpisodes.length > 1
+            ? '<div class="adx-episodes"><span class="adx-episodes-label">This patient has ' + allEpisodes.length + ' diagnoses / episodes:</span>' +
+              allEpisodes.map(function(x){ return x.id === c.id
+                  ? '<span class="adx-episode current" aria-current="true">' + esc(x.diagnosis) + ' <span class="adx-episode-now">(viewing)</span></span>'
+                  : '<a class="adx-episode" href="case-detail.html?id=' + x.id + '&view=' + view + '">' + esc(x.diagnosis) + '</a>'; }).join('') +
+              '</div>'
+            : '';
 
         var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
         var gain = c.pifCurrent - c.pifStart;
@@ -58,6 +71,7 @@
                 '<span class="ctx-badge muted">IPM: ' + esc(ipm.name) + '</span>' +
                 '<span class="ctx-badge muted">Client: ' + esc(client.name) + '</span>' +
             '</div>' +
+            episodesBox +
 
             '<div class="section-header"><h3>' + esc(c.diagnosis) + '</h3></div>' +
             '<div class="daily-grid">' +
@@ -67,10 +81,10 @@
                 '<div class="daily-stat ' + (c.scheduling==="No-show"?"alert":"") + '"><span class="stat-label">Scheduling</span><span class="stat-value" style="font-size:1.5rem;">' + esc(c.scheduling) + '</span></div>' +
             '</div>' +
 
-            '<div class="section-header"><h3>Plan <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR — links to notes]</span></h3></div>' +
+            '<div class="section-header"><h3>Plan <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
             '<div class="inherited-data-box"><p style="margin:0; font-weight:600;">' + esc(c.planNote) + '</p>' +
             '<div class="visit-actions" style="border-top:none; padding-bottom:0;">' +
-                '<button class="btn-visit primary" onclick="alert(\'Opens plan notes in Derived Results.\')">Open Plan Notes</button>' +
+                '<button class="btn-visit primary" onclick="alert(\'Opens plan notes.\')">Open Plan Notes</button>' +
                 '<button class="btn-visit outline" onclick="alert(\'Flagged: get this moving.\')">Get This Moving</button>' +
                 (c.scheduling==="No-show" ? '<button class="btn-visit alert" onclick="alert(\'ADX notified of no-show.\')">Notify ADX of No-Show</button>' : '') +
             '</div></div>' +
@@ -86,18 +100,19 @@
                 '<div class="section-header"><h3>Performance vs Network</h3></div>' +
                 '<div class="deep-grid" style="grid-template-columns:1fr 1fr;">' +
                     '<div class="deep-card ' + (c.vsNetworkDays>0?"alert-card":"") + '"><h4>Days in ADX vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkDays>0?"adx-warn-text":"") + '">' + (c.vsNetworkDays>=0?"+":"−") + Math.abs(c.vsNetworkDays) + ' days</p><span style="font-size:0.78rem; color:#888;">Network norm: ' + ADX_NETWORK_NORMS.avgDaysInADX + ' days</span></div>' +
-                    '<div class="deep-card ' + (c.vsNetworkCost>0?"alert-card":"") + '"><h4>Cost vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkCost>0?"adx-warn-text":"") + '">' + (c.vsNetworkCost>=0?"+":"−") + money(Math.abs(c.vsNetworkCost)).slice(1).replace("$","") + '</p><span style="font-size:0.78rem; color:#888;">Like-for-like comparable cases</span></div>' +
+                    '<div class="deep-card ' + (c.vsNetworkCost>0?"alert-card":"") + '"><h4>Cost vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkCost>0?"adx-warn-text":"") + '">' + (c.vsNetworkCost>=0?"+$":"−$") + Math.abs(c.vsNetworkCost).toLocaleString() + '</p><span style="font-size:0.78rem; color:#888;">Like-for-like comparable cases</span></div>' +
                 '</div>' : '') +
 
             '<div class="section-header"><h3>Visit History <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR / FHIR]</span></h3></div>' +
             '<ul class="adx-timeline">' +
-                c.visits.slice().reverse().map(function(v){ return '<li><div class="tl-date">' + esc(v.date) + ' <span class="adx-src-tag">[' + v.source + ']</span></div><div class="tl-note">' + esc(v.note) + '</div></li>'; }).join("") +
+                c.visits.map(function(v, idx){ return { v: v, idx: idx }; }).reverse().map(function(o){ var v = o.v;
+                    return '<li><div class="tl-date"><a class="adx-link" href="visit-detail.html?case=' + c.id + '&i=' + o.idx + '&view=' + view + '">' + esc(v.date) + '</a> <span class="adx-src-tag">[' + v.source + ']</span></div><div class="tl-note">' + esc(v.note) + '</div></li>'; }).join("") +
             '</ul>' +
 
             '<div class="section-header"><h3>Care Team &amp; Coverage</h3></div>' +
             '<div class="deep-grid">' +
                 '<div class="deep-card"><h4>Assigned IPM (Coordinator)</h4><p><a class="adx-link" href="provider-detail.html?id=' + ipm.id + '&view=' + view + '">' + esc(ipm.name) + '</a> — ' + esc(ipm.specialty) + '</p></div>' +
-                '<div class="deep-card"><h4>Team Providers</h4><p>' + (c.teamProviderIds.map(function(id){ var p=adxProvider(id); return '<a class="adx-link" href="provider-detail.html?id=' + id + '&view=' + view + '">' + esc(p.name) + '</a>'; }).join("<br>") || "—") + '</p></div>' +
+                '<div class="deep-card"><h4>Treating Doctors</h4><p>' + (c.teamProviderIds.map(function(id){ var p=adxProvider(id); return '<a class="adx-link" href="provider-detail.html?id=' + id + '&view=' + view + '">' + esc(p.name) + '</a>'; }).join("<br>") || "—") + '</p></div>' +
                 payerCard +
                 '<div class="deep-card"><h4>Referral Source / Client <span style="font-weight:600;">[Salesforce]</span></h4><p><a class="adx-link" href="referral-detail.html?id=' + client.id + '&view=' + view + '">' + esc(client.name) + '</a> — ' + esc(client.type) + '</p></div>' +
             '</div>';

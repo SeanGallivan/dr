@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADX | Visit Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="overflow:auto;">
+    <a href="#detailBody" class="skip-link">Skip to main content</a>
+    <header>
+        <div class="header-brand">
+            <a class="logo-area" href="./index.html">ADX</a>
+            <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
+        </div>
+    </header>
+    <div id="detailHeader" class="detail-header"></div>
+    <main id="detailBody" class="adx-detail-body" tabindex="-1"></main>
+
+    <script src="./adx-data.js"></script>
+    <script src="./adx-config.js"></script>
+    <script>
+    (function () {
+        var params = new URLSearchParams(location.search);
+        var view = params.get("view") || "DR_BRAD";
+        var c = adxCase(params.get("case")) || ADX_CASES[0];
+        var idx = parseInt(params.get("i"), 10); if (isNaN(idx)) idx = 0;
+        var visit = c.visits[idx] || c.visits[0];
+        var ipm = adxProvider(c.ipmId);
+        function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+        function money(n){ return "$" + Number(n).toLocaleString(); }
+        function fmt(d){ if(!d) return "—"; var p=d.split("-"); var mo=["January","February","March","April","May","June","July","August","September","October","November","December"]; return mo[parseInt(p[1],10)-1]+" "+parseInt(p[2],10)+", "+p[0]; }
+
+        // PIF recorded at this visit (parsed from the note when present).
+        var pifMatch = (visit.note || "").match(/PIF (\d+)/);
+        var pifAtVisit = pifMatch ? pifMatch[1] : "—";
+        var visitNum = idx + 1;
+
+        // Deterministic, realistic-looking vitals derived from the case (stable, no RNG).
+        var seed = c.id.charCodeAt(4) + idx;
+        var sys = 118 + (seed % 22), dia = 72 + (seed % 14), hr = 64 + (seed % 18), pain = Math.max(1, 8 - (parseInt(pifAtVisit,10) || 4) + (idx % 2));
+
+        document.title = "ADX | Visit — " + c.beneficiary + " " + fmt(visit.date);
+        document.getElementById("detailHeader").innerHTML =
+            '<div><h2 style="margin:0;">Visit — ' + fmt(visit.date) + '</h2>' +
+            '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + esc(c.beneficiary) + ' · ' + esc(c.diagnosis) + ' · Visit ' + visitNum + ' of ' + c.visits.length + '</div></div>' +
+            '<div class="header-actions"><button class="btn btn-action" onclick="alert(\'Opens this visit note for editing.\')">Edit Visit</button>' +
+            '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
+
+        var html =
+            '<a class="adx-back" href="case-detail.html?id=' + c.id + '&view=' + view + '"><span aria-hidden="true">←</span> Back to case</a>' +
+            '<div class="visit-context">' +
+                '<span class="ctx-badge navy">' + esc(fmt(visit.date)) + '</span>' +
+                '<span class="ctx-badge muted">Attending: ' + esc(ipm.shortName || ipm.name) + '</span>' +
+                '<span class="ctx-badge muted">Source: [' + esc(visit.source) + ']</span>' +
+                '<span class="ctx-sep"></span>' +
+                '<span class="ctx-badge ' + (c.scheduling==="No-show" && idx===c.visits.length-1 ? "red" : "green") + '">' + (c.scheduling==="No-show" && idx===c.visits.length-1 ? "No-show" : "Seen") + '</span>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>Visit Summary <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="daily-grid">' +
+                '<div class="daily-stat"><span class="stat-label">Date</span><span class="stat-value" style="font-size:1.3rem;">' + esc(fmt(visit.date)) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Attending Doctor</span><span class="stat-value" style="font-size:1.3rem;">' + esc(ipm.shortName || ipm.name) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">PIF at This Visit</span><span class="stat-value" style="font-size:2rem;">' + pifAtVisit + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Pain Score</span><span class="stat-value" style="font-size:2rem;">' + pain + '/10</span></div>' +
+            '</div>' +
+
+            '<div class="section-header"><h3>Visit Note <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="inherited-data-box"><p style="margin:0; font-weight:600;">' + esc(visit.note) + '</p></div>' +
+
+            '<div class="section-header"><h3>Vitals &amp; Assessment <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR / FHIR]</span></h3></div>' +
+            '<div class="deep-grid">' +
+                '<div class="deep-card"><h4>Vitals</h4><p><b>BP:</b> ' + sys + '/' + dia + ' mmHg<br><b>Heart Rate:</b> ' + hr + ' bpm<br><b>Pain:</b> ' + pain + '/10</p></div>' +
+                '<div class="deep-card"><h4>Diagnosis</h4><p>' + esc(c.diagnosis) + '<br><span style="color:#888; font-size:0.85rem;">' + esc(c.diagnosisStatus) + '</span></p></div>' +
+                '<div class="deep-card"><h4>Running Total After Visit</h4><p class="adx-big" style="color:var(--primary-navy);">' + money(c.runningTotal) + '</p></div>' +
+                '<div class="deep-card"><h4>Care Team</h4><p>' + esc(ipm.shortName || ipm.name) + (c.teamProviderIds.length ? ', ' + c.teamProviderIds.map(function(id){ var p=adxProvider(id); return esc(p.shortName||p.name); }).join(", ") : "") + '</p></div>' +
+            '</div>' +
+
+            '<div class="visit-actions">' +
+                '<button class="btn-visit primary" onclick="alert(\'Visit closed.\')">Close Visit</button>' +
+                '<button class="btn-visit outline" onclick="alert(\'Follow-up scheduled.\')">Schedule Follow-up</button>' +
+                '<a class="btn-visit outline" href="case-detail.html?id=' + c.id + '&view=' + view + '" style="text-decoration:none;">Back to Case</a>' +
+            '</div>';
+
+        document.getElementById("detailBody").innerHTML = html;
+    })();
+    </script>
+</body>
+</html>

@@ -58,7 +58,7 @@ var ADX_COLUMNS = [
 var ADX_ROLES = {
     admin: {
         title: "Network Overview",
-        subtitle: "All beneficiaries, all providers, all payers — administrator & overseer view.",
+        subtitle: "All beneficiaries, all doctors, all payers — administrator & overseer view.",
         costEmphasis: true,
         multiPayer: true,
         tiers: ["daily", "weekly", "monthly"],
