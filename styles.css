@@ -361,12 +361,13 @@ a:focus-visible, button:focus-visible, select:focus-visible, .adx-nav-item:focus
 .adx-nav-item.active { background: #e9ecef; border-left-color: var(--primary-navy); }
 .adx-nav-name { display: block; font-weight: 800; font-size: 0.85rem; color: var(--primary-navy); }
 .adx-nav-spec { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
+.adx-nav-org { display: block; font-size: 0.64rem; font-weight: 600; color: #99a; margin-top: 1px; }
 
 /* --- Main content area --- */
 .adx-content { padding: 1.8rem 2.2rem 3rem; }
 .adx-h2 { font-size: 1.8rem; font-weight: 800; color: var(--primary-navy); margin: 0; }
 .adx-sub { color: var(--text-muted); font-weight: 600; margin: 0.3rem 0 1.2rem; font-size: 0.85rem; }
-.adx-daily-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+.adx-daily-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .adx-strip { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.2rem; margin-bottom: 1.6rem; }
 
 /* --- Status selector --- */
@@ -447,25 +448,28 @@ a:focus-visible, button:focus-visible, select:focus-visible, .adx-nav-item:focus
 .adx-lien-ok { color: #0a7d28; }
 .adx-lien-missing { color: var(--secondary-red); }
 
-/* --- Flag chips (icon + text, never color alone) --- */
+/* --- Flag chips (icon + text, never color alone). Three severity tiers. --- */
+.adx-flags-cell { display: flex; flex-wrap: wrap; gap: 3px; }
 .adx-flag {
     display: inline-flex; align-items: center; gap: 3px; font-size: 0.6rem; font-weight: 800;
-    padding: 2px 6px; border-radius: 4px; margin: 1px 0; text-transform: uppercase; letter-spacing: 0.02em;
+    padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.02em;
 }
-.adx-flag-warn { background: #fef3d6; color: #946200; }
-.adx-flag-urgent { background: #fce4e4; color: #b3001a; }
+.adx-flag-red    { background: #fce4e4; color: #b3001a; }
+.adx-flag-orange { background: #ffe6cc; color: #9a4f00; }
+.adx-flag-yellow { background: #fff3c0; color: #7a5800; }
 .adx-flag-text { white-space: nowrap; }
 
-/* --- Row quick actions --- */
-.adx-row-actions { display: flex; gap: 4px; }
-.adx-act {
-    background: #fff; border: 1.5px solid var(--primary-navy); color: var(--primary-navy);
-    font-family: 'Montserrat'; font-weight: 700; font-size: 0.66rem; padding: 4px 9px;
-    border-radius: 5px; cursor: pointer; white-space: nowrap;
+/* --- Row quick actions (links) --- */
+.adx-row-actions { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.adx-actlink {
+    background: none; border: none; padding: 0; font-family: 'Montserrat';
+    font-weight: 800; font-size: 0.72rem; color: var(--primary-navy);
+    cursor: pointer; text-decoration: underline;
 }
-.adx-act:hover { background: var(--primary-navy); color: #fff; }
-.adx-act-alert { border-color: var(--secondary-red); color: var(--secondary-red); }
-.adx-act-alert:hover { background: var(--secondary-red); color: #fff; }
+.adx-actlink:hover { color: #003d9e; }
+.adx-actlink-alert { color: var(--secondary-red); }
+.adx-actlink-alert:hover { color: #b8001a; }
+.adx-act-sep { color: #ccc; font-weight: 700; }
 
 /* --- Source tags / section heads --- */
 .adx-section-head { display: flex; align-items: center; justify-content: space-between; margin-top: 2rem; }

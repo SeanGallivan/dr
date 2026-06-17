@@ -10,7 +10,7 @@ var ADXApp = (function () {
 
     /* ---- state ---- */
     var state = {
-        sortKey: "runningTotal",   // BRD: organize the daily table around running total
+        sortKey: "flags",          // default: red → orange → yellow, then aging desc
         sortDir: "desc",
         statusFilter: "Active"     // BRD 5.4: default to Active
     };
@@ -81,8 +81,22 @@ var ADXApp = (function () {
         }
     }
 
+    function caseSeverity(c) {
+        return (c.flags || []).reduce(function (m, f) {
+            return Math.max(m, (ADX_FLAGS[f] || {}).rank || 0);
+        }, 0);
+    }
+
     function sortCases(cases) {
         var key = state.sortKey, dir = state.sortDir === "desc" ? -1 : 1;
+        if (key === "flags") {
+            // Severity (red → orange → yellow) then aging large → small.
+            return cases.slice().sort(function (a, b) {
+                var sa = caseSeverity(a), sb = caseSeverity(b);
+                if (sa !== sb) return (sa - sb) * dir;
+                return b.agingDays - a.agingDays;
+            });
+        }
         return cases.slice().sort(function (a, b) {
             var av = sortValue(a, key), bv = sortValue(b, key);
             if (av < bv) return -1 * dir;
@@ -91,19 +105,18 @@ var ADXApp = (function () {
         });
     }
 
-    /* ---- flag chips (no color-only meaning: icon + text) ---- */
-    function flagChips(c, compact) {
-        var role = getRoleKey();
-        var chips = (c.flags || []).filter(function (f) {
-            var meta = ADX_FLAGS[f];
-            return meta && (!meta.adminOnly || role === "admin");
+    /* ---- flag chips (no color-only meaning: icon + text), sorted by severity ---- */
+    function flagChips(c) {
+        var chips = (c.flags || []).slice().sort(function (a, b) {
+            return ((ADX_FLAGS[b] || {}).rank || 0) - ((ADX_FLAGS[a] || {}).rank || 0);
         }).map(function (f) {
             var m = ADX_FLAGS[f];
+            if (!m) return "";
             return '<span class="adx-flag adx-flag-' + m.sev + '" title="' + esc(m.label) + '">' +
                    '<span aria-hidden="true">' + m.icon + '</span>' +
-                   '<span class="' + (compact ? "adx-flag-text" : "") + '">' + esc(compact ? m.short : m.label) + '</span></span>';
+                   '<span class="adx-flag-text">' + esc(m.short) + '</span></span>';
         });
-        return chips.length ? chips.join(" ") : '<span class="adx-muted">—</span>';
+        return chips.length ? '<span class="adx-flags-cell">' + chips.join("") + '</span>' : '<span class="adx-muted">—</span>';
     }
 
     /* ---- cell renderer ---- */
@@ -118,7 +131,7 @@ var ADXApp = (function () {
             case "money":
                 return '<span class="adx-money">' + money(c.runningTotal) + '</span>';
             case "provider":
-                return '<a class="adx-link" href="' + providerDetailUrl(c.ipmId) + '">' + esc(adxProvider(c.ipmId).name) + '</a>';
+                return '<a class="adx-link" href="' + providerDetailUrl(c.ipmId) + '">' + esc(adxProvider(c.ipmId).shortName) + '</a>';
             case "payer":
                 var pay = adxPayer(c.payerId);
                 return '<a class="adx-link" href="' + referralDetailUrl(c.clientId) + '">' + esc(pay.name) + '</a>' +
@@ -149,14 +162,13 @@ var ADXApp = (function () {
                     ? '<span class="adx-lien adx-lien-ok"><span aria-hidden="true">✓</span> On file</span>'
                     : '<span class="adx-lien adx-lien-missing"><span aria-hidden="true">⚠</span> Missing</span>';
             case "flags":
-                return flagChips(c, true);
+                return flagChips(c);
             case "actions":
-                return '<div class="adx-row-actions">' +
-                    '<button class="adx-act" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message provider about ' + esc(c.beneficiary) + '">Message</button>' +
-                    (c.scheduling === "No-show"
-                        ? '<button class="adx-act adx-act-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
-                        : '<button class="adx-act" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Nudge case ' + esc(c.beneficiary) + '">Get moving</button>') +
-                    '</div>';
+                var acts = '<button class="adx-actlink" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message doc about ' + esc(c.beneficiary) + '">Message Doc</button>';
+                acts += (c.scheduling === "No-show"
+                    ? '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
+                    : '<span class="adx-act-sep" aria-hidden="true">·</span><button class="adx-actlink" onclick="ADXApp.action(\'message-brad\',\'' + c.id + '\')" aria-label="Message Brad about ' + esc(c.beneficiary) + '">Message Brad</button>');
+                return '<span class="adx-row-actions">' + acts + '</span>';
             default: return "";
         }
     }
@@ -185,8 +197,7 @@ var ADXApp = (function () {
         var groups = [
             { label: "Administrator / Overseer", role: "admin" },
             { label: "IPM Physicians", role: "ipm" },
-            { label: "Network Physicians", role: "network" },
-            { label: "Specialists", role: "specialty" }
+            { label: "Network Physicians", role: "network" }
         ];
         var html = '<div class="adx-nav-intro">View as</div>';
         groups.forEach(function (g) {
@@ -198,7 +209,8 @@ var ADXApp = (function () {
                 html += '<a class="adx-nav-item' + active + '" href="' + urlFor(p.id, getTier()) + '"' +
                         (active ? ' aria-current="page"' : '') + '>' +
                         '<span class="adx-nav-name">' + esc(p.name) + '</span>' +
-                        '<span class="adx-nav-spec">' + esc(p.specialty) + '</span></a>';
+                        '<span class="adx-nav-spec">' + esc(p.specialty) + '</span>' +
+                        (p.org ? '<span class="adx-nav-org">' + esc(p.org) + '</span>' : '') + '</a>';
             });
             html += '</div>';
         });
@@ -217,34 +229,6 @@ var ADXApp = (function () {
     }
 
     /* =================================================================
-       ALERT SURFACE (BRD section 4)
-    ================================================================= */
-    function renderAlertBanner() {
-        var role = getRoleKey();
-        var urgent = [];
-        statusFiltered(visibleCases()).forEach(function (c) {
-            (c.flags || []).forEach(function (f) {
-                var m = ADX_FLAGS[f];
-                if (m && m.urgent && (!m.adminOnly || role === "admin")) {
-                    urgent.push({ c: c, m: m });
-                }
-            });
-        });
-        var bar = document.getElementById("adxAlertBar");
-        if (!urgent.length) { bar.innerHTML = ""; bar.classList.add("hidden"); return; }
-        bar.classList.remove("hidden");
-        var items = urgent.slice(0, 5).map(function (u) {
-            return '<a class="adx-alert-item" href="' + caseDetailUrl(u.c) + '">' +
-                   '<span aria-hidden="true">' + u.m.icon + '</span> ' +
-                   esc(u.c.beneficiary) + ' — ' + esc(u.m.label) + '</a>';
-        }).join("");
-        bar.innerHTML = '<div class="adx-alert-head"><span aria-hidden="true">⚠</span> ' +
-            urgent.length + ' urgent ' + (urgent.length === 1 ? "item needs" : "items need") +
-            ' attention now</div><div class="adx-alert-items">' + items +
-            (urgent.length > 5 ? '<span class="adx-alert-more">+' + (urgent.length - 5) + ' more</span>' : '') + '</div>';
-    }
-
-    /* =================================================================
        DAILY TIER — the active-cases table (BRD 5)
     ================================================================= */
     function renderDaily() {
@@ -258,31 +242,26 @@ var ADXApp = (function () {
                 return '<option value="' + o.value + '"' + (o.value === state.statusFilter ? " selected" : "") + '>' + o.label + '</option>';
             }).join("") + '</select></label>';
 
-        /* summary stat strip */
+        /* summary stat strip — "by the numbers" */
         var all = statusFiltered(visibleCases());
         var totalCost = all.reduce(function (s, c) { return s + c.runningTotal; }, 0);
-        var flagged = all.filter(function (c) { return (c.flags || []).length; }).length;
-        var noShows = all.filter(function (c) { return c.scheduling === "No-show"; }).length;
         var newIntakes = all.filter(function (c) { return c.newIntake; }).length;
 
         var strip = '<div class="daily-grid adx-strip">' +
             stat("Active Cases", all.length, false) +
             (role.costEmphasis ? stat("Running Total — All Cases", money(totalCost), false) : "") +
             stat("New Intakes", newIntakes, false) +
-            stat("No-Shows", noShows, noShows > 0) +
-            stat("Flagged Cases", flagged, flagged > 0) +
             '</div>';
 
         var header = '<div class="adx-daily-head">' +
-            '<div><h2 class="adx-h2">Active Cases</h2>' +
-            '<p class="adx-sub">' + esc(role.subtitle) + '</p></div>' +
-            statusSel + '</div>';
+            '<h2 class="adx-h2">Active Cases</h2>' +
+            statusSel + '</div>' +
+            '<p class="adx-sub">' + esc(role.subtitle) + '</p>';
 
         var table = buildTable(cols, cases);
 
         document.getElementById("adxMain").innerHTML = header + strip +
-            '<div class="adx-table-wrap">' + table + '</div>' +
-            '<p class="adx-source-note">Sources: clinical &amp; cost <strong>[DR]</strong> · payer / lien / client <strong>[Salesforce]</strong> · scheduling &amp; no-shows <strong>[FHIR]</strong></p>';
+            '<div class="adx-table-wrap">' + table + '</div>';
     }
 
     function stat(label, value, alert) {
@@ -304,7 +283,7 @@ var ADXApp = (function () {
 
         var body = cases.length
             ? cases.map(function (c) {
-                var rowCls = (c.flags || []).some(function (f) { return (ADX_FLAGS[f] || {}).urgent && (!ADX_FLAGS[f].adminOnly || getRoleKey() === "admin"); }) ? " adx-row-urgent" : "";
+                var rowCls = caseSeverity(c) === 3 ? " adx-row-urgent" : "";
                 return '<tr class="' + rowCls.trim() + '">' + cols.map(function (col) {
                     return '<td data-label="' + esc(col.label) + '">' + cell(c, col) + '</td>';
                 }).join("") + '</tr>';
@@ -351,7 +330,7 @@ var ADXApp = (function () {
         /* Provider productivity composite (RAS) */
         html += sectionHead("Provider Productivity — Composite Score", "DR");
         html += '<p class="adx-sub" style="margin-top:-0.5rem;">Composite (RAS-style) score: PIF improvement (weighted heaviest), return-to-work, cost, and time. Computed at MBT; formula is isolated &amp; swappable.</p>';
-        html += providerScoreTable(["ipm", "network", "specialty"]);
+        html += providerScoreTable(["ipm", "network"]);
 
         document.getElementById("adxMain").innerHTML = html;
     }
@@ -489,14 +468,14 @@ var ADXApp = (function () {
         }
         renderDaily();
     }
-    function setStatus(v) { state.statusFilter = v; renderAlertBanner(); renderDaily(); }
+    function setStatus(v) { state.statusFilter = v; renderDaily(); }
 
     function action(type, caseId) {
         var c = adxCase(caseId);
         var msg = {
-            "message": "Message sent to " + adxProvider(c.ipmId).name + " re: " + c.beneficiary + " — “Get this moving.”",
-            "notify-adx": "ADX notified of no-show for " + c.beneficiary + ".",
-            "move": "Nudge logged for " + c.beneficiary + " — flagged to coordinator."
+            "message": "Message sent to " + adxProvider(c.ipmId).name + " re: " + c.beneficiary + ".",
+            "message-brad": "Message sent to Dr. Brad re: " + c.beneficiary + " — “Get this moving.”",
+            "notify-adx": "ADX notified of no-show for " + c.beneficiary + "."
         }[type] || "Action recorded.";
         toast(msg);
     }
@@ -521,7 +500,6 @@ var ADXApp = (function () {
 
         renderViewAsNav();
         renderTierNav();
-        renderAlertBanner();
 
         var tier = getTier();
         if (tier === "weekly") renderWeekly();

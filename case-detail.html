@@ -14,7 +14,6 @@
             <a class="logo-area" href="./index.html">ADX</a>
             <span class="adx-tagline">Accurate Diagnosis · Derived Results</span>
         </div>
-        <div class="reconciliation-badge">&#x2713; Verified against Derived Results &amp; Salesforce</div>
     </header>
     <div id="detailHeader" class="detail-header"></div>
     <main id="detailBody" class="adx-detail-body" tabindex="-1"></main>
@@ -46,10 +45,6 @@
         var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
         var gain = c.pifCurrent - c.pifStart;
 
-        var lienRow = (role === "admin")
-            ? '<div class="deep-card ' + (c.lienOnFile ? '' : 'alert-card') + '"><h4>Lien on File</h4><p>' +
-              (c.lienOnFile ? '<span class="adx-lien-ok">✓ Perfected lien on file</span>' : '<span class="adx-lien-missing">⚠ No perfected lien — treating at risk</span>') + '</p></div>'
-            : '';
         var payerCard = (role === "admin" || role === "ipm")
             ? '<div class="deep-card"><h4>Payer <span style="font-weight:600;">[Salesforce]</span></h4><p>' + esc(payer.name) + (payer.reminderRequired ? ' <span class="adx-pill adx-pill-warn">SLOW PAYER</span>' : '') + '</p></div>'
             : '';
@@ -105,7 +100,6 @@
                 '<div class="deep-card"><h4>Team Providers</h4><p>' + (c.teamProviderIds.map(function(id){ var p=adxProvider(id); return '<a class="adx-link" href="provider-detail.html?id=' + id + '&view=' + view + '">' + esc(p.name) + '</a>'; }).join("<br>") || "—") + '</p></div>' +
                 payerCard +
                 '<div class="deep-card"><h4>Referral Source / Client <span style="font-weight:600;">[Salesforce]</span></h4><p><a class="adx-link" href="referral-detail.html?id=' + client.id + '&view=' + view + '">' + esc(client.name) + '</a> — ' + esc(client.type) + '</p></div>' +
-                lienRow +
             '</div>';
 
         document.getElementById("detailBody").innerHTML = html;
