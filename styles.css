@@ -543,9 +543,9 @@ a.adx-episode:hover { background: var(--primary-navy); color: #fff; }
     white-space: normal; word-wrap: break-word; overflow-wrap: break-word;
     box-shadow: 0 6px 22px rgba(0,0,0,0.28); pointer-events: none;
 }
-/* Table-header tooltips: anchor to the left of the icon so they don't clip
-   at the right table edge (where most of the metric columns live). */
-.adx-table thead .adx-info-tip { right: auto; left: 0; }
+/* Anchor every tip to the RIGHT of its icon (extending left). Works for
+   any column position because there is always table/page width to the left.
+   The opposite (extending right) clips the rightmost columns off-screen. */
 .adx-info-wrap:hover .adx-info-tip,
 .adx-info-wrap:focus-within .adx-info-tip { display: block; }
 
