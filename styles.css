@@ -535,13 +535,17 @@ a.adx-episode:hover { background: var(--primary-navy); color: #fff; }
 }
 .adx-info:hover, .adx-info:focus-visible { opacity: 1; }
 .adx-info-tip {
-    display: none; position: absolute; left: 50%; transform: translateX(-50%);
-    top: calc(100% + 6px); z-index: 400; width: 250px; max-width: 62vw;
+    display: none; position: absolute; right: 0; left: auto;
+    top: calc(100% + 6px); z-index: 400; width: 260px; max-width: 80vw;
     background: var(--primary-navy); color: #fff; padding: 9px 11px; border-radius: 7px;
     font-size: 0.72rem; font-weight: 600; line-height: 1.5;
     text-transform: none; letter-spacing: normal; text-align: left;
+    white-space: normal; word-wrap: break-word; overflow-wrap: break-word;
     box-shadow: 0 6px 22px rgba(0,0,0,0.28); pointer-events: none;
 }
+/* Table-header tooltips: anchor to the left of the icon so they don't clip
+   at the right table edge (where most of the metric columns live). */
+.adx-table thead .adx-info-tip { right: auto; left: 0; }
 .adx-info-wrap:hover .adx-info-tip,
 .adx-info-wrap:focus-within .adx-info-tip { display: block; }
 

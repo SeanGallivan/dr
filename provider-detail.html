@@ -39,7 +39,7 @@
         var well = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) >= 3; });
         var poorly = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) <= 1 || c.scheduling === "No-show"; });
 
-        var html = '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=weekly"><span aria-hidden="true">←</span> Back to dashboard</a>' + adxSourceLegend();
+        var html = '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=weekly"><span aria-hidden="true">←</span> Back to dashboard</a>';
 
         if (p.composite != null) {
             html +=

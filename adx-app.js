@@ -267,7 +267,6 @@ var ADXApp = (function () {
         var table = buildTable(cols, cases);
 
         document.getElementById("adxMain").innerHTML = header + strip +
-            adxSourceLegend() +
             '<div class="adx-table-wrap">' + table + '</div>';
     }
 
@@ -341,7 +340,6 @@ var ADXApp = (function () {
         html += '<p class="adx-sub" style="margin-top:-0.5rem;">Composite score (0–100) for network benchmarking and bonus eligibility ' + adxInfo("composite") +
             '. <strong>Clinical-outcome</strong> components: PIFs, Time to MBT. <strong>Management</strong> components: cost, return to work.</p>';
         html += providerScoreTable(["ipm", "network"]);
-        html += adxSourceLegend();
 
         document.getElementById("adxMain").innerHTML = html;
     }
@@ -384,7 +382,6 @@ var ADXApp = (function () {
             '</div>';
 
         html += exportLink();
-        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
@@ -416,7 +413,6 @@ var ADXApp = (function () {
             (poorly.map(function (c) { return esc(c.beneficiary) + " — " + (c.scheduling === "No-show" ? "no-show" : "PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
             '</div>';
         html += exportLink();
-        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
@@ -492,7 +488,6 @@ var ADXApp = (function () {
                 return '<tr><td data-label="Type">' + esc(m.type) + '</td><td data-label="Cases">' + m.cases + '</td><td data-label="Margin">' + Math.round(m.avgMargin * 100) + '%</td></tr>';
             }).join("") + '</tbody></table>';
 
-        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
