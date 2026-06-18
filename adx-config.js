@@ -168,9 +168,9 @@ function adxMarker(shape, color, extra) {
    per Sean's request; the inline [DR]/[FHIR]/[Salesforce] tags remain. */
 function adxSourceLegend() { return ""; }
 
-/* --------- Theme persistence (light default, persists per user) --------- */
+/* --------- Theme persistence (dark default, persists per user) --------- */
 function adxTheme() {
-    try { return localStorage.getItem("adx_theme") || "light"; } catch (e) { return "light"; }
+    try { return localStorage.getItem("adx_theme") || "dark"; } catch (e) { return "dark"; }
 }
 function adxApplyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
@@ -187,7 +187,7 @@ function adxToggleTheme() {
 }
 /* Apply at load so the page never flashes the wrong theme. */
 (function () {
-    try { document.documentElement.setAttribute("data-theme", localStorage.getItem("adx_theme") || "light"); } catch (e) {}
+    try { document.documentElement.setAttribute("data-theme", localStorage.getItem("adx_theme") || "dark"); } catch (e) {}
 })();
 
 /* --------- Portal tooltip controller --------- */
