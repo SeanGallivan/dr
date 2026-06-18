@@ -161,7 +161,7 @@ var ADXApp = (function () {
             case "actions":
                 var acts = '<button class="adx-actlink" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message doc about ' + esc(c.beneficiary) + '">Message Doc</button>';
                 acts += (c.scheduling === "No-show"
-                    ? '<button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'notify-adx\',\'' + c.id + '\')" aria-label="Notify ADX of no-show for ' + esc(c.beneficiary) + '">Notify ADX</button>'
+                    ? '<button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'flag-noshow\',\'' + c.id + '\')" aria-label="Flag no-show and request ADX outreach for ' + esc(c.beneficiary) + '">Flag no-show</button>'
                     : '<button class="adx-actlink" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
                 return '<span class="adx-row-actions">' + acts + '</span>';
             default: return "";
@@ -255,8 +255,8 @@ var ADXApp = (function () {
 
         var strip = '<div class="daily-grid adx-strip">' +
             stat("Active Cases", all.length, false) +
-            (role.costEmphasis ? stat("Running Total — All Cases", money(totalCost), false) : "") +
-            stat("New Intakes", newIntakes, false) +
+            (role.costEmphasis ? stat("Running Total — All Cases", money(totalCost), false, "running-total") : "") +
+            stat("New Intakes", newIntakes, false, "new-intake") +
             '</div>';
 
         var header = '<div class="adx-daily-head">' +
@@ -267,24 +267,26 @@ var ADXApp = (function () {
         var table = buildTable(cols, cases);
 
         document.getElementById("adxMain").innerHTML = header + strip +
+            adxSourceLegend() +
             '<div class="adx-table-wrap">' + table + '</div>';
     }
 
-    function stat(label, value, alert) {
+    function stat(label, value, alert, info) {
         return '<div class="daily-stat' + (alert ? " alert" : "") + '">' +
-               '<span class="stat-label">' + label + '</span>' +
+               '<span class="stat-label">' + label + (info ? ' ' + adxInfo(info) : '') + '</span>' +
                '<span class="stat-value" style="font-size:1.8rem;">' + value + '</span></div>';
     }
 
     function buildTable(cols, cases) {
         var head = cols.map(function (col) {
-            if (!col.sortable) return '<th scope="col">' + col.label + '</th>';
+            var info = col.info ? ' ' + adxInfo(col.info) : '';
+            if (!col.sortable) return '<th scope="col">' + col.label + info + '</th>';
             var isSort = state.sortKey === col.key;
             var ariaSort = isSort ? (state.sortDir === "desc" ? "descending" : "ascending") : "none";
             return '<th scope="col" aria-sort="' + ariaSort + '">' +
                    '<button class="adx-sort" onclick="ADXApp.sortBy(\'' + col.key + '\')">' + col.label +
                    '<span class="adx-sort-ind" aria-hidden="true">' + (isSort ? (state.sortDir === "desc" ? " ▼" : " ▲") : " ⇅") + '</span>' +
-                   '</button></th>';
+                   '</button>' + info + '</th>';
         }).join("");
 
         var body = cases.length
@@ -306,6 +308,7 @@ var ADXApp = (function () {
     function renderWeekly() {
         var role = getRoleKey();
         if (role === "network") return renderNetworkWeekly();
+        if (role === "ipm") return renderIpmWeekly();
 
         var revTrend = ADX_WEEKLY.revenueThisWeek - ADX_WEEKLY.revenueLastWeek;
         var html = '<h2 class="adx-h2">Weekly — Management</h2><p class="adx-sub">Reviewed about weekly. Several items originate in Salesforce, surfaced here read-only.</p>';
@@ -333,26 +336,73 @@ var ADXApp = (function () {
                     '<td data-label="Cash Value">' + money(cl.cashValue) + '</td></tr>';
             }).join("") + '</tbody></table>';
 
-        /* Doctor productivity composite (RAS) */
+        /* Doctor productivity composite */
         html += sectionHead("Doctor Productivity — Composite Score", "DR");
-        html += '<p class="adx-sub" style="margin-top:-0.5rem;">Composite (RAS-style) score: PIF improvement (weighted heaviest), return-to-work, cost, and time. Computed at MBT; formula is isolated &amp; swappable.</p>';
+        html += '<p class="adx-sub" style="margin-top:-0.5rem;">Composite score (0–100) for network benchmarking and bonus eligibility ' + adxInfo("composite") +
+            '. <strong>Clinical-outcome</strong> components: PIFs, Time to MBT. <strong>Management</strong> components: cost, return to work.</p>';
         html += providerScoreTable(["ipm", "network"]);
+        html += adxSourceLegend();
 
+        document.getElementById("adxMain").innerHTML = html;
+    }
+
+    /* Referral & ADX-payment widget — the physician's side of the exchange (B1) */
+    function renderReferralRevenue(p) {
+        var f = adxReferralFlow(p.id);
+        if (!f) return "";
+        var trend = f.referralsThisWeek - f.referralsLastWeek;
+        return sectionHead("Referrals & ADX Payment — " + f.period, "Salesforce") +
+            '<div class="daily-grid adx-strip">' +
+            stat("Referrals Received", f.referralsThisWeek, false, "referrals") +
+            stat("vs Last Week", (trend >= 0 ? "▲ +" : "▼ ") + Math.abs(trend), trend < 0) +
+            stat("Intakes Accepted", f.intakesAccepted, false, "intakes") +
+            stat("ADX Payment", money(f.adxPaymentPeriod), false, "adx-payment") +
+            stat("ADX Payment (MTD)", money(f.adxPaymentMTD), false) +
+            '</div>' +
+            '<p class="adx-sub" style="margin-top:-0.6rem;">Single payer: <strong>ADX</strong>. ADX is currently placing ~12 new patients/week at the IPM level across the Colorado network and growing.</p>';
+    }
+
+    /* Link out to cohort export in the full Derived Results tool (B3-link) */
+    function exportLink() {
+        return '<p class="adx-sub"><a class="adx-link" href="#" onclick="ADXApp.action(\'export\');return false;">Export this cohort →</a> <span class="adx-muted">(opens in the full Derived Results tool)</span></p>';
+    }
+
+    /* IPM weekly — coordinator view with the referral/revenue widget (B1) */
+    function renderIpmWeekly() {
+        var p = getProvider();
+        var pct = p.composite;
+        var rank = rankAmong(p, "ipm");
+        var html = '<h2 class="adx-h2">Weekly — Management</h2><p class="adx-sub">Your coordinated episodes, the referrals ADX placed with you, and your standing.</p>';
+
+        html += renderReferralRevenue(p);
+
+        html += sectionHead("Your Standing", "DR");
+        html += '<div class="clinical-scorecard">' +
+            scoreCard("Your Composite Score " + adxInfo("composite"), pct, "Network avg: " + ADX_NETWORK_NORMS.composite) +
+            scoreCard("IPM Rank", rank.pos + " of " + rank.total, "Among IPMs") +
+            scoreCard("Bonus Eligibility " + adxInfo("bonus"), p.bonusEligible ? "Eligible" : "Not yet", "Threshold: " + ADX_BONUS_THRESHOLD) +
+            '</div>';
+
+        html += exportLink();
+        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
     function renderNetworkWeekly() {
         var p = getProvider();
-        var comp = computeComposite(p);
         var pct = p.composite;
         var eligible = pct >= ADX_BONUS_THRESHOLD;
         var rank = rankAmong(p, "network");
 
-        var html = '<h2 class="adx-h2">Your Weekly Standing</h2><p class="adx-sub">How you compare to the network, and your bonus eligibility.</p>';
+        var html = '<h2 class="adx-h2">Your Weekly Standing</h2><p class="adx-sub">The referrals ADX placed with you, what ADX paid, and how you compare to the network.</p>';
+
+        html += renderReferralRevenue(p);
+
+        html += sectionHead("Network Standing", "DR");
         html += '<div class="clinical-scorecard">' +
-            scoreCard("Your Composite Score", pct, "Network avg: " + ADX_NETWORK_NORMS.composite) +
+            scoreCard("Your Composite Score " + adxInfo("composite"), pct, "Network avg: " + ADX_NETWORK_NORMS.composite) +
             scoreCard("Network Rank", rank.pos + " of " + rank.total, "Among network physicians") +
-            scoreCard("Bonus Eligibility", eligible ? "Eligible" : "Not yet", "Threshold: " + ADX_BONUS_THRESHOLD) +
+            scoreCard("Bonus Eligibility " + adxInfo("bonus"), eligible ? "Eligible" : "Not yet", "Threshold: " + ADX_BONUS_THRESHOLD) +
             '</div>';
 
         html += sectionHead("Where You're Doing Well vs Poorly", "DR");
@@ -361,10 +411,12 @@ var ADXApp = (function () {
         var poorly = mine.filter(function (c) { return (c.pifCurrent - c.pifStart) <= 1 || c.scheduling === "No-show"; });
         html += '<div class="deep-grid">' +
             '<div class="deep-card" style="border-left:4px solid #0a8f2c;"><h4>Doing Well (' + well.length + ')</h4><p>' +
-            (well.map(function (c) { return esc(c.beneficiary) + " — PIF +" + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
+            (well.map(function (c) { return esc(c.beneficiary) + " — PIFs +" + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
             '<div class="deep-card alert-card"><h4>Needs Attention (' + poorly.length + ')</h4><p>' +
-            (poorly.map(function (c) { return esc(c.beneficiary) + " — " + (c.scheduling === "No-show" ? "no-show" : "PIF +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
+            (poorly.map(function (c) { return esc(c.beneficiary) + " — " + (c.scheduling === "No-show" ? "no-show" : "PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
             '</div>';
+        html += exportLink();
+        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
@@ -373,9 +425,9 @@ var ADXApp = (function () {
             .sort(function (a, b) { return b.composite - a.composite; });
         return '<table class="adx-table"><thead><tr>' +
             '<th scope="col">Doctor</th><th scope="col">Role</th>' +
-            '<th scope="col">Composite</th><th scope="col">PIF Median Gain</th>' +
-            '<th scope="col">Return to Work</th><th scope="col">Avg Cost / Case</th>' +
-            '<th scope="col">Avg Days in ADX</th><th scope="col">Bonus</th></tr></thead><tbody>' +
+            '<th scope="col">Composite ' + adxInfo("composite") + '</th><th scope="col">PIFs Median Gain ' + adxInfo("pif") + '</th>' +
+            '<th scope="col">Return to Work ' + adxInfo("rtw") + '</th><th scope="col">Avg Cost / Case ' + adxInfo("avg-cost") + '</th>' +
+            '<th scope="col">Avg Days in ADX ' + adxInfo("avg-days") + '</th><th scope="col">Bonus ' + adxInfo("bonus") + '</th></tr></thead><tbody>' +
             rows.map(function (p, i) {
                 var tag = i === 0 ? ' <span class="adx-pill adx-pill-good">TOP</span>' : (i === rows.length - 1 ? ' <span class="adx-pill adx-pill-warn">BOTTOM</span>' : '');
                 return '<tr><td data-label="Doctor"><a class="adx-link" href="' + providerDetailUrl(p.id) + '">' + esc(p.name) + '</a>' + tag + '</td>' +
@@ -428,8 +480,8 @@ var ADXApp = (function () {
         html += sectionHead("Portfolio Valuation", "Salesforce");
         html += '<div class="deep-grid" style="grid-template-columns:1fr 1fr 1fr;">' +
             '<div class="deep-card"><h4>Face Value</h4><p class="adx-big">' + money(pf.faceValue) + '</p></div>' +
-            '<div class="deep-card"><h4>Realization Rate</h4><p class="adx-big">' + Math.round(pf.realizationRate * 100) + '%</p></div>' +
-            '<div class="deep-card" style="border-left:4px solid var(--primary-navy);"><h4>Weighted Expected Value</h4><p class="adx-big" style="color:var(--primary-navy);">' + money(pf.weightedValue) + '</p></div>' +
+            '<div class="deep-card"><h4>Realization Rate ' + adxInfo("realization") + '</h4><p class="adx-big">' + Math.round(pf.realizationRate * 100) + '%</p></div>' +
+            '<div class="deep-card" style="border-left:4px solid var(--primary-navy);"><h4>Weighted Expected Value ' + adxInfo("weighted-ev") + '</h4><p class="adx-big" style="color:var(--primary-navy);">' + money(pf.weightedValue) + '</p></div>' +
             '</div>' +
             '<p class="adx-sub" style="font-style:italic;">' + esc(pf.note) + '</p>';
 
@@ -440,6 +492,7 @@ var ADXApp = (function () {
                 return '<tr><td data-label="Type">' + esc(m.type) + '</td><td data-label="Cases">' + m.cases + '</td><td data-label="Margin">' + Math.round(m.avgMargin * 100) + '%</td></tr>';
             }).join("") + '</tbody></table>';
 
+        html += adxSourceLegend();
         document.getElementById("adxMain").innerHTML = html;
     }
 
@@ -477,11 +530,12 @@ var ADXApp = (function () {
     function setStatus(v) { state.statusFilter = v; renderDaily(); }
 
     function action(type, caseId) {
+        if (type === "export") { toast("Opening cohort export in the full Derived Results tool…"); return; }
         var c = adxCase(caseId);
         var msg = {
             "message": "Message sent to " + adxProvider(c.ipmId).name + " re: " + c.beneficiary + ".",
             "move": "“Get this moving” — flagged to the care team for " + c.beneficiary + ".",
-            "notify-adx": "ADX notified of no-show for " + c.beneficiary + "."
+            "flag-noshow": "No-show flagged — ADX outreach requested for " + c.beneficiary + "."
         }[type] || "Action recorded.";
         toast(msg);
     }

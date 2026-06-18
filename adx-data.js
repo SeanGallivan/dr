@@ -212,7 +212,7 @@ var ADX_CASES = [
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 41, vsNetworkCost: 18900,
         pifStart: 2, pifCurrent: 4, pifTarget: 8,
-        flags: ["no-update"],
+        flags: ["no-update", "off-track"],
         planNote: "High-cost outlier. Surgical decompression under review with Duhon.",
         costBreakdown: [
             { item: "IPM evaluation (Trainor)", amount: 3300, source: "DR" },
@@ -516,7 +516,7 @@ var ADX_CASES = [
         nextVisitFlag: false, unscheduledAgeDays: 0,
         vsNetworkDays: 33, vsNetworkCost: 9100,
         pifStart: 2, pifCurrent: 3, pifTarget: 7,
-        flags: ["no-update"],
+        flags: ["no-update", "off-track"],
         planNote: "High-cost, slow progress. Surgical decompression workup with Duhon.",
         costBreakdown: [
             { item: "IPM evaluation (Trainor)", amount: 3300, source: "DR" },
@@ -540,7 +540,7 @@ var ADX_WEEKLY = {
     revenueLastWeek: 291000,
     newReferrals: 23,
     casesToMBT: 7,
-    note: "Composite score is computed by computeComposite() in adx-config.js (swappable formula)."
+    note: "Composite score is supplied by ADX per provider (official formula pending)."
 };
 
 /* ---------------------------------------------------------------------
@@ -573,6 +573,27 @@ var ADX_MONTHLY = {
         { type: "Other",         cases: 2, avgMargin: 0.26 }
     ]
 };
+
+/* ---------------------------------------------------------------------
+   REFERRAL & ADX-PAYMENT FLOW (B1)  [Salesforce + DR]
+   The physician's side of the exchange: what ADX placed with them and
+   what ADX paid, for the period. Single payer (ADX).
+   Seed: ADX is placing ~12 new patients/week at the IPM level in Colorado,
+   assigned out to specialists as needed, and growing.
+     7 + 5 = 12/week across the two IPMs; specialists receive sub-referrals.
+--------------------------------------------------------------------- */
+var ADX_REFERRAL_FLOW = {
+    IPM_VILIMS:   { period: "This week", referralsThisWeek: 7, referralsLastWeek: 5, intakesAccepted: 6, adxPaymentPeriod: 18400, adxPaymentMTD: 71200 },
+    IPM_TRAINOR:  { period: "This week", referralsThisWeek: 5, referralsLastWeek: 4, intakesAccepted: 4, adxPaymentPeriod: 12900, adxPaymentMTD: 49500 },
+    NET_GHAZI:    { period: "This week", referralsThisWeek: 4, referralsLastWeek: 3, intakesAccepted: 4, adxPaymentPeriod: 9600,  adxPaymentMTD: 36800 },
+    NET_BAZAZ:    { period: "This week", referralsThisWeek: 2, referralsLastWeek: 2, intakesAccepted: 2, adxPaymentPeriod: 14200, adxPaymentMTD: 52100 },
+    NET_DUHON:    { period: "This week", referralsThisWeek: 2, referralsLastWeek: 1, intakesAccepted: 1, adxPaymentPeriod: 16800, adxPaymentMTD: 58300 },
+    NET_HATZ:     { period: "This week", referralsThisWeek: 2, referralsLastWeek: 2, intakesAccepted: 2, adxPaymentPeriod: 11100, adxPaymentMTD: 41900 },
+    NET_WHITE:    { period: "This week", referralsThisWeek: 1, referralsLastWeek: 1, intakesAccepted: 1, adxPaymentPeriod: 13400, adxPaymentMTD: 39600 },
+    NET_YI:       { period: "This week", referralsThisWeek: 1, referralsLastWeek: 0, intakesAccepted: 1, adxPaymentPeriod: 7800,  adxPaymentMTD: 24300 },
+    NET_NAKAMURA: { period: "This week", referralsThisWeek: 1, referralsLastWeek: 1, intakesAccepted: 0, adxPaymentPeriod: 8900,  adxPaymentMTD: 27500 }
+};
+function adxReferralFlow(id) { return ADX_REFERRAL_FLOW[id]; }
 
 /* Quick lookups */
 function adxProvider(id) { return ADX_PROVIDERS.find(p => p.id === id); }

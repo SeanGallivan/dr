@@ -49,6 +49,7 @@
 
         var html =
             '<a class="adx-back" href="case-detail.html?id=' + c.id + '&view=' + view + '"><span aria-hidden="true">←</span> Back to case</a>' +
+            adxSourceLegend() +
             '<div class="visit-context">' +
                 '<span class="ctx-badge navy">' + esc(fmt(visit.date)) + '</span>' +
                 '<span class="ctx-badge muted">Attending: ' + esc(ipm.shortName || ipm.name) + '</span>' +
@@ -61,7 +62,7 @@
             '<div class="daily-grid">' +
                 '<div class="daily-stat"><span class="stat-label">Date</span><span class="stat-value" style="font-size:1.3rem;">' + esc(fmt(visit.date)) + '</span></div>' +
                 '<div class="daily-stat"><span class="stat-label">Attending Doctor</span><span class="stat-value" style="font-size:1.3rem;">' + esc(ipm.shortName || ipm.name) + '</span></div>' +
-                '<div class="daily-stat"><span class="stat-label">PIF at This Visit</span><span class="stat-value" style="font-size:2rem;">' + pifAtVisit + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">PIFs at This Visit ' + adxInfo("pif") + '</span><span class="stat-value" style="font-size:2rem;">' + pifAtVisit + '</span></div>' +
                 '<div class="daily-stat"><span class="stat-label">Pain Score</span><span class="stat-value" style="font-size:2rem;">' + pain + '/10</span></div>' +
             '</div>' +
 

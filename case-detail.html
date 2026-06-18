@@ -57,6 +57,19 @@
         var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
         var gain = c.pifCurrent - c.pifStart;
 
+        // Time to MBT (C1b): actual for closed cases, elapsed/in-progress otherwise.
+        function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+        var firstVisit = c.visits[0].date, lastVisit = c.visits[c.visits.length-1].date;
+        var mbtReached = c.status === "Inactive complete";
+        var timeToMbt = mbtReached ? daysBetween(firstVisit, lastVisit) : daysBetween(firstVisit, "2026-06-18");
+        var mbtDisplay = mbtReached ? (timeToMbt + " days") : (timeToMbt + " days");
+        var mbtSub = mbtReached ? "Reached MBT" : "In progress";
+
+        // PIFs trend across visits (G1): carry forward the last recorded PIF.
+        var lastPif = c.pifStart;
+        var pifSeries = c.visits.map(function(v){ var m=(v.note||"").match(/PIF (\d+)/); if(m) lastPif=parseInt(m[1],10); return { date:v.date, pif:lastPif }; });
+        var pifCeil = Math.max(c.pifTarget || 10, c.pifCurrent);
+
         var payerCard = (role === "admin" || role === "ipm")
             ? '<div class="deep-card"><h4>Payer <span style="font-weight:600;">[Salesforce]</span></h4><p>' + esc(payer.name) + (payer.reminderRequired ? ' <span class="adx-pill adx-pill-warn">SLOW PAYER</span>' : '') + '</p></div>'
             : '';
@@ -71,13 +84,15 @@
                 '<span class="ctx-badge muted">Client: ' + esc(client.name) + '</span>' +
             '</div>' +
             episodesBox +
+            adxSourceLegend() +
 
             '<div class="section-header"><h3>' + esc(c.diagnosis) + '</h3></div>' +
             '<div class="daily-grid">' +
-                '<div class="daily-stat"><span class="stat-label">Running Total Spent</span><span class="stat-value" style="font-size:2rem;">' + money(c.runningTotal) + '</span></div>' +
-                '<div class="daily-stat"><span class="stat-label">PIF Score (start → now)</span><span class="stat-value" style="font-size:2rem;">' + c.pifStart + ' → ' + c.pifCurrent + ' <span class="adx-pif-' + (gain>0?'up':gain<0?'down':'flat') + '" style="font-size:1rem;">' + (gain>0?'▲ +':gain<0?'▼ ':'▬ ') + gain + '</span></span><span style="font-size:0.7rem; color:#888;">Target: ' + c.pifTarget + '</span></div>' +
-                '<div class="daily-stat"><span class="stat-label">Aging</span><span class="stat-value" style="font-size:2rem;">' + c.agingDays + ' <span style="font-size:0.9rem;">days</span></span></div>' +
-                '<div class="daily-stat ' + (c.scheduling==="No-show"?"alert":"") + '"><span class="stat-label">Scheduling</span><span class="stat-value" style="font-size:1.5rem;">' + esc(c.scheduling) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Running Total Spent ' + adxInfo("running-total") + '</span><span class="stat-value" style="font-size:2rem;">' + money(c.runningTotal) + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">PIFs (start → now) ' + adxInfo("pif") + '</span><span class="stat-value" style="font-size:2rem;">' + c.pifStart + ' → ' + c.pifCurrent + ' <span class="adx-pif-' + (gain>0?'up':gain<0?'down':'flat') + '" style="font-size:1rem;">' + (gain>0?'▲ +':gain<0?'▼ ':'▬ ') + gain + '</span></span><span style="font-size:0.7rem; color:#888;">Patient-identified · Target: ' + c.pifTarget + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Time to MBT ' + adxInfo("time-to-mbt") + '</span><span class="stat-value" style="font-size:2rem;">' + mbtDisplay + '</span><span style="font-size:0.7rem; color:#888;">' + mbtSub + '</span></div>' +
+                '<div class="daily-stat"><span class="stat-label">Aging ' + adxInfo("aging") + '</span><span class="stat-value" style="font-size:2rem;">' + c.agingDays + ' <span style="font-size:0.9rem;">days</span></span></div>' +
+                '<div class="daily-stat ' + (c.scheduling==="No-show"?"alert":"") + '"><span class="stat-label">Scheduling ' + adxInfo("scheduling") + '</span><span class="stat-value" style="font-size:1.5rem;">' + esc(c.scheduling) + '</span></div>' +
             '</div>' +
 
             '<div class="section-header"><h3>Plan <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
@@ -85,13 +100,13 @@
             '<div class="visit-actions" style="border-top:none; padding-bottom:0;">' +
                 '<button class="btn-visit primary" onclick="alert(\'Opens plan notes.\')">Open Plan Notes</button>' +
                 '<button class="btn-visit outline" onclick="alert(\'Flagged: get this moving.\')">Get This Moving</button>' +
-                (c.scheduling==="No-show" ? '<button class="btn-visit alert" onclick="alert(\'ADX notified of no-show.\')">Notify ADX of No-Show</button>' : '') +
+                (c.scheduling==="No-show" ? '<button class="btn-visit alert" onclick="alert(\'No-show flagged — ADX outreach requested.\')">Flag No-Show / Request Outreach</button>' : '') +
             '</div></div>' +
 
-            '<div class="section-header"><h3>Running Total — Cost Accumulation <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="section-header"><h3>Running Total — Cost Accumulation <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR / FHIR]</span></h3></div>' +
             '<table class="table-custom adx-cost-table">' +
                 '<thead><tr><th>Item</th><th>Source</th><th>Amount</th></tr></thead><tbody>' +
-                c.costBreakdown.map(function(x){ return '<tr><td>' + esc(x.item) + '</td><td><span class="adx-src-tag">[' + x.source + ']</span></td><td>' + money(x.amount) + '</td></tr>'; }).join("") +
+                c.costBreakdown.map(function(x){ var fhir = x.source === "FHIR"; return '<tr class="' + (fhir ? "adx-fhir-row" : "") + '"><td>' + esc(x.item) + (fhir ? ' <span class="adx-auto-badge">auto-captured</span>' : '') + '</td><td><span class="adx-src-tag src-' + (fhir ? "fhir" : "dr") + '">[' + x.source + ']</span></td><td>' + money(x.amount) + '</td></tr>'; }).join("") +
                 '<tr class="adx-cost-total"><td><strong>Running Total</strong></td><td></td><td>' + money(costTotal) + '</td></tr>' +
                 '</tbody></table>' +
 
@@ -102,10 +117,16 @@
                     '<div class="deep-card ' + (c.vsNetworkCost>0?"alert-card":"") + '"><h4>Cost vs Network Norm</h4><p class="adx-big ' + (c.vsNetworkCost>0?"adx-warn-text":"") + '">' + (c.vsNetworkCost>=0?"+$":"−$") + Math.abs(c.vsNetworkCost).toLocaleString() + '</p><span style="font-size:0.78rem; color:#888;">Like-for-like comparable cases</span></div>' +
                 '</div>' : '') +
 
+            '<div class="section-header"><h3>Outcome Trend — PIFs over visits ' + adxInfo("pif") + ' <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="adx-trend" role="img" aria-label="PIFs trend across ' + pifSeries.length + ' visits, from ' + c.pifStart + ' to ' + c.pifCurrent + ' against a target of ' + c.pifTarget + '">' +
+                pifSeries.map(function(s,i){ return '<div class="adx-trend-col"><div class="adx-trend-bar" style="height:' + Math.max(6, Math.round(s.pif / pifCeil * 100)) + '%"><span class="adx-trend-val">' + s.pif + '</span></div><div class="adx-trend-x">V' + (i+1) + '</div></div>'; }).join("") +
+                '<div class="adx-trend-target"><span>Target ' + c.pifTarget + '</span></div>' +
+            '</div>' +
+
             '<div class="section-header"><h3>Visit History <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR / FHIR]</span></h3></div>' +
             '<ul class="adx-timeline">' +
-                c.visits.map(function(v, idx){ return { v: v, idx: idx }; }).reverse().map(function(o){ var v = o.v;
-                    return '<li><div class="tl-date"><a class="adx-link" href="visit-detail.html?case=' + c.id + '&i=' + o.idx + '&view=' + view + '">' + esc(v.date) + '</a> <span class="adx-src-tag">[' + v.source + ']</span></div><div class="tl-note">' + esc(v.note) + '</div></li>'; }).join("") +
+                c.visits.map(function(v, idx){ return { v: v, idx: idx }; }).reverse().map(function(o){ var v = o.v; var fhir = v.source === "FHIR";
+                    return '<li class="' + (fhir ? "adx-fhir-row" : "") + '"><div class="tl-date"><a class="adx-link" href="visit-detail.html?case=' + c.id + '&i=' + o.idx + '&view=' + view + '">' + esc(v.date) + '</a> <span class="adx-src-tag src-' + (fhir ? "fhir" : "dr") + '">[' + v.source + ']</span>' + (fhir ? ' <span class="adx-auto-badge">auto-captured</span>' : '') + '</div><div class="tl-note">' + esc(v.note) + '</div></li>'; }).join("") +
             '</ul>' +
 
             '<div class="section-header"><h3>Care Team &amp; Coverage</h3></div>' +
