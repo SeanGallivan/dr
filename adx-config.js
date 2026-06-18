@@ -10,12 +10,20 @@
      rank: 3 = red, 2 = orange, 1 = yellow
 --------------------------------------------------------------------- */
 var ADX_FLAGS = {
-    "no-visit":    { label: "No visit in 14+ days",  icon: "🚩", short: "MISSED",  sev: "red",    rank: 3 },
-    "past-window": { label: "Past next-visit window", icon: "⌛", short: "OVERDUE", sev: "red",    rank: 3 },
-    "needs-appt":  { label: "Needs appointment",     icon: "📅", short: "APPT",    sev: "orange", rank: 2 },
-    "no-update":   { label: "No update in 10+ days", icon: "⏳", short: "STALE",   sev: "orange", rank: 2 },
-    "off-track":   { label: "Below expected outcome trajectory", icon: "📉", short: "OFF-TRACK", sev: "orange", rank: 2 },
-    "needs-test":  { label: "Needs test",            icon: "🧪", short: "TEST",    sev: "yellow", rank: 1 }
+    "no-visit":    { label: "No visit in 14+ days",  short: "MISSED",   sev: "red",    rank: 3, marker: "triangle", color: "clay" },
+    "past-window": { label: "Past next-visit window", short: "OVERDUE", sev: "red",    rank: 3, marker: "diamond",  color: "clay" },
+    "off-track":   { label: "Below expected outcome trajectory", short: "OFF-TRACK", sev: "red",   rank: 3, marker: "square",   color: "clay" },
+    "no-update":   { label: "No update in 10+ days", short: "STALE",    sev: "orange", rank: 2, marker: "ring",     color: "amber" },
+    "needs-appt":  { label: "Needs appointment",     short: "APPT",     sev: "muted",  rank: 1, marker: "bar",      color: "muted" },
+    "needs-test":  { label: "Needs test",            short: "TEST",     sev: "muted",  rank: 1, marker: "dot",      color: "muted" }
+};
+
+/* Scheduling shape markers (mirrors flag system; reuse same shapes). */
+var ADX_SCHED_MARKERS = {
+    "No-show":     { marker: "triangle-lg", color: "clay"   },
+    "Unscheduled": { marker: "ring-lg",     color: "amber"  },
+    "Scheduled":   { marker: "diamond-lg",  color: "accent" },
+    "Seen":        { marker: "dot-lg",      color: "green"  }
 };
 
 /* Thresholds for "no update" / "no visit" flags — configurable (BRD 5.3) */
@@ -134,30 +142,108 @@ var ADX_DEFINITIONS = {
     "adx-payment": "ADX payment: amount ADX paid you for the period (single payer — ADX)."
 };
 
-/* Accessible info-icon tooltip (I1). Works on hover AND keyboard focus,
-   screen-reader accessible via aria-describedby, dismissible with Escape.
-   Defined here (config) so dashboard and all detail pages can use it. */
-var _adxInfoSeq = 0;
+/* Accessible info-icon tooltip (I1). The trigger is inline; the popup is a
+   single portal node (#adxTooltip) positioned `fixed`, so it is never
+   clipped by table scroll containers, KPI cards, or sidebars. Works on
+   hover AND keyboard focus; ESC dismisses. */
 function adxInfo(key) {
     var def = ADX_DEFINITIONS[key];
     if (!def) return "";
-    var id = "adxtip-" + (++_adxInfoSeq);
-    var safe = String(def).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    var label = String(key).replace(/-/g, " ");
+    var dataAttr = encodeURIComponent(def);
     return '<span class="adx-info-wrap">' +
-        '<button type="button" class="adx-info" aria-label="Definition" aria-describedby="' + id + '" ' +
-        'onkeydown="if(event.key===\'Escape\'){this.blur();}">' +
-        '<span aria-hidden="true">&#9432;</span></button>' +
-        '<span role="tooltip" id="' + id + '" class="adx-info-tip">' + safe + '</span></span>';
+        '<button type="button" class="adx-info" aria-label="Definition: ' + label + '" ' +
+        'data-tip="' + dataAttr + '" data-tip-title="' + label + '">' +
+        '<span aria-hidden="true">&#9432;</span></button></span>';
 }
 
-/* Source-provenance legend (A1) — one editable line, reused on every data surface. */
-function adxSourceLegend() {
-    return '<div class="adx-legend" role="note" aria-label="Data source legend">' +
-        '<span class="adx-legend-title">Data sources:</span>' +
-        '<span class="adx-src-tag src-dr">[DR]</span> entered in Derived Results' +
-        '<span class="adx-legend-sep">·</span>' +
-        '<span class="adx-src-tag src-fhir">[FHIR]</span> auto-captured from your EMR — zero keystrokes' +
-        '<span class="adx-legend-sep">·</span>' +
-        '<span class="adx-src-tag src-sf">[Salesforce]</span> referral &amp; payment' +
-        '</div>';
+/* Shape marker (colorblind-safe). Returns an empty span with the shape +
+   reinforcing color classes. Reused by flag chips and scheduling cells. */
+function adxMarker(shape, color, extra) {
+    return '<span class="adx-mk adx-mk-' + shape + ' adx-color-' + (color || "muted") +
+           (extra ? ' ' + extra : '') + '" aria-hidden="true"></span>';
 }
+
+/* No-op kept for compatibility — the data-source legend has been removed
+   per Sean's request; the inline [DR]/[FHIR]/[Salesforce] tags remain. */
+function adxSourceLegend() { return ""; }
+
+/* --------- Theme persistence (light default, persists per user) --------- */
+function adxTheme() {
+    try { return localStorage.getItem("adx_theme") || "light"; } catch (e) { return "light"; }
+}
+function adxApplyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("adx_theme", t); } catch (e) {}
+    var btn = document.getElementById("adxThemeToggle");
+    if (btn) {
+        btn.setAttribute("aria-pressed", t === "dark" ? "true" : "false");
+        var knob = btn.querySelector(".knob");
+        if (knob) knob.textContent = t === "dark" ? "☾" : "☀";
+    }
+}
+function adxToggleTheme() {
+    adxApplyTheme(adxTheme() === "dark" ? "light" : "dark");
+}
+/* Apply at load so the page never flashes the wrong theme. */
+(function () {
+    try { document.documentElement.setAttribute("data-theme", localStorage.getItem("adx_theme") || "light"); } catch (e) {}
+})();
+
+/* --------- Portal tooltip controller --------- */
+var ADXTooltip = (function () {
+    var el = null;
+    function ensure() {
+        if (el) return el;
+        el = document.createElement("div");
+        el.id = "adxTooltip"; el.setAttribute("role", "tooltip");
+        el.innerHTML = '<div class="tip-title"></div><div class="tip-body"></div>';
+        document.body.appendChild(el);
+        return el;
+    }
+    function show(target) {
+        var def = target.getAttribute("data-tip");
+        if (!def) return;
+        var title = target.getAttribute("data-tip-title") || "";
+        var t = ensure();
+        t.querySelector(".tip-title").textContent = title;
+        t.querySelector(".tip-body").textContent = decodeURIComponent(def);
+        t.classList.add("show");
+        var r = target.getBoundingClientRect();
+        // measure
+        var tw = t.offsetWidth, th = t.offsetHeight;
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var x = r.left;
+        // clamp horizontally
+        if (x + tw > vw - 10) x = vw - tw - 10;
+        if (x < 10) x = 10;
+        var y = r.bottom + 8;
+        // flip above if it would overflow
+        if (y + th > vh - 10) y = r.top - th - 8;
+        t.style.left = x + "px";
+        t.style.top = y + "px";
+    }
+    function hide() { if (el) el.classList.remove("show"); }
+    function bind() {
+        document.addEventListener("mouseover", function (e) {
+            var t = e.target.closest && e.target.closest(".adx-info, [data-tip]");
+            if (t && t.hasAttribute("data-tip")) show(t);
+        });
+        document.addEventListener("mouseout", function (e) {
+            var t = e.target.closest && e.target.closest(".adx-info, [data-tip]");
+            if (t) hide();
+        });
+        document.addEventListener("focusin", function (e) {
+            var t = e.target.closest && e.target.closest(".adx-info, [data-tip]");
+            if (t && t.hasAttribute("data-tip")) show(t);
+        });
+        document.addEventListener("focusout", function () { hide(); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
+        window.addEventListener("scroll", hide, true);
+        window.addEventListener("resize", hide);
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bind);
+    } else { bind(); }
+    return { show: show, hide: hide };
+})();

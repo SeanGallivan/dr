@@ -104,15 +104,15 @@ var ADXApp = (function () {
         });
     }
 
-    /* ---- flag chips (no color-only meaning: icon + text), sorted by severity ---- */
+    /* ---- flag chips (shape + label; colorblind-safe), sorted by severity ---- */
     function flagChips(c) {
         var chips = (c.flags || []).slice().sort(function (a, b) {
             return ((ADX_FLAGS[b] || {}).rank || 0) - ((ADX_FLAGS[a] || {}).rank || 0);
         }).map(function (f) {
             var m = ADX_FLAGS[f];
             if (!m) return "";
-            return '<span class="adx-flag adx-flag-' + m.sev + '" title="' + esc(m.label) + '">' +
-                   '<span aria-hidden="true">' + m.icon + '</span>' +
+            return '<span class="adx-flag" title="' + esc(m.label) + '">' +
+                   '<span class="adx-flag-marker">' + adxMarker(m.marker, m.color) + '</span>' +
                    '<span class="adx-flag-text">' + esc(m.short) + '</span></span>';
         });
         return chips.length ? '<span class="adx-flags-cell">' + chips.join("") + '</span>' : '<span class="adx-muted">—</span>';
@@ -128,7 +128,7 @@ var ADXApp = (function () {
                 return '<div class="adx-dx">' + esc(c.diagnosis) + '</div>' +
                        '<div class="adx-dx-status">' + esc(c.diagnosisStatus) + '</div>';
             case "money":
-                return '<span class="adx-money">' + money(c.runningTotal) + '</span>';
+                return '<span class="adx-money" style="display:block; text-align:right;">' + money(c.runningTotal) + '</span>';
             case "provider":
                 return '<a class="adx-link" href="' + providerDetailUrl(c.ipmId) + '">' + esc(adxProvider(c.ipmId).shortName) + '</a>';
             case "payer":
@@ -136,44 +136,49 @@ var ADXApp = (function () {
                 return '<a class="adx-link" href="' + referralDetailUrl(c.clientId) + '">' + esc(pay.name) + '</a>' +
                        (pay.reminderRequired ? ' <span class="adx-pill adx-pill-warn" title="Slow payer">SLOW</span>' : '');
             case "agingNum":
-                return '<span class="' + (c.agingDays > 90 ? "adx-warn-text" : "") + '">' + c.agingDays + '</span>';
+                return '<span class="adx-mono ' + (c.agingDays > 90 ? "adx-warn-text" : "") + '" style="display:block; text-align:right;">' + c.agingDays + '</span>';
             case "scheduling":
                 return schedulingBadge(c.scheduling);
             case "nextVisit":
                 return c.nextVisit
-                    ? '<span class="' + (c.nextVisitFlag ? "adx-warn-text" : "") + '">' + fmtDate(c.nextVisit) +
-                      (c.nextVisitFlag ? ' <span aria-hidden="true">⌛</span>' : '') + '</span>'
+                    ? '<span class="adx-next ' + (c.nextVisitFlag ? "adx-next-bad" : "") + '">' + fmtDate(c.nextVisit) + '</span>'
                     : (c.unscheduledAgeDays > 0
-                        ? '<span class="adx-warn-text">Unscheduled ' + c.unscheduledAgeDays + 'd</span>'
+                        ? '<span class="adx-next adx-next-bad">Unscheduled · ' + c.unscheduledAgeDays + 'd</span>'
                         : '<span class="adx-muted">—</span>');
             case "deltaDays":
-                return deltaBadge(c.vsNetworkDays, signedDays(c.vsNetworkDays) + "d");
+                return '<div class="adx-vs-stack" style="text-align:right;">' + deltaBadge(c.vsNetworkDays, signedDays(c.vsNetworkDays) + "d") + '</div>';
             case "deltaMoney":
-                return deltaBadge(c.vsNetworkCost, signedMoney(c.vsNetworkCost));
+                return '<div class="adx-vs-stack" style="text-align:right;">' + deltaBadge(c.vsNetworkCost, signedMoney(c.vsNetworkCost)) + '</div>';
             case "pif":
                 var gain = c.pifCurrent - c.pifStart;
                 var dir = gain > 0 ? "up" : gain < 0 ? "down" : "flat";
-                return '<span class="adx-pif">' + c.pifStart + '<span aria-hidden="true">→</span>' + c.pifCurrent +
-                       ' <span class="adx-pif-' + dir + '">' + (gain > 0 ? "▲" : gain < 0 ? "▼" : "▬") + ' ' + (gain > 0 ? "+" : "") + gain + '</span></span>' +
-                       '<span class="sr-only"> PIF improved from ' + c.pifStart + ' to ' + c.pifCurrent + '</span>';
+                var delta = gain > 0 ? "+" + gain : (gain < 0 ? gain : "±0");
+                return '<span class="adx-pif adx-pif-' + dir + '">' +
+                       '<span class="pif-start">' + c.pifStart + '</span>' +
+                       '<span class="pif-arrow" aria-hidden="true">→</span>' +
+                       '<span class="pif-now">' + c.pifCurrent + '</span>' +
+                       '<span class="pif-delta">' + delta + '</span></span>' +
+                       '<span class="sr-only"> PIFs improved from ' + c.pifStart + ' to ' + c.pifCurrent + '</span>';
             case "flags":
                 return flagChips(c);
             case "actions":
                 var acts = '<button class="adx-actlink" onclick="ADXApp.action(\'message\',\'' + c.id + '\')" aria-label="Message doc about ' + esc(c.beneficiary) + '">Message Doc</button>';
                 acts += (c.scheduling === "No-show"
                     ? '<button class="adx-actlink adx-actlink-alert" onclick="ADXApp.action(\'flag-noshow\',\'' + c.id + '\')" aria-label="Flag no-show and request ADX outreach for ' + esc(c.beneficiary) + '">Flag no-show</button>'
-                    : '<button class="adx-actlink" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
+                    : '<button class="adx-actlink adx-actlink-secondary" onclick="ADXApp.action(\'move\',\'' + c.id + '\')" aria-label="Get this case moving for ' + esc(c.beneficiary) + '">Get Moving</button>');
                 return '<span class="adx-row-actions">' + acts + '</span>';
             default: return "";
         }
     }
 
     function schedulingBadge(s) {
-        var map = { "Scheduled": "navy", "Seen": "green", "No-show": "red", "Unscheduled": "yellow" };
-        return '<span class="ctx-badge ' + (map[s] || "muted") + '">' + esc(s) + '</span>';
+        var m = ADX_SCHED_MARKERS[s] || { marker: "dot-lg", color: "muted" };
+        return '<span class="adx-sched">' +
+               adxMarker(m.marker, m.color) +
+               '<span class="adx-sched-label">' + esc(s) + '</span></span>';
     }
     function deltaBadge(n, text) {
-        if (n === 0) return '<span class="adx-muted">on par</span>';
+        if (n === 0) return '<span class="adx-muted adx-mono">on par</span>';
         var good = n < 0; // below network norm (days/cost) is good
         return '<span class="adx-delta ' + (good ? "adx-delta-good" : "adx-delta-bad") + '">' +
                '<span aria-hidden="true">' + (good ? "▼" : "▲") + '</span> ' + esc(text) + '</span>';
@@ -265,9 +270,26 @@ var ADXApp = (function () {
             (role.subtitle ? '<p class="adx-sub">' + esc(role.subtitle) + '</p>' : '');
 
         var table = buildTable(cols, cases);
+        var totalVisible = all.length;
+        var totalShown = cases.length;
+
+        var footer = '<div class="adx-table-foot">' +
+            '<span>Showing ' + totalShown + ' of ' + totalVisible + ' cases</span>' +
+            '<span class="adx-shape-legend">' +
+                legendItem("triangle", "clay",  "Missed") +
+                legendItem("diamond",  "clay",  "Overdue") +
+                legendItem("square",   "clay",  "Off-track") +
+                legendItem("ring",     "amber", "Stale") +
+                legendItem("bar",      "muted", "Appt") +
+                legendItem("dot",      "muted", "Test") +
+            '</span></div>';
 
         document.getElementById("adxMain").innerHTML = header + strip +
-            '<div class="adx-table-wrap">' + table + '</div>';
+            '<div class="adx-table-wrap"><div style="overflow-x:auto;">' + table + '</div>' + footer + '</div>';
+    }
+
+    function legendItem(shape, color, label) {
+        return '<span class="lg-item">' + adxMarker(shape, color) + esc(label) + '</span>';
     }
 
     function stat(label, value, alert, info) {
@@ -290,7 +312,8 @@ var ADXApp = (function () {
 
         var body = cases.length
             ? cases.map(function (c) {
-                var rowCls = caseSeverity(c) === 3 ? " adx-row-urgent" : "";
+                var sev = caseSeverity(c);
+                var rowCls = sev === 3 ? " adx-row-urgent" : (sev === 2 ? " adx-row-warn" : "");
                 return '<tr class="' + rowCls.trim() + '">' + cols.map(function (col) {
                     return '<td data-label="' + esc(col.label) + '">' + cell(c, col) + '</td>';
                 }).join("") + '</tr>';

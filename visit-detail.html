@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADX | Visit Detail</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=5">
+    <title>Derived Results | Visit Detail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body style="overflow:auto;">
     <a href="#detailBody" class="skip-link">Skip to main content</a>
     <header>
         <div class="header-brand">
-            <a class="logo-area" href="dashboard.html?view=DR_BRAD&tier=daily">Derived Results</a>
+            <a class="logo-area" href="dashboard.html?view=DR_BRAD&tier=daily">DERIVED&nbsp;RESULTS</a>
+            <span class="adx-brand-sep"></span>
+            <span class="adx-eyebrow">Visit Detail</span>
+        </div>
+        <div class="adx-header-right">
+            <button id="adxThemeToggle" class="adx-theme-toggle" onclick="adxToggleTheme()"
+                    aria-label="Toggle light / dark theme" aria-pressed="false" type="button">
+                <span class="knob">☀</span>
+            </button>
+            <div class="adx-avatar" aria-hidden="true">BV</div>
         </div>
     </header>
     <div id="detailHeader" class="detail-header"></div>
