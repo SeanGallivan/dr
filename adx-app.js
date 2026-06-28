@@ -122,8 +122,10 @@ var ADXApp = (function () {
     function cell(c, col) {
         switch (col.type) {
             case "text":
+                var dx = adxPatientDx(c);
                 return '<a class="adx-link" href="' + caseDetailUrl(c) + '">' + esc(c.beneficiary) + '</a>' +
-                       (c.newIntake ? ' <span class="adx-pill adx-pill-new" title="New intake">NEW</span>' : '');
+                       (c.newIntake ? ' <span class="adx-pill adx-pill-new" title="New intake">NEW</span>' : '') +
+                       (dx.total > 1 ? ' <span class="adx-dx-count" title="Diagnosis ' + dx.index + ' of ' + dx.total + ' for this patient">' + dx.index + '/' + dx.total + ' dx</span>' : '');
             case "diagnosis":
                 return '<div class="adx-dx">' + esc(c.diagnosis) + '</div>' +
                        '<div class="adx-dx-status">' + esc(c.diagnosisStatus) + '</div>';
@@ -393,6 +395,7 @@ var ADXApp = (function () {
         var p = getProvider();
         var pct = p.composite;
         var rank = rankAmong(p, "ipm");
+        var agg = aggregateBonus(providerCases(p.id));
         var html = '<h2 class="adx-h2">Weekly — Management</h2><p class="adx-sub">Your coordinated episodes, the referrals ADX placed with you, and your standing.</p>';
 
         html += renderReferralRevenue(p);
@@ -401,7 +404,7 @@ var ADXApp = (function () {
         html += '<div class="clinical-scorecard">' +
             scoreCard("Your Composite Score " + adxInfo("composite"), pct, "Network avg: " + ADX_NETWORK_NORMS.composite) +
             scoreCard("IPM Rank", rank.pos + " of " + rank.total, "Among IPMs") +
-            scoreCard("Bonus Eligibility " + adxInfo("bonus"), p.bonusEligible ? "Eligible" : "Not yet", "Threshold: " + ADX_BONUS_THRESHOLD) +
+            scoreCard("Bonus Eligibility " + adxInfo("bonus"), agg.eligible ? "Eligible" : "Not yet", agg.total + " pts · " + agg.count + " diagnoses · avg " + agg.avg + " (need " + ADX_BONUS_POINTS_THRESHOLD + ")") +
             '</div>';
 
         html += exportLink();
@@ -411,8 +414,8 @@ var ADXApp = (function () {
     function renderNetworkWeekly() {
         var p = getProvider();
         var pct = p.composite;
-        var eligible = pct >= ADX_BONUS_THRESHOLD;
         var rank = rankAmong(p, "network");
+        var agg = aggregateBonus(providerCases(p.id));
 
         var html = '<h2 class="adx-h2">Your Weekly Standing</h2><p class="adx-sub">The referrals ADX placed with you, what ADX paid, and how you compare to the network.</p>';
 
@@ -422,18 +425,18 @@ var ADXApp = (function () {
         html += '<div class="clinical-scorecard">' +
             scoreCard("Your Composite Score " + adxInfo("composite"), pct, "Network avg: " + ADX_NETWORK_NORMS.composite) +
             scoreCard("Network Rank", rank.pos + " of " + rank.total, "Among network physicians") +
-            scoreCard("Bonus Eligibility " + adxInfo("bonus"), eligible ? "Eligible" : "Not yet", "Threshold: " + ADX_BONUS_THRESHOLD) +
+            scoreCard("Bonus Eligibility " + adxInfo("bonus"), agg.eligible ? "Eligible" : "Not yet", agg.total + " pts · " + agg.count + " diagnoses · avg " + agg.avg + " (need " + ADX_BONUS_POINTS_THRESHOLD + ")") +
             '</div>';
 
-        html += sectionHead("Where You're Doing Well vs Poorly", "DR");
+        html += sectionHead("Where You're Doing Well vs Poorly — by patient / diagnosis", "DR");
         var mine = visibleCases();
         var well = mine.filter(function (c) { return (c.pifCurrent - c.pifStart) >= 3; });
         var poorly = mine.filter(function (c) { return (c.pifCurrent - c.pifStart) <= 1 || c.scheduling === "No-show"; });
         html += '<div class="deep-grid">' +
-            '<div class="deep-card" style="border-left:4px solid #0a8f2c;"><h4>Doing Well (' + well.length + ')</h4><p>' +
-            (well.map(function (c) { return esc(c.beneficiary) + " — PIFs +" + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
+            '<div class="deep-card" style="border-left:4px solid var(--green);"><h4>Doing Well (' + well.length + ')</h4><p>' +
+            (well.map(function (c) { return esc(c.beneficiary) + " · " + esc(c.diagnosis) + " — PIFs +" + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
             '<div class="deep-card alert-card"><h4>Needs Attention (' + poorly.length + ')</h4><p>' +
-            (poorly.map(function (c) { return esc(c.beneficiary) + " — " + (c.scheduling === "No-show" ? "no-show" : "PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
+            (poorly.map(function (c) { return esc(c.beneficiary) + " · " + esc(c.diagnosis) + " — " + (c.scheduling === "No-show" ? "no-show" : "PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
             '</div>';
         html += exportLink();
         document.getElementById("adxMain").innerHTML = html;
@@ -449,6 +452,7 @@ var ADXApp = (function () {
             '<th scope="col">Avg Days in ADX ' + adxInfo("avg-days") + '</th><th scope="col">Bonus ' + adxInfo("bonus") + '</th></tr></thead><tbody>' +
             rows.map(function (p, i) {
                 var tag = i === 0 ? ' <span class="adx-pill adx-pill-good">TOP</span>' : (i === rows.length - 1 ? ' <span class="adx-pill adx-pill-warn">BOTTOM</span>' : '');
+                var agg = aggregateBonus(providerCases(p.id));
                 return '<tr><td data-label="Doctor"><a class="adx-link" href="' + providerDetailUrl(p.id) + '">' + esc(p.name) + '</a>' + tag + '</td>' +
                     '<td data-label="Role">' + roleLabel(p.role) + '</td>' +
                     '<td data-label="Composite"><strong>' + p.composite + '</strong></td>' +
@@ -456,7 +460,8 @@ var ADXApp = (function () {
                     '<td data-label="RTW">' + Math.round(p.returnToWork * 100) + '%</td>' +
                     '<td data-label="Cost">' + money(p.avgCostPerCase) + '</td>' +
                     '<td data-label="Days">' + p.avgDaysInADX + '</td>' +
-                    '<td data-label="Bonus">' + (p.bonusEligible ? '<span class="adx-ok-text">✓ Eligible</span>' : '<span class="adx-muted">—</span>') + '</td></tr>';
+                    '<td data-label="Bonus">' + (agg.eligible ? '<span class="adx-ok-text">✓ Eligible</span>' : '<span class="adx-muted">—</span>') +
+                        ' <span class="adx-muted" style="font-size:0.85em;">' + agg.avg + ' avg · ' + agg.total + ' pts</span></td></tr>';
             }).join("") + '</tbody></table>';
     }
 
@@ -500,7 +505,7 @@ var ADXApp = (function () {
         html += '<div class="deep-grid" style="grid-template-columns:1fr 1fr 1fr;">' +
             '<div class="deep-card"><h4>Face Value</h4><p class="adx-big">' + money(pf.faceValue) + '</p></div>' +
             '<div class="deep-card"><h4>Realization Rate ' + adxInfo("realization") + '</h4><p class="adx-big">' + Math.round(pf.realizationRate * 100) + '%</p></div>' +
-            '<div class="deep-card" style="border-left:4px solid var(--primary-navy);"><h4>Weighted Expected Value ' + adxInfo("weighted-ev") + '</h4><p class="adx-big" style="color:var(--primary-navy);">' + money(pf.weightedValue) + '</p></div>' +
+            '<div class="deep-card" style="border-left:4px solid var(--accent);"><h4>Weighted Expected Value ' + adxInfo("weighted-ev") + '</h4><p class="adx-big" style="color:var(--accent);">' + money(pf.weightedValue) + '</p></div>' +
             '</div>' +
             '<p class="adx-sub" style="font-style:italic;">' + esc(pf.note) + '</p>';
 

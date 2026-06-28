@@ -106,6 +106,57 @@ var ADX_TIERS = {
    score and eligibility without claiming a method (change-req D1/D2). */
 var ADX_BONUS_THRESHOLD = 80;
 
+/* ---------------------------------------------------------------------
+   BONUS — aggregated per patient/diagnosis pair.
+   Every ADX_CASES row IS one patient/diagnosis pair. Bonus is built up
+   from the pairs and never collapsed to the patient: each pair earns
+   "bonus points" from its PIFs trajectory toward the patient-defined
+   target (PIFs drive bonus eligibility per ADX), plus a completion
+   kicker when the diagnosis reaches MBT. A physician's or a patient's
+   bonus is the aggregate across their pairs. Prototype calc — ADX
+   supplies the official weighting (see D2).
+--------------------------------------------------------------------- */
+var ADX_BONUS_POINTS_THRESHOLD = 40;   // avg points per pair for eligibility
+
+function caseBonusPoints(c) {
+    if (!c) return 0;
+    var gain = (c.pifCurrent || 0) - (c.pifStart || 0);
+    var span = Math.max(1, (c.pifTarget || 10) - (c.pifStart || 0));
+    var progress = Math.max(0, Math.min(1, gain / span));   // 0..1 toward target
+    var pts = Math.round(progress * 100);                    // 0..100 per pair
+    if (c.status === "Inactive complete") pts += 20;         // reached-MBT kicker
+    return pts;
+}
+
+/* Aggregate a list of patient/diagnosis pairs into a bonus rollup. */
+function aggregateBonus(cases) {
+    var list = cases || [];
+    var total = list.reduce(function (s, c) { return s + caseBonusPoints(c); }, 0);
+    var count = list.length;
+    var avg = count ? Math.round(total / count) : 0;
+    return { total: total, count: count, avg: avg, eligible: count > 0 && avg >= ADX_BONUS_POINTS_THRESHOLD };
+}
+
+/* All patient/diagnosis pairs a physician is responsible for or treating. */
+function providerCases(pid) {
+    return ADX_CASES.filter(function (c) {
+        return c.ipmId === pid || (c.teamProviderIds || []).indexOf(pid) >= 0;
+    });
+}
+
+/* All diagnosis pairs for one patient (same person, different episode). */
+function patientCases(beneficiary, dob) {
+    return ADX_CASES.filter(function (c) {
+        return c.beneficiary === beneficiary && c.dob === dob;
+    }).sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+}
+
+/* Which diagnosis (1 of N) a given pair is, for "patient/diagnosis" labels. */
+function adxPatientDx(c) {
+    var peers = patientCases(c.beneficiary, c.dob);
+    return { index: peers.findIndex(function (x) { return x.id === c.id; }) + 1, total: peers.length };
+}
+
 /* Which composite components are clinical outcomes vs management inputs (C1c) */
 var ADX_COMPONENT_KIND = {
     "PIF Median Gain":  "clinical",   // PIFs
@@ -124,7 +175,8 @@ var ADX_DEFINITIONS = {
     "time-to-mbt": "Time to MBT: time from the start of treatment to the point of Maximum Benefit of Therapy.",
     "mbt": "Maximum Benefit of Therapy: the point at which a patient has reached the greatest clinically meaningful improvement treatment can reasonably provide; further treatment yields little or no added gain.",
     "composite": "Composite score: a single 0–100 score summarizing a physician's outcomes and efficiency for network benchmarking and bonus eligibility. (Official ADX formula pending.)",
-    "bonus": "Bonus eligibility: whether the physician's composite score meets the network threshold for a performance bonus.",
+    "bonus": "Bonus eligibility: built up from each patient/diagnosis pair's PIFs trajectory toward its target, then aggregated — never collapsed to the patient. A physician (or patient) qualifies when the average bonus points across their pairs meet the network threshold.",
+    "bonus-points": "Bonus points for one patient/diagnosis pair: its PIFs progress toward the patient-defined target (0–100), plus a completion kicker at MBT. These aggregate into the physician and patient totals.",
     "aging": "Aging (days): number of days the case has been open in ADX since intake.",
     "running-total": "Running total: cumulative cost accrued on this case across all providers and services in the episode.",
     "vs-days": "vs Network — Days: how this case's aging compares to the network norm for similar cases. A positive value means it is running longer than peers.",

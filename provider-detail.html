@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body style="overflow:auto;">
     <a href="#detailBody" class="skip-link">Skip to main content</a>
@@ -47,6 +47,7 @@
 
         var n = ADX_NETWORK_NORMS;
         var theirCases = ADX_CASES.filter(function(c){ return c.ipmId === p.id || (c.teamProviderIds||[]).indexOf(p.id) >= 0; });
+        var agg = aggregateBonus(theirCases);
         var well = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) >= 3; });
         var poorly = theirCases.filter(function(c){ return (c.pifCurrent - c.pifStart) <= 1 || c.scheduling === "No-show"; });
 
@@ -55,11 +56,12 @@
         if (p.composite != null) {
             html +=
                 '<div class="section-header"><h3>Composite Score ' + adxInfo("composite") + ' <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
-                '<div class="clinical-scorecard" style="grid-template-columns:1fr 1fr;">' +
+                '<div class="clinical-scorecard">' +
                     '<div class="scorecard-card"><div class="scorecard-label">Composite Score ' + adxInfo("composite") + '</div><div class="scorecard-value">' + p.composite + '</div><div class="scorecard-sub">Network avg: ' + n.composite + '</div></div>' +
-                    '<div class="scorecard-card"><div class="scorecard-label">Bonus Eligibility ' + adxInfo("bonus") + '</div><div class="scorecard-value" style="font-size:1.6rem;">' + (p.bonusEligible ? "Eligible" : "Not yet") + '</div><div class="scorecard-sub">Network threshold: ' + ADX_BONUS_THRESHOLD + '</div></div>' +
+                    '<div class="scorecard-card"><div class="scorecard-label">Aggregate Bonus ' + adxInfo("bonus") + '</div><div class="scorecard-value">' + agg.total + '</div><div class="scorecard-sub">points across ' + agg.count + ' patient/diagnosis pairs · avg ' + agg.avg + '</div></div>' +
+                    '<div class="scorecard-card"><div class="scorecard-label">Bonus Eligibility ' + adxInfo("bonus") + '</div><div class="scorecard-value" style="font-size:1.6rem;">' + (agg.eligible ? "Eligible" : "Not yet") + '</div><div class="scorecard-sub">avg ' + agg.avg + ' vs ' + ADX_BONUS_POINTS_THRESHOLD + ' needed / pair</div></div>' +
                 '</div>' +
-                '<p class="adx-sub">The composite combines <strong>clinical-outcome</strong> components (PIFs, Time to MBT) with <strong>management</strong> components (cost, return to work). The official ADX weighting is pending; this view shows the components and how they compare to the network norm — not a formula.</p>' +
+                '<p class="adx-sub">The composite combines <strong>clinical-outcome</strong> components (PIFs, Time to MBT) with <strong>management</strong> components (cost, return to work). <strong>Bonus is aggregated from each patient/diagnosis pair</strong> (see the combinations below), not collapsed to the patient. The official ADX weighting is pending; this view shows the components and how they compare to the network norm — not a formula.</p>' +
 
                 '<div class="section-header"><h3>Score Components vs Network Norm</h3></div>' +
                 '<table class="table-custom"><thead><tr><th>Component</th><th>Category</th><th>This Doctor</th><th>Network Norm</th><th>Read</th></tr></thead><tbody>' +
@@ -71,22 +73,32 @@
         }
 
         html +=
-            '<div class="section-header"><h3>Patients Doing Well vs Poorly <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<div class="section-header"><h3>Doing Well vs Poorly — by patient / diagnosis <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
             '<div class="deep-grid">' +
-                '<div class="deep-card" style="border-left:4px solid #0a8f2c;"><h4>Doing Well (' + well.length + ')</h4><p>' +
-                (well.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> — PIFs +' + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
+                '<div class="deep-card" style="border-left:4px solid var(--green);"><h4>Doing Well (' + well.length + ')</h4><p>' +
+                (well.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> · ' + esc(c.diagnosis) + ' — PIFs +' + (c.pifCurrent - c.pifStart); }).join("<br>") || "—") + '</p></div>' +
                 '<div class="deep-card alert-card"><h4>Needs Attention (' + poorly.length + ')</h4><p>' +
-                (poorly.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> — ' + (c.scheduling==="No-show"?"no-show":"PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
+                (poorly.map(function(c){ return '<a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a> · ' + esc(c.diagnosis) + ' — ' + (c.scheduling==="No-show"?"no-show":"PIFs +" + (c.pifCurrent - c.pifStart)); }).join("<br>") || "—") + '</p></div>' +
             '</div>' +
 
-            '<div class="section-header"><h3>All Cases (' + theirCases.length + ')</h3></div>' +
-            '<table class="adx-table"><thead><tr><th scope="col">Patient</th><th scope="col">Diagnosis</th><th scope="col">Running Total ' + adxInfo("running-total") + '</th><th scope="col">PIFs ' + adxInfo("pif") + '</th><th scope="col">Status ' + adxInfo("status") + '</th></tr></thead><tbody>' +
-                theirCases.map(function(c){ return '<tr><td data-label="Patient"><a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a></td>' +
-                    '<td data-label="Diagnosis">' + esc(c.diagnosis) + '</td>' +
-                    '<td data-label="Running Total"><span class="adx-money">' + money(c.runningTotal) + '</span></td>' +
-                    '<td data-label="PIF">' + c.pifStart + '→' + c.pifCurrent + '</td>' +
-                    '<td data-label="Status">' + esc(c.status) + '</td></tr>'; }).join("") +
-            '</tbody></table>';
+            (function(){
+                /* Patient / diagnosis combinations — by diagnosis, aggregated into a total. */
+                var combos = theirCases.slice().sort(function(a,b){ return a.diagnosis < b.diagnosis ? -1 : (a.diagnosis > b.diagnosis ? 1 : (a.beneficiary < b.beneficiary ? -1 : 1)); });
+                var sumRT = combos.reduce(function(s,c){ return s + c.runningTotal; }, 0);
+                var sumPts = combos.reduce(function(s,c){ return s + caseBonusPoints(c); }, 0);
+                return '<div class="section-header"><h3>Patient / Diagnosis Combinations (' + combos.length + ') ' + adxInfo("bonus-points") + ' <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+                '<table class="adx-table"><thead><tr><th scope="col">Patient</th><th scope="col">Diagnosis</th><th scope="col" style="text-align:right;">PIFs ' + adxInfo("pif") + '</th><th scope="col" style="text-align:right;">Running Total ' + adxInfo("running-total") + '</th><th scope="col" style="text-align:right;">Bonus Pts ' + adxInfo("bonus-points") + '</th><th scope="col">Status ' + adxInfo("status") + '</th></tr></thead><tbody>' +
+                    combos.map(function(c){ var g = c.pifCurrent - c.pifStart; return '<tr><td data-label="Patient"><a class="adx-link" href="case-detail.html?id=' + c.id + '&view=' + view + '">' + esc(c.beneficiary) + '</a></td>' +
+                        '<td data-label="Diagnosis">' + esc(c.diagnosis) + '</td>' +
+                        '<td data-label="PIFs" style="text-align:right;"><span class="adx-mono">' + c.pifStart + '→' + c.pifCurrent + ' <span class="' + (g>0?"adx-ok-text":"adx-muted") + '">' + (g>0?"+"+g:(g<0?g:"±0")) + '</span></span></td>' +
+                        '<td data-label="Running Total" style="text-align:right;"><span class="adx-money">' + money(c.runningTotal) + '</span></td>' +
+                        '<td data-label="Bonus Pts" style="text-align:right;"><span class="adx-mono">' + caseBonusPoints(c) + '</span></td>' +
+                        '<td data-label="Status">' + esc(c.status) + '</td></tr>'; }).join("") +
+                    '<tr class="adx-total-row"><td><strong>Total — ' + combos.length + ' combinations</strong></td><td></td><td></td>' +
+                        '<td style="text-align:right;"><span class="adx-money">' + money(sumRT) + '</span></td>' +
+                        '<td style="text-align:right;"><span class="adx-mono"><strong>' + sumPts + '</strong></span></td><td></td></tr>' +
+                '</tbody></table>';
+            })();
 
         document.getElementById("detailBody").innerHTML = html;
 

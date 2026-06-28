@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body style="overflow:auto;">
     <a href="#detailBody" class="skip-link">Skip to main content</a>
@@ -57,13 +57,37 @@
             '<div class="header-actions">' +
             '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
 
-        var episodesBox = allEpisodes.length > 1
-            ? '<div class="adx-episodes"><span class="adx-episodes-label">This patient has ' + allEpisodes.length + ' diagnoses / episodes:</span>' +
-              allEpisodes.map(function(x){ return x.id === c.id
-                  ? '<span class="adx-episode current" aria-current="true">' + esc(x.diagnosis) + ' <span class="adx-episode-now">(viewing)</span></span>'
-                  : '<a class="adx-episode" href="case-detail.html?id=' + x.id + '&view=' + view + '">' + esc(x.diagnosis) + '</a>'; }).join('') +
-              '</div>'
-            : '';
+        // Patient-level: every diagnosis is its own patient/diagnosis pair.
+        // Progress, tracking, and bonus are shown per pair and aggregated.
+        var patientAgg = aggregateBonus(allEpisodes);
+        var patientSumRT = allEpisodes.reduce(function(s,x){ return s + x.runningTotal; }, 0);
+        var patientDxRows = allEpisodes.map(function(x){
+            var g = x.pifCurrent - x.pifStart;
+            var isCur = x.id === c.id;
+            var dxCell = isCur
+                ? '<strong>' + esc(x.diagnosis) + '</strong> <span class="adx-episode-now">(viewing)</span>'
+                : '<a class="adx-link" href="case-detail.html?id=' + x.id + '&view=' + view + '">' + esc(x.diagnosis) + '</a>';
+            return '<tr' + (isCur ? ' class="adx-row-current"' : '') + '>' +
+                '<td data-label="Diagnosis">' + dxCell + '</td>' +
+                '<td data-label="Phase">' + esc(x.diagnosisStatus) + ' · ' + esc(x.status) + '</td>' +
+                '<td data-label="PIFs" style="text-align:right;"><span class="adx-mono">' + x.pifStart + '→' + x.pifCurrent + ' <span class="' + (g>0?"adx-ok-text":"adx-muted") + '">' + (g>0?"+"+g:(g<0?g:"±0")) + '</span></span></td>' +
+                '<td data-label="Aging" style="text-align:right;"><span class="adx-mono">' + x.agingDays + '</span></td>' +
+                '<td data-label="Running Total" style="text-align:right;"><span class="adx-money">' + money(x.runningTotal) + '</span></td>' +
+                '<td data-label="Bonus Pts" style="text-align:right;"><span class="adx-mono">' + caseBonusPoints(x) + '</span></td>' +
+                '</tr>';
+        }).join("");
+        var patientDxSection =
+            '<div class="section-header"><h3>Diagnoses — Progress, Tracking &amp; Bonus ' + adxInfo("bonus-points") + ' <span style="font-size:0.62rem; font-weight:800; color:#888;">[DR]</span></h3></div>' +
+            '<p class="adx-sub">Each diagnosis is its own patient/diagnosis pair. Bonus is the aggregate of the pairs below, not collapsed to the patient.</p>' +
+            '<table class="adx-table"><thead><tr><th scope="col">Diagnosis</th><th scope="col">Phase · Status ' + adxInfo("status") + '</th>' +
+                '<th scope="col" style="text-align:right;">PIFs ' + adxInfo("pif") + '</th><th scope="col" style="text-align:right;">Aging ' + adxInfo("aging") + '</th>' +
+                '<th scope="col" style="text-align:right;">Running Total ' + adxInfo("running-total") + '</th><th scope="col" style="text-align:right;">Bonus Pts ' + adxInfo("bonus-points") + '</th></tr></thead><tbody>' +
+                patientDxRows +
+                '<tr class="adx-total-row"><td><strong>All diagnoses (' + allEpisodes.length + ')</strong></td><td></td><td></td><td></td>' +
+                    '<td style="text-align:right;"><span class="adx-money">' + money(patientSumRT) + '</span></td>' +
+                    '<td style="text-align:right;"><span class="adx-mono"><strong>' + patientAgg.total + '</strong></span></td></tr>' +
+            '</tbody></table>' +
+            '<p class="adx-sub">Aggregate bonus: <strong>' + patientAgg.total + ' pts</strong> across ' + patientAgg.count + ' diagnosis pair' + (patientAgg.count !== 1 ? 's' : '') + ' · avg ' + patientAgg.avg + '/pair · <strong>' + (patientAgg.eligible ? 'Eligible' : 'Not yet') + '</strong> (need ' + ADX_BONUS_POINTS_THRESHOLD + '/pair) ' + adxInfo("bonus") + '</p>';
 
         var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
         var gain = c.pifCurrent - c.pifStart;
@@ -87,6 +111,9 @@
 
         var html =
             '<a class="adx-back" href="dashboard.html?view=' + view + '&tier=daily"><span aria-hidden="true">←</span> Back to dashboard</a>' +
+            patientDxSection +
+
+            '<div class="section-header"><h3>Diagnosis Detail — ' + esc(c.diagnosis) + '</h3></div>' +
             '<div class="visit-context">' +
                 '<span class="ctx-badge navy">' + esc(c.diagnosisStatus) + '</span>' +
                 '<span class="ctx-badge ' + (c.status === "Active" ? "green" : c.status === "Maintenance" ? "yellow" : "muted") + '">' + esc(c.status) + '</span>' +
@@ -94,9 +121,7 @@
                 '<span class="ctx-badge muted">IPM: ' + esc(ipm.name) + '</span>' +
                 '<span class="ctx-badge muted">Client: ' + esc(client.name) + '</span>' +
             '</div>' +
-            episodesBox +
 
-            '<div class="section-header"><h3>' + esc(c.diagnosis) + '</h3></div>' +
             '<div class="daily-grid">' +
                 '<div class="daily-stat"><span class="stat-label">Running Total Spent ' + adxInfo("running-total") + '</span><span class="stat-value" style="font-size:2rem;">' + money(c.runningTotal) + '</span></div>' +
                 '<div class="daily-stat"><span class="stat-label">PIFs (start → now) ' + adxInfo("pif") + '</span><span class="stat-value" style="font-size:2rem;">' + c.pifStart + ' → ' + c.pifCurrent + ' <span class="adx-pif-' + (gain>0?'up':gain<0?'down':'flat') + '" style="font-size:1rem;">' + (gain>0?'▲ +':gain<0?'▼ ':'▬ ') + gain + '</span></span><span style="font-size:0.7rem; color:#888;">Patient-identified · Target: ' + c.pifTarget + '</span></div>' +

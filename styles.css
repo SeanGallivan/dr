@@ -865,6 +865,61 @@ a.adx-episode:hover { background: var(--accent-soft); }
 }
 
 /* -----------------------------------------------------------
+   STRATEGIC — Demonstrated Systems Efficacy box
+   ----------------------------------------------------------- */
+.adx-efficacy {
+    margin-top: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 22px 20px;
+}
+.adx-efficacy-head {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink);
+}
+.adx-efficacy-head span {
+    color: var(--faint); font-weight: 500;
+    letter-spacing: 0; text-transform: none;
+}
+.adx-efficacy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    margin-top: 14px;
+    background: var(--line);              /* shows through as hairline separators */
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.adx-eff-item { background: var(--surface); padding: 14px 16px; }
+.adx-eff-value {
+    font-family: var(--num-font); font-size: 26px; font-weight: 500;
+    color: var(--ink); letter-spacing: -0.01em; line-height: 1;
+}
+.adx-eff-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin-top: 8px;
+}
+.adx-eff-trend { font-size: 11px; font-weight: 500; margin-top: 6px; }
+
+/* Patient/diagnosis count badge in the Case cell */
+.adx-dx-count {
+    display: inline-block; font-size: 8.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--line-2);
+    border-radius: 3px; padding: 1px 5px; vertical-align: middle;
+    font-family: var(--num-font);
+}
+
+/* Aggregate total row + currently-viewed row in patient/diagnosis tables */
+.adx-table tbody tr.adx-total-row { border-top: 1px solid var(--line-2); background: var(--surface-2); }
+.adx-table tbody tr.adx-total-row td { font-weight: 600; }
+.adx-table tbody tr.adx-row-current { background: var(--surface-2); }
+.adx-table tbody tr.adx-row-current > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* -----------------------------------------------------------
    PRINT / RESPONSIVE
    ----------------------------------------------------------- */
 @media (max-width: 900px) {
