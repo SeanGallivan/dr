@@ -529,6 +529,367 @@ var ADX_CASES = [
             { date: "2026-04-22", note: "ESI series; limited relief.", source: "DR" },
             { date: "2026-06-12", note: "Surgical workup begun. PIF 3.", source: "DR" }
         ]
+    },
+
+    /* ---------------------------------------------------------------
+       Additional diagnoses so patients carry multiple patient/diagnosis
+       pairs (realistic for PI / MVA cases with several injuries).
+       Distribution target: ~50% of patients with 2 diagnoses, ~25% with
+       3. Each pair keeps the patient's existing IPM, payer, and client.
+    --------------------------------------------------------------- */
+
+    /* Marcus Whitfield — 3rd diagnosis */
+    {
+        id: "C1019", beneficiary: "Marcus Whitfield", dob: "4/12/1979", age: 47,
+        diagnosis: "Cervical strain (whiplash)", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY1", clientId: "CL1",
+        runningTotal: 5200, agingDays: 30,
+        scheduling: "Scheduled", lastVisit: "2026-06-05", nextVisit: "2026-06-26",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -20, vsNetworkCost: -8200,
+        pifStart: 4, pifCurrent: 6, pifTarget: 8,
+        flags: [],
+        planNote: "Whiplash from the same MVA; PT progressing well.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 2200, source: "DR" },
+            { item: "Cervical X-ray + PT (Ghazi)", amount: 3000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-19", note: "Intake — IPM (Vilims). PIF 4.", source: "DR" },
+            { date: "2026-06-05", note: "PT progressing; ROM improving. PIF 6.", source: "DR" }
+        ]
+    },
+
+    /* Roy Calderon — 2nd & 3rd diagnoses */
+    {
+        id: "C1020", beneficiary: "Roy Calderon", dob: "11/3/1974", age: 51,
+        diagnosis: "Cervical radiculopathy C6", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_DUHON"],
+        payerId: "PAY4", clientId: "CL5",
+        runningTotal: 12400, agingDays: 70,
+        scheduling: "Scheduled", lastVisit: "2026-05-28", nextVisit: "2026-06-24",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: 9, vsNetworkCost: 1100,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Cervical component of a multi-level injury; ESI underway.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 3000, source: "DR" },
+            { item: "Cervical MRI + ESI (Duhon)", amount: 9400, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-04-15", note: "Intake — IPM (Trainor). PIF 3.", source: "DR" },
+            { date: "2026-05-28", note: "ESI administered; partial relief. PIF 5.", source: "DR" }
+        ]
+    },
+    {
+        id: "C1021", beneficiary: "Roy Calderon", dob: "11/3/1974", age: 51,
+        diagnosis: "Right shoulder impingement", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_HATZ"],
+        payerId: "PAY4", clientId: "CL5",
+        runningTotal: 6800, agingDays: 45,
+        scheduling: "Seen", lastVisit: "2026-06-10", nextVisit: "2026-07-01",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -10, vsNetworkCost: -7000,
+        pifStart: 4, pifCurrent: 6, pifTarget: 8,
+        flags: [],
+        planNote: "Shoulder responding to injection + PT.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2400, source: "DR" },
+            { item: "Subacromial injection + PT (Hatzidakis)", amount: 4400, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-10", note: "Intake — IPM (Trainor). PIF 4.", source: "DR" },
+            { date: "2026-06-10", note: "Injection; improving. PIF 6.", source: "DR" }
+        ]
+    },
+
+    /* Terrence Bauer — 2nd & 3rd diagnoses */
+    {
+        id: "C1022", beneficiary: "Terrence Bauer", dob: "1/8/1968", age: 58,
+        diagnosis: "Lumbar strain", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY3", clientId: "CL3",
+        runningTotal: 7100, agingDays: 60,
+        scheduling: "Scheduled", lastVisit: "2026-06-02", nextVisit: "2026-06-23",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: 5, vsNetworkCost: -3000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Lumbar component; conservative PT course.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2600, source: "DR" },
+            { item: "PT course (Ghazi)", amount: 4500, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-04-20", note: "Intake — IPM (Trainor). PIF 3.", source: "DR" },
+            { date: "2026-06-02", note: "PT progressing. PIF 5.", source: "DR" }
+        ]
+    },
+    {
+        id: "C1023", beneficiary: "Terrence Bauer", dob: "1/8/1968", age: 58,
+        diagnosis: "Right wrist sprain w/ TFCC tear", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_YI"],
+        payerId: "PAY3", clientId: "CL3",
+        runningTotal: 4300, agingDays: 28,
+        scheduling: "Seen", lastVisit: "2026-06-08", nextVisit: "2026-06-29",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -18, vsNetworkCost: -9000,
+        pifStart: 5, pifCurrent: 6, pifTarget: 7,
+        flags: [],
+        planNote: "Wrist splinted; hand-surgery consult done.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2100, source: "DR" },
+            { item: "Wrist splint + hand consult (Yi)", amount: 2200, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-21", note: "Intake — IPM (Trainor). PIF 5.", source: "DR" },
+            { date: "2026-06-08", note: "Splinting; mild improvement. PIF 6.", source: "DR" }
+        ]
+    },
+
+    /* Daniela Ferreira — 2nd & 3rd diagnoses */
+    {
+        id: "C1024", beneficiary: "Daniela Ferreira", dob: "9/30/1986", age: 39,
+        diagnosis: "Cervical facet syndrome", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY2", clientId: "CL2",
+        runningTotal: 8900, agingDays: 40,
+        scheduling: "Scheduled", lastVisit: "2026-06-04", nextVisit: "2026-06-25",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -8, vsNetworkCost: -2000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Cervical facet pain; medial branch blocks + PT.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 2900, source: "DR" },
+            { item: "Medial branch blocks + PT (Ghazi)", amount: 6000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-05", note: "Intake — IPM (Vilims). PIF 3.", source: "DR" },
+            { date: "2026-06-04", note: "Blocks; partial relief. PIF 5.", source: "DR" }
+        ]
+    },
+    {
+        id: "C1025", beneficiary: "Daniela Ferreira", dob: "9/30/1986", age: 39,
+        diagnosis: "Lumbar disc bulge L5-S1", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_DUHON"],
+        payerId: "PAY2", clientId: "CL2",
+        runningTotal: 11200, agingDays: 52,
+        scheduling: "Seen", lastVisit: "2026-06-09", nextVisit: "2026-06-30",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: 3, vsNetworkCost: 900,
+        pifStart: 2, pifCurrent: 4, pifTarget: 8,
+        flags: ["needs-test"],
+        planNote: "Lumbar disc; MRI reviewed, spine consult pending EMG.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 3000, source: "DR" },
+            { item: "Lumbar MRI + spine consult (Duhon)", amount: 8200, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-04-28", note: "Intake — IPM (Vilims). PIF 2.", source: "DR" },
+            { date: "2026-06-09", note: "MRI reviewed; EMG ordered. PIF 4.", source: "DR" }
+        ]
+    },
+
+    /* Naomi Sutter — 2nd diagnosis */
+    {
+        id: "C1026", beneficiary: "Naomi Sutter", dob: "3/17/1990", age: 36,
+        diagnosis: "Right knee contusion", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_NAKAMURA"],
+        payerId: "PAY2", clientId: "CL1",
+        runningTotal: 3600, agingDays: 18,
+        scheduling: "Scheduled", lastVisit: "2026-06-12", nextVisit: "2026-06-27",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -26, vsNetworkCost: -12000,
+        pifStart: 5, pifCurrent: 7, pifTarget: 8,
+        flags: [],
+        planNote: "Minor knee contusion; resolving with conservative care.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 1800, source: "DR" },
+            { item: "Knee X-ray + ortho consult (Nakamura)", amount: 1800, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-30", note: "Intake — IPM (Vilims). PIF 5.", source: "DR" },
+            { date: "2026-06-12", note: "Ortho consult; near resolution. PIF 7.", source: "DR" }
+        ]
+    },
+
+    /* Hector Salinas — 2nd diagnosis (also maintenance) */
+    {
+        id: "C1027", beneficiary: "Hector Salinas", dob: "7/25/1963", age: 62,
+        diagnosis: "Lumbar facet arthropathy", diagnosisStatus: "Maintenance",
+        status: "Maintenance", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY1", clientId: "CL2",
+        runningTotal: 9100, agingDays: 0,
+        scheduling: "Seen", lastVisit: "2026-05-30", nextVisit: "2026-08-30",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: 6, vsNetworkCost: 1000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 7,
+        flags: [],
+        planNote: "Meds-only maintenance (clock stopped), like his hip.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2600, source: "DR" },
+            { item: "RFA + maintenance meds (Ghazi)", amount: 6500, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-02-10", note: "Intake — IPM (Trainor). PIF 3.", source: "DR" },
+            { date: "2026-05-30", note: "Transitioned to maintenance. PIF 5.", source: "DR" }
+        ]
+    },
+
+    /* Priya Nadkarni — 2nd diagnosis */
+    {
+        id: "C1028", beneficiary: "Priya Nadkarni", dob: "12/9/1983", age: 42,
+        diagnosis: "Cervical strain", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY3", clientId: "CL3",
+        runningTotal: 4200, agingDays: 22,
+        scheduling: "Scheduled", lastVisit: "2026-06-10", nextVisit: "2026-06-24",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -16, vsNetworkCost: -7000,
+        pifStart: 4, pifCurrent: 6, pifTarget: 8,
+        flags: [],
+        planNote: "Cervical strain alongside the carpal tunnel; PT.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 2200, source: "DR" },
+            { item: "PT course (Ghazi)", amount: 2000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-26", note: "Intake — IPM (Vilims). PIF 4.", source: "DR" },
+            { date: "2026-06-10", note: "PT progressing. PIF 6.", source: "DR" }
+        ]
+    },
+
+    /* Yolanda Reyes — 2nd diagnosis */
+    {
+        id: "C1029", beneficiary: "Yolanda Reyes", dob: "10/28/1977", age: 48,
+        diagnosis: "Right shoulder bursitis", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_HATZ"],
+        payerId: "PAY3", clientId: "CL3",
+        runningTotal: 5400, agingDays: 38,
+        scheduling: "Seen", lastVisit: "2026-06-07", nextVisit: "2026-06-28",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -4, vsNetworkCost: -5000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Shoulder bursitis; injection + PT.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2400, source: "DR" },
+            { item: "Injection + PT (Hatzidakis)", amount: 3000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-12", note: "Intake — IPM (Trainor). PIF 3.", source: "DR" },
+            { date: "2026-06-07", note: "Injection; improving. PIF 5.", source: "DR" }
+        ]
+    },
+
+    /* Caleb Whitman — 2nd diagnosis */
+    {
+        id: "C1030", beneficiary: "Caleb Whitman", dob: "6/6/1988", age: 38,
+        diagnosis: "Lumbar strain", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_GHAZI"],
+        payerId: "PAY1", clientId: "CL1",
+        runningTotal: 6300, agingDays: 50,
+        scheduling: "Scheduled", lastVisit: "2026-06-06", nextVisit: "2026-06-27",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -2, vsNetworkCost: -4000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Low-back strain in addition to the ACL; PT.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 2300, source: "DR" },
+            { item: "PT course (Ghazi)", amount: 4000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-04-25", note: "Intake — IPM (Vilims). PIF 3.", source: "DR" },
+            { date: "2026-06-06", note: "PT progressing. PIF 5.", source: "DR" }
+        ]
+    },
+
+    /* Andre Fontaine — 2nd diagnosis */
+    {
+        id: "C1031", beneficiary: "Andre Fontaine", dob: "9/12/1966", age: 59,
+        diagnosis: "Cervical radiculopathy", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_VILIMS", teamProviderIds: ["NET_DUHON"],
+        payerId: "PAY1", clientId: "CL4",
+        runningTotal: 9800, agingDays: 33,
+        scheduling: "Seen", lastVisit: "2026-06-11", nextVisit: "2026-07-02",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -12, vsNetworkCost: -2000,
+        pifStart: 4, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Cervical radiculopathy alongside the shoulder; MRI + consult.",
+        costBreakdown: [
+            { item: "IPM evaluation (Vilims)", amount: 2800, source: "DR" },
+            { item: "Cervical MRI + spine consult (Duhon)", amount: 7000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-15", note: "Intake — IPM (Vilims). PIF 4.", source: "DR" },
+            { date: "2026-06-11", note: "Consult; modest gain. PIF 5.", source: "DR" }
+        ]
+    },
+
+    /* Brenda Coates — 2nd diagnosis */
+    {
+        id: "C1032", beneficiary: "Brenda Coates", dob: "1/30/1972", age: 54,
+        diagnosis: "Right hip bursitis", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_WHITE"],
+        payerId: "PAY3", clientId: "CL3",
+        runningTotal: 7400, agingDays: 44,
+        scheduling: "Scheduled", lastVisit: "2026-06-05", nextVisit: "2026-06-26",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: 2, vsNetworkCost: -1000,
+        pifStart: 3, pifCurrent: 5, pifTarget: 8,
+        flags: [],
+        planNote: "Hip bursitis alongside the lumbar facet; injection + consult.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2400, source: "DR" },
+            { item: "Hip injection + consult (White)", amount: 5000, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-08", note: "Intake — IPM (Trainor). PIF 3.", source: "DR" },
+            { date: "2026-06-05", note: "Injection; improving. PIF 5.", source: "DR" }
+        ]
+    },
+
+    /* Wendell Pierce — 2nd diagnosis */
+    {
+        id: "C1033", beneficiary: "Wendell Pierce", dob: "7/7/1955", age: 70,
+        diagnosis: "Bilateral carpal tunnel syndrome", diagnosisStatus: "Active treatment",
+        status: "Active", newIntake: false,
+        ipmId: "IPM_TRAINOR", teamProviderIds: ["NET_YI"],
+        payerId: "PAY4", clientId: "CL5",
+        runningTotal: 5600, agingDays: 36,
+        scheduling: "Seen", lastVisit: "2026-06-09", nextVisit: "2026-06-30",
+        nextVisitFlag: false, unscheduledAgeDays: 0,
+        vsNetworkDays: -16, vsNetworkCost: -8000,
+        pifStart: 2, pifCurrent: 4, pifTarget: 7,
+        flags: ["needs-test"],
+        planNote: "Carpal tunnel alongside the stenosis; EMG to confirm severity.",
+        costBreakdown: [
+            { item: "IPM evaluation (Trainor)", amount: 2200, source: "DR" },
+            { item: "EMG + splinting (Yi)", amount: 3400, source: "DR" }
+        ],
+        visits: [
+            { date: "2026-05-13", note: "Intake — IPM (Trainor). PIF 2.", source: "DR" },
+            { date: "2026-06-09", note: "Splinting; EMG ordered. PIF 4.", source: "DR" }
+        ]
     }
 ];
 
