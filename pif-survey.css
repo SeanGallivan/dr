@@ -1,0 +1,255 @@
+/* ============================================================
+   PIF Survey — component styles
+   Scoped under .pif-survey. Uses the shared OKLCH design tokens
+   from styles.css (var(--bg), --surface, --ink, --accent, …) and
+   the shared header / select / theme-toggle classes, so the survey
+   belongs to the same design system without inheriting the
+   dashboard's app-shell layout.
+   Mobile-first; WCAG 2.2 AA (44px targets, visible focus, contrast).
+   ============================================================ */
+
+/* --- Layout: fixed header + scrolling content + fixed nav (from body flex column) --- */
+.pif-survey .pif-main {
+    padding: 20px 16px 28px;
+    background: var(--bg);
+}
+.pif-survey .pif-shell {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* --- Cards & typography --- */
+.pif-survey .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 22px 24px;
+    margin-bottom: 16px;
+}
+.pif-survey h1 {
+    margin: 0 0 10px;
+    font-size: 24px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); text-wrap: pretty;
+}
+.pif-survey h2 {
+    margin: 0 0 8px;
+    font-size: 20px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); text-wrap: pretty;
+}
+.pif-survey p { margin: 0 0 12px; font-size: 15px; line-height: 1.55; color: var(--ink); }
+.pif-survey .intro-lead { font-size: 16px; color: var(--ink); }
+.pif-survey .muted { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.pif-survey strong { font-weight: 600; }
+
+/* --- Progress "Section X of Y" --- */
+.pif-survey .progress {
+    max-width: 680px; margin: 0 auto 14px;
+    font-family: var(--num-font);
+    font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* --- Region selection --- */
+.pif-survey .region-row {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--surface);
+}
+.pif-survey .region-row.checked { border-color: var(--accent); background: var(--accent-soft); }
+.pif-survey .region-check {
+    display: flex; align-items: flex-start; gap: 12px;
+    cursor: pointer; min-height: 44px;
+}
+.pif-survey .region-check input[type="checkbox"] {
+    width: 22px; height: 22px; margin-top: 2px; flex: none;
+    accent-color: var(--accent); cursor: pointer;
+}
+.pif-survey .region-name { font-size: 15px; font-weight: 600; color: var(--ink); display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.pif-survey .tag {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 6px;
+}
+.pif-survey .lat-group { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0 2px 34px; }
+.pif-survey .lat-label { font-size: 13px; color: var(--muted); font-weight: 600; margin-right: 2px; }
+.pif-survey .seg {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; min-width: 64px; padding: 0 14px;
+    border: 1px solid var(--line-2); border-radius: 8px;
+    font-size: 14px; font-weight: 500; color: var(--ink);
+    background: var(--surface); cursor: pointer;
+}
+.pif-survey .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pif-survey .seg.on { background: var(--accent); color: var(--surface); border-color: var(--accent); font-weight: 600; }
+.pif-survey .seg:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Example prompts --- */
+.pif-survey .examples {
+    background: var(--surface-2); border: 1px dashed var(--line-2);
+    border-radius: 10px; padding: 12px 14px; margin: 14px 0;
+}
+.pif-survey .ex-title { font-size: 13px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+.pif-survey .chip {
+    display: inline-block; margin: 0 8px 8px 0;
+    min-height: 40px; padding: 8px 14px;
+    border: 1px solid var(--line-2); border-radius: 20px;
+    background: var(--surface); color: var(--accent);
+    font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+    text-align: left;
+}
+.pif-survey .chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* --- Activities --- */
+.pif-survey .activity {
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 14px; background: var(--surface);
+}
+.pif-survey .act-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.pif-survey .activity input[type="text"] {
+    flex: 1; min-width: 200px; min-height: 44px;
+    padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 8px;
+    font-family: inherit; font-size: 15px; color: var(--ink); background: var(--surface);
+}
+.pif-survey .activity input[type="text"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pif-survey .locked-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+.pif-survey .lockicon { font-size: 12px; font-weight: 500; color: var(--muted); }
+.pif-survey .last-score {
+    font-family: var(--num-font); font-size: 12px; font-weight: 500;
+    color: var(--muted); white-space: nowrap;
+    border: 1px solid var(--line-2); border-radius: 6px; padding: 3px 8px;
+}
+.pif-survey .btn-remove, .pif-survey .btn-add, .pif-survey .btn-edit {
+    font-family: inherit; cursor: pointer; background: none;
+    border: 1px solid var(--line-2); border-radius: 8px;
+    min-height: 40px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: var(--accent);
+}
+.pif-survey .btn-remove { color: var(--clay); border-color: transparent; }
+.pif-survey .btn-remove:hover { border-color: var(--clay); }
+.pif-survey .btn-add { margin-top: 4px; border-style: dashed; }
+.pif-survey .btn-add:hover, .pif-survey .btn-edit:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* --- Medication blocks (stacked, never side by side) --- */
+.pif-survey .med-block { margin-top: 14px; }
+.pif-survey .med-label {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+}
+
+/* --- Accessible 0–10 slider: horizontal continuum, handle starts OFF the track --- */
+.pif-survey .pif-slider-wrap { margin-bottom: 4px; }
+.pif-survey .pif-ends {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
+}
+.pif-survey .pif-slider {
+    position: relative; padding: 12px 0; cursor: pointer; touch-action: none;
+    outline-offset: 4px;
+}
+.pif-survey .pif-slider:focus-visible { outline: 2px solid var(--accent); }
+.pif-survey .pif-track {
+    position: relative; height: 8px; border-radius: 6px;
+    background: var(--line-2);
+}
+.pif-survey .pif-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 6px; background: var(--accent); }
+.pif-survey .pif-thumb {
+    position: absolute; top: 50%; width: 26px; height: 26px; margin-top: -13px;
+    border-radius: 50%; background: var(--surface);
+    border: 3px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+.pif-survey .pif-slider.unanswered .pif-thumb { border-color: var(--faint); background: var(--surface-2); }
+.pif-survey .pif-slider.unanswered .pif-track { background: var(--line); }
+.pif-survey .pif-scale {
+    display: flex; justify-content: space-between;
+    font-family: var(--num-font); font-size: 11px; color: var(--faint); margin-top: 8px;
+}
+.pif-survey .pif-val {
+    font-family: var(--num-font); font-size: 13px; font-weight: 500;
+    color: var(--muted); margin-top: 4px;
+}
+.pif-survey .pif-slider:not(.unanswered) + .pif-scale + .pif-val,
+.pif-survey .pif-slider-wrap .pif-val { color: var(--ink); }
+
+/* --- mRPQ-20 (Instrument B): equal-size, equally-spaced 0–4 targets --- */
+.pif-survey .mrpq-item {
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px; background: var(--surface);
+}
+.pif-survey .mrpq-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 12px; text-wrap: pretty; }
+.pif-survey .mrpq-opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.pif-survey .mrpq-opt {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    min-height: 64px; padding: 8px 4px;
+    border: 1px solid var(--line-2); border-radius: 10px;
+    background: var(--surface); cursor: pointer; text-align: center;
+    font-size: 11px; line-height: 1.2; color: var(--muted);
+}
+.pif-survey .mrpq-opt .num { font-family: var(--num-font); font-size: 18px; font-weight: 500; color: var(--ink); }
+.pif-survey .mrpq-opt.on { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.pif-survey .mrpq-opt.on .num { color: var(--surface); }
+.pif-survey .mrpq-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Review --- */
+.pif-survey .review-item { border-top: 1px solid var(--line); padding: 14px 0; }
+.pif-survey .review-item:first-of-type { border-top: none; }
+.pif-survey .review-item .muted { margin-top: 4px; }
+
+/* --- Results (score readout for the care team) --- */
+.pif-survey .result-region {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 14px;
+    max-width: 680px; margin-left: auto; margin-right: auto;
+}
+.pif-survey .pill {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; padding: 3px 10px;
+    white-space: nowrap;
+}
+.pif-survey .metric {
+    display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+}
+.pif-survey .metric:last-of-type { border-bottom: none; }
+.pif-survey .metric .lab { font-size: 13.5px; color: var(--muted); }
+.pif-survey .metric .num { font-family: var(--num-font); font-size: 14px; font-weight: 500; color: var(--ink); text-align: right; }
+.pif-survey .flag {
+    display: inline-block; margin-top: 12px;
+    font-size: 13px; font-weight: 600;
+    border-radius: 8px; padding: 8px 12px;
+    background: var(--surface-2); color: var(--muted); border: 1px solid var(--line-2);
+}
+.pif-survey .flag.good { color: var(--green); border-color: var(--green); }
+.pif-survey .flag.bad  { color: var(--clay);  border-color: var(--clay); }
+.pif-survey .note { font-size: 12px; line-height: 1.5; color: var(--faint); margin-top: 12px; }
+
+/* --- Bottom nav bar --- */
+.pif-survey .pif-nav {
+    flex: none; background: var(--surface); border-top: 1px solid var(--line);
+    padding: 12px 16px; box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+}
+.pif-survey .pif-nav-inner {
+    max-width: 680px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.pif-survey .pif-btn {
+    font-family: inherit; cursor: pointer;
+    min-height: 48px; min-width: 108px; padding: 0 22px;
+    border-radius: 10px; font-size: 15px; font-weight: 600;
+}
+.pif-survey .pif-btn.primary { background: var(--accent); color: var(--surface); border: 1px solid var(--accent); }
+.pif-survey .pif-btn.primary:hover { filter: brightness(0.96); }
+.pif-survey .pif-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-2); }
+.pif-survey .pif-btn.ghost:hover { background: var(--surface-2); }
+
+/* --- Focus visibility (WCAG 2.2) --- */
+.pif-survey a:focus-visible,
+.pif-survey button:focus-visible,
+.pif-survey select:focus-visible,
+.pif-survey input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Larger screens --- */
+@media (min-width: 640px) {
+    .pif-survey .pif-main { padding: 28px 28px 32px; }
+    .pif-survey .card { padding: 26px 28px 28px; }
+    .pif-survey h1 { font-size: 27px; }
+}
