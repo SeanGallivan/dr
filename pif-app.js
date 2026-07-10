@@ -70,30 +70,17 @@ var PIFApp = (function () {
             regions: regions,
             brainPresent: !!src.brain,
             mrpq: { responses: (src.brain && src.mrpq) ? src.mrpq.slice() : MRPQ_ITEMS.map(function () { return null; }) },
-            submitted: false
+            submitted: false,
+            feedback: ""
         };
         stepIndex = 0;
         render();
     }
 
-    /* Region baseline/follow-up analysis (Instrument A). Primary comparison uses
-       the without-medication readings; with-medication shown alongside. */
-    function regionAnalysis(region) {
-        var curWo = avg(region.activities.map(function (a) { return a.cur.wo; }));
-        var curWm = avg(region.activities.map(function (a) { return a.cur.wm; }));
-        if (region.repeat) {
-            var baseWo = avg(region.activities.map(function (a) { return a.prior ? a.prior.wo : null; }));
-            var baseWm = avg(region.activities.map(function (a) { return a.prior ? a.prior.wm : null; }));
-            var changeWo = (curWo != null && baseWo != null) ? (curWo - baseWo) : null;
-            var changeWm = (curWm != null && baseWm != null) ? (curWm - baseWm) : null;
-            var flag = (changeWo != null) && (Math.abs(changeWo) >= MDC_POINTS);
-            // v2 endpoint-weighted New Score, without-medication endpoints (medStart=0, medEnd=0).
-            var v2 = (baseWo != null && curWo != null) ? pifV2Score(baseWo, 0, curWo, 0) : null;
-            return { repeat: true, baseWo: baseWo, baseWm: baseWm, curWo: curWo, curWm: curWm, changeWo: changeWo, changeWm: changeWm, flag: flag, v2: v2 };
-        }
-        // First-time visit: this visit establishes the baseline; follow-up is next visit.
-        return { repeat: false, baseWo: curWo, baseWm: curWm, curWo: curWo, curWm: curWm, changeWo: null, changeWm: null, flag: false, v2: null };
-    }
+    /* NOTE: the per-diagnosis clinician scoring (baseline/follow-up/change,
+       3-point MDC, v2 endpoint-weighted New Score) lives in the dashboard's
+       case-detail view. The patient survey no longer renders a results screen;
+       the scoring functions stay available in pif-data.js. */
 
     /* =================================================================
        SCREEN LIST + NAVIGATION  (no auto-advance)
@@ -103,10 +90,10 @@ var PIFApp = (function () {
         state.regions.forEach(function (r) { if (r.instrument === "A") list.push({ k: "msk", id: r.id }); });
         if (state.brainPresent) list.push({ k: "brain" });
         list.push({ k: "review" });
-        list.push({ k: "results" });
+        list.push({ k: "thankyou" });
         return list;
     }
-    function contentList() { return screenList().filter(function (s) { return s.k !== "intro" && s.k !== "results"; }); }
+    function contentList() { return screenList().filter(function (s) { return s.k !== "intro" && s.k !== "thankyou"; }); }
 
     // Rebuild MSK working objects + brain flag from region-selection checkboxes,
     // preserving any activities already captured for a region.
@@ -132,12 +119,12 @@ var PIFApp = (function () {
         if (cur.k === "regions") {
             syncRegionsFromSelection();
             if (state.regions.length === 0 && !state.brainPresent) {
-                announce("Please select at least one region to continue.");
+                announce("Please select at least one area to continue.");
                 return;
             }
         }
         if (cur.k === "review") { state.submitted = true; }
-        if (cur.k === "results") { initPatient(state.patientId); return; } // "Start over"
+        if (cur.k === "thankyou") { initPatient(state.patientId); return; } // "Start over"
         stepIndex++;
         render();
     }
@@ -152,10 +139,10 @@ var PIFApp = (function () {
         var back = document.getElementById("btnBack");
         var next = document.getElementById("btnNext");
         back.style.visibility = (stepIndex === 0) ? "hidden" : "visible";
-        if (cur.k === "intro")        next.textContent = "Begin";
-        else if (cur.k === "review")  next.textContent = "Submit";
-        else if (cur.k === "results") next.textContent = "Start over";
-        else                          next.textContent = "Next";
+        if (cur.k === "intro")         next.textContent = "Begin";
+        else if (cur.k === "review")   next.textContent = "Submit";
+        else if (cur.k === "thankyou") next.textContent = "Start over";
+        else                           next.textContent = "Next";
     }
 
     function announce(msg) {
@@ -237,8 +224,8 @@ var PIFApp = (function () {
         var app = document.getElementById("app");
         app.innerHTML = "";
 
-        // Progress "Section X of Y" for content screens (not intro/results).
-        if (cur.k !== "intro" && cur.k !== "results") {
+        // Progress "Section X of Y" for content screens (not intro / thank-you).
+        if (cur.k !== "intro" && cur.k !== "thankyou") {
             var content = contentList();
             var pos = 0;
             for (var i = 0; i < content.length; i++) {
@@ -253,8 +240,8 @@ var PIFApp = (function () {
         else if (cur.k === "regions") renderRegions(app);
         else if (cur.k === "msk")     renderMSK(app, cur.id);
         else if (cur.k === "brain")   renderBrain(app);
-        else if (cur.k === "review")  renderReview(app);
-        else if (cur.k === "results") renderResults(app);
+        else if (cur.k === "review")   renderReview(app);
+        else if (cur.k === "thankyou") renderThankYou(app);
 
         updateNav(cur);
         window.scrollTo(0, 0);
@@ -275,48 +262,75 @@ var PIFApp = (function () {
         app.appendChild(c);
     }
 
-    /* ---- Screen 2: Region selection (note-seeded, add-able, laterality) ---- */
+    /* ---- Screen 2: Area selection ----
+       Shows only the areas the care team noted (checked) up top; the rest live
+       in a collapsed "New pain areas?" section so the patient can add more
+       without being shown the full list. */
     function renderRegions(app) {
         var c = el("div", "card");
-        c.appendChild(el("h2", null, "Select the regions where you are experiencing pain"));
-        c.appendChild(el("p", "muted", "Some regions are already checked based on the note from your care team. You can add or remove any region, and choose a side where it applies."));
+        c.appendChild(el("h2", null, "Select the areas where you are experiencing pain"));
+        c.appendChild(el("p", "muted", "These are the areas your care team noted. You can remove any that don't apply, and choose a side where it applies. Having pain somewhere else? Open “New pain areas?” at the bottom to add it."));
         var listWrap = el("div"); listWrap.id = "regionList";
         c.appendChild(listWrap);
         app.appendChild(c);
 
+        var expandNew = false;
+
+        function buildRow(def, container) {
+            var sel = state.selection[def.id] || (state.selection[def.id] = { checked: false, lat: null, fromNote: false });
+            var row = el("div", "region-row" + (sel.checked ? " checked" : ""));
+            var lab = el("label", "region-check");
+            var cb = el("input"); cb.type = "checkbox"; cb.checked = !!sel.checked;
+            cb.setAttribute("aria-label", def.label);
+            cb.addEventListener("change", function () { sel.checked = cb.checked; if (cb.checked) expandNew = true; refresh(); });
+            var nameWrap = el("div");
+            var nm = el("div", "region-name", def.label);
+            if (sel.fromNote) { nm.appendChild(el("span", "tag", "from your care team")); }
+            nameWrap.appendChild(nm);
+            if (def.id === "brain") { nameWrap.appendChild(el("div", "muted", "Selecting this shows the concussion symptom questionnaire.")); }
+            lab.appendChild(cb); lab.appendChild(nameWrap);
+            row.appendChild(lab);
+
+            if (sel.checked && def.lat) {
+                var opts = def.lat === "LRM" ? ["Left", "Right", "Middle"] : ["Left", "Right"];
+                var lg = el("div", "lat-group");
+                lg.appendChild(el("div", "lat-label", "Which side?"));
+                opts.forEach(function (o) {
+                    var seg = el("label", "seg" + (sel.lat === o ? " on" : ""));
+                    var r = el("input"); r.type = "radio"; r.name = "lat_" + def.id; r.checked = (sel.lat === o);
+                    r.setAttribute("aria-label", def.label + " " + o);
+                    r.addEventListener("change", function () { sel.lat = o; refresh(); });
+                    seg.appendChild(r); seg.appendChild(document.createTextNode(o));
+                    lg.appendChild(seg);
+                });
+                row.appendChild(lg);
+            }
+            (container || listWrap).appendChild(row);
+        }
+
         function refresh() {
             listWrap.innerHTML = "";
+            var checkedDefs = [], uncheckedDefs = [];
             REGIONS.forEach(function (def) {
-                var sel = state.selection[def.id] || (state.selection[def.id] = { checked: false, lat: null, fromNote: false });
-                var row = el("div", "region-row" + (sel.checked ? " checked" : ""));
-                var lab = el("label", "region-check");
-                var cb = el("input"); cb.type = "checkbox"; cb.checked = !!sel.checked;
-                cb.setAttribute("aria-label", def.label);
-                cb.addEventListener("change", function () { sel.checked = cb.checked; refresh(); });
-                var nameWrap = el("div");
-                var nm = el("div", "region-name", def.label);
-                if (sel.fromNote) { nm.appendChild(el("span", "tag", "from your care team")); }
-                nameWrap.appendChild(nm);
-                if (def.id === "brain") { nameWrap.appendChild(el("div", "muted", "Selecting this shows the concussion symptom questionnaire.")); }
-                lab.appendChild(cb); lab.appendChild(nameWrap);
-                row.appendChild(lab);
-
-                if (sel.checked && def.lat) {
-                    var opts = def.lat === "LRM" ? ["Left", "Right", "Middle"] : ["Left", "Right"];
-                    var lg = el("div", "lat-group");
-                    lg.appendChild(el("div", "lat-label", "Which side?"));
-                    opts.forEach(function (o) {
-                        var seg = el("label", "seg" + (sel.lat === o ? " on" : ""));
-                        var r = el("input"); r.type = "radio"; r.name = "lat_" + def.id; r.checked = (sel.lat === o);
-                        r.setAttribute("aria-label", def.label + " " + o);
-                        r.addEventListener("change", function () { sel.lat = o; refresh(); });
-                        seg.appendChild(r); seg.appendChild(document.createTextNode(o));
-                        lg.appendChild(seg);
-                    });
-                    row.appendChild(lg);
-                }
-                listWrap.appendChild(row);
+                var sel = state.selection[def.id];
+                if (sel && sel.checked) checkedDefs.push(def); else uncheckedDefs.push(def);
             });
+
+            if (checkedDefs.length) {
+                checkedDefs.forEach(function (def) { buildRow(def, listWrap); });
+            } else {
+                listWrap.appendChild(el("p", "muted", "No areas selected yet. Open “New pain areas?” below to choose where you're having pain."));
+            }
+
+            if (uncheckedDefs.length) {
+                var det = el("details", "new-areas");
+                det.open = expandNew;
+                det.addEventListener("toggle", function () { expandNew = det.open; });
+                det.appendChild(el("summary", "new-areas-summary", "New pain areas?"));
+                det.appendChild(el("div", "new-areas-hint muted", "Only the areas your care team noted appear above. If you're having pain somewhere else, choose it here and it will move up to your list."));
+                uncheckedDefs.forEach(function (def) { buildRow(def, det); });
+                listWrap.appendChild(det);
+            }
         }
         refresh();
     }
@@ -334,6 +348,14 @@ var PIFApp = (function () {
         } else {
             c.appendChild(el("p", null, "Name up to five everyday activities that are hard for you because of your " + region.plain + ", in your own words. Then rate each one — first without your medication, then with it."));
         }
+
+        var medHelp = el("div", "med-help");
+        medHelp.appendChild(el("strong", null, "About medication:"));
+        medHelp.appendChild(document.createTextNode(" Answer the scale that fits you and you can leave the other blank. If you " +
+            "don't take any medication for this, rate “without medication” and skip “with medication.” If you're only ever on " +
+            "medication and can't judge how you'd do without it, rate “with medication” and skip “without medication.” If you use " +
+            "medication some of the time, answer both."));
+        c.appendChild(medHelp);
 
         if (!region.repeat) {
             var ex = EXAMPLE_ACTIVITIES[regionId] || [];
@@ -442,124 +464,102 @@ var PIFApp = (function () {
         app.appendChild(c);
     }
 
-    /* ---- Screen 5: Review and edit before submit (no auto-advance) ---- */
+    /* ---- Screen 5: Review and edit before submit (no auto-advance) ----
+       Uses the same card + metric-row layout as the old results readout so
+       everything is easy to scan before submitting. */
+    function reviewCard(app, title, pill, editPred) {
+        var rc = el("div", "result-region");
+        var h = el("div", "act-head");
+        var left = el("div", "rr-title");
+        left.appendChild(el("strong", null, title));
+        if (pill) left.appendChild(el("span", "pill", pill));
+        h.appendChild(left);
+        var ed = el("button", "btn-edit", "Edit"); ed.type = "button";
+        ed.addEventListener("click", function () { goToScreen(editPred); });
+        h.appendChild(ed);
+        rc.appendChild(h);
+        app.appendChild(rc);
+        return rc;
+    }
     function renderReview(app) {
         var c = el("div", "card");
         c.appendChild(el("h2", null, "Review your answers"));
         c.appendChild(el("p", "muted", "Please check everything below. Tap Edit to change a section, then press Submit when you are ready."));
+        app.appendChild(c);
 
-        // Regions summary
-        var rItem = el("div", "review-item");
-        var rHead = el("div", "act-head");
-        rHead.appendChild(el("strong", null, "Regions selected"));
-        var rEdit = el("button", "btn-edit", "Edit"); rEdit.type = "button";
-        rEdit.addEventListener("click", function () { goToScreen(function (s) { return s.k === "regions"; }); });
-        rHead.appendChild(rEdit);
-        rItem.appendChild(rHead);
+        // Areas selected
         var chosen = [];
         REGIONS.forEach(function (def) { var s = state.selection[def.id]; if (s && s.checked) chosen.push(def.label + (s.lat ? " (" + s.lat + ")" : "")); });
-        rItem.appendChild(el("div", "muted", chosen.length ? chosen.join(", ") : "None"));
-        c.appendChild(rItem);
+        var rcAreas = reviewCard(app, "Areas selected", null, function (s) { return s.k === "regions"; });
+        rcAreas.appendChild(el("div", "review-line", chosen.length ? chosen.join(", ") : "None"));
 
-        // Each MSK region
+        // Each MSK area
         state.regions.forEach(function (region) {
-            var item = el("div", "review-item");
-            var head = el("div", "act-head");
-            head.appendChild(el("strong", null, "How is your " + region.plain + "?" + (region.lat ? " (" + region.lat + ")" : "")));
-            var ed = el("button", "btn-edit", "Edit"); ed.type = "button";
-            ed.addEventListener("click", function () { goToScreen(function (s) { return s.k === "msk" && s.id === region.id; }); });
-            head.appendChild(ed);
-            item.appendChild(head);
-            if (!region.activities.length || region.activities.every(function (a) { return !a.name.trim(); })) {
-                item.appendChild(el("div", "muted", "No activities entered yet."));
+            var rc = reviewCard(app, "How is your " + region.plain + "?" + (region.lat ? " (" + region.lat + ")" : ""),
+                "Instrument A · PSFS", function (s) { return s.k === "msk" && s.id === region.id; });
+            var named = region.activities.filter(function (a) { return a.name.trim(); });
+            if (!named.length) {
+                rc.appendChild(el("div", "review-line muted", "No activities entered yet."));
             } else {
-                region.activities.forEach(function (a) {
-                    if (!a.name.trim()) return;
-                    var line = a.name + " — without med: " + (a.cur.wo == null ? "not answered" : a.cur.wo + "/10") +
-                        ", with med: " + (a.cur.wm == null ? "not answered" : a.cur.wm + "/10") +
-                        (region.repeat && a.prior ? "  (last visit: " + a.prior.wo + "/10)" : "");
-                    item.appendChild(el("div", "muted", line));
+                named.forEach(function (a) {
+                    var val = "without " + (a.cur.wo == null ? "—" : a.cur.wo + "/10") + "   ·   with " + (a.cur.wm == null ? "—" : a.cur.wm + "/10") +
+                        (region.repeat && a.prior ? "   ·   last " + a.prior.wo + "/10" : "");
+                    metricRow(rc, a.name, val);
                 });
             }
-            c.appendChild(item);
         });
 
-        // Brain summary
+        // Brain
         if (state.brainPresent) {
-            var item2 = el("div", "review-item");
-            var head2 = el("div", "act-head");
-            head2.appendChild(el("strong", null, "Concussion symptom check"));
-            var ed2 = el("button", "btn-edit", "Edit"); ed2.type = "button";
-            ed2.addEventListener("click", function () { goToScreen(function (s) { return s.k === "brain"; }); });
-            head2.appendChild(ed2);
-            item2.appendChild(head2);
+            var rcB = reviewCard(app, "Concussion symptom check", "Instrument B · mRPQ-20", function (s) { return s.k === "brain"; });
             var answered = state.mrpq.responses.filter(function (v) { return v != null; }).length;
-            item2.appendChild(el("div", "muted", answered + " of " + MRPQ_ITEMS.length + " symptoms rated."));
-            c.appendChild(item2);
+            metricRow(rcB, "Symptoms rated", answered + " of " + MRPQ_ITEMS.length);
         }
-        app.appendChild(c);
     }
 
-    /* ---- Screen 6: Score readout (for the care team / Dr. Vilims) ---- */
+    /* ---- metric row (shared by the review cards) ---- */
     function metricRow(parent, lab, val, cls) {
         var m = el("div", "metric");
         m.appendChild(el("span", "lab", lab));
         m.appendChild(el("span", "num" + (cls ? " " + cls : ""), val));
         parent.appendChild(m);
     }
-    function renderResults(app) {
-        var c = el("div", "card");
-        c.appendChild(el("h2", null, "Results (for the care team)"));
-        c.appendChild(el("p", "muted", "Scores are calculated per diagnosis and are never blended across diagnoses. Instrument A uses a 0–10 functional scale; a change of " + MDC_POINTS + " points or more is flagged as meaningful (minimum detectable change)."));
-        app.appendChild(c);
 
-        state.regions.forEach(function (region) {
-            var a = regionAnalysis(region);
-            var rc = el("div", "result-region");
-            var h = el("div", "act-head");
-            h.appendChild(el("strong", null, region.label + (region.lat ? " — " + region.lat : "")));
-            h.appendChild(el("span", "pill", "Instrument A · PSFS"));
-            rc.appendChild(h);
+    /* ---- Screen 6: Thank you + free-text message to the care team ----
+       PRODUCTION: the per-diagnosis score readout (baseline/follow-up/change,
+       3-point MDC flag, v2 endpoint-weighted New Score, mRPQ-20 total + cutoff)
+       is a CLINICIAN view — it renders in the dashboard case-detail, not to the
+       patient. The patient's last screen is this thank-you + feedback box. The
+       scoring functions remain in pif-data.js (pifV2Score, mrpqTotal, …). */
+    function renderThankYou(app) {
+        var c = el("div", "card pif-thanks");
+        c.appendChild(el("h1", null, "Thank you!"));
+        c.appendChild(el("p", "intro-lead", "Your answers have been sent to your care team. They'll use them to see how you're doing and tailor your care to what matters most to you."));
+        c.appendChild(el("p", "muted", "There's nothing else you need to do — you can close this page whenever you're ready."));
 
-            if (a.repeat) {
-                metricRow(rc, "Baseline (without med)", fmt1(a.baseWo) + " / 10");
-                metricRow(rc, "Follow-up (without med)", fmt1(a.curWo) + " / 10");
-                metricRow(rc, "Change (without med)", fmtSigned(a.changeWo));
-                metricRow(rc, "With-medication baseline / follow-up", fmt1(a.baseWm) + " / " + fmt1(a.curWm) + "  (change " + fmtSigned(a.changeWm) + ")");
-                metricRow(rc, "Endpoint-weighted PIF (v2 New Score)", (a.v2 == null ? "—" : (a.v2 > 0 ? "+" : "") + a.v2));
-                var flagSpan = el("div");
-                flagSpan.appendChild(el("span", "flag" + (a.flag && a.changeWo >= 0 ? " good" : (a.flag ? " bad" : "")), a.flag ? (a.changeWo >= 0 ? "Meets 3-point MDC (improved)" : "Meets 3-point MDC (declined)") : "Change below 3-point MDC"));
-                rc.appendChild(flagSpan);
-                rc.appendChild(el("div", "note", "v2 New Score uses the without-medication baseline and follow-up bands (medStart=0, medEnd=0) from the PifsScores v2 lookup. PRODUCTION: the production readout selects the clinically-appropriate medication-flag pairing per diagnosis; raw averages and change are shown here alongside so the endpoint-weighted score is transparent."));
-            } else {
-                metricRow(rc, "Baseline recorded (without med)", fmt1(a.baseWo) + " / 10");
-                metricRow(rc, "Baseline recorded (with med)", fmt1(a.baseWm) + " / 10");
-                rc.appendChild(el("div", "note", "This is a first-time visit, so this assessment establishes the baseline. Change, the 3-point MDC flag, and the v2 endpoint-weighted score are computed at the next follow-up against these locked activities."));
-            }
-            app.appendChild(rc);
+        var fb = el("div", "feedback-box");
+        var lab = el("label", "fb-label", "Any questions, or anything you'd like your care team to know? (optional)");
+        lab.setAttribute("for", "pifFeedback");
+        fb.appendChild(lab);
+        var ta = el("textarea", "fb-textarea"); ta.id = "pifFeedback"; ta.rows = 5;
+        ta.setAttribute("aria-label", "Questions or feedback for your care team");
+        ta.placeholder = "Type your questions or feedback here…";
+        ta.value = state.feedback || "";
+        ta.addEventListener("input", function () { state.feedback = ta.value; });
+        fb.appendChild(ta);
+        var send = el("button", "pif-btn primary fb-send", "Send to my care team"); send.type = "button";
+        var confirm = el("div", "fb-confirm"); confirm.style.display = "none";
+        send.addEventListener("click", function () {
+            // PRODUCTION: posts the free-text message to DR alongside the assessment.
+            send.textContent = "Sent ✓"; send.disabled = true; ta.disabled = true;
+            confirm.textContent = "Thanks — your message has been sent to your care team.";
+            confirm.style.display = "block";
+            announce("Your message has been sent to your care team.");
         });
-
-        if (state.brainPresent) {
-            var total = mrpqTotal(state.mrpq.responses);
-            var answered = state.mrpq.responses.filter(function (v) { return v != null; }).length;
-            var flagged = (MRPQ_CUTOFF_DIRECTION === "above") ? (total > MRPQ_CUTOFF) : (total < MRPQ_CUTOFF);
-            var rc2 = el("div", "result-region");
-            var h2 = el("div", "act-head");
-            h2.appendChild(el("strong", null, "Brain and/or Concussion"));
-            h2.appendChild(el("span", "pill", "Instrument B · mRPQ-20"));
-            rc2.appendChild(h2);
-            metricRow(rc2, "mRPQ-20 total", total + " (max " + MRPQ_MAX + ")");
-            metricRow(rc2, "Symptoms rated", answered + " of " + MRPQ_ITEMS.length);
-            var fl = el("div");
-            fl.appendChild(el("span", "flag" + (flagged ? " bad" : " good"), flagged ? ("Total > " + MRPQ_CUTOFF + " — flags likely post-concussion syndrome") : ("Total ≤ " + MRPQ_CUTOFF + " — below post-concussion syndrome cutoff")));
-            rc2.appendChild(fl);
-            rc2.appendChild(el("div", "note", "Scoring: 16 standard items at face value 0–4; three ADX threshold items (#17–19) count only when rated " + (SUPP_COUNT_THRESHOLD ? "4" : "3 or 4") + "; item #20 (neck pain / upper-extremity weakness) is scored negatively (0 to −4) and subtracted. See the page-2 vs page-3 scoring-conflict note in pif-data.js."));
-            app.appendChild(rc2);
-        }
-
-        var done = el("div", "card");
-        done.appendChild(el("p", "muted", "End of demo. Use Start over to run this patient again, or switch sample patients in the top bar."));
-        app.appendChild(done);
+        fb.appendChild(send);
+        fb.appendChild(confirm);
+        c.appendChild(fb);
+        app.appendChild(c);
     }
 
     function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }

@@ -247,6 +247,53 @@
 .pif-survey select:focus-visible,
 .pif-survey input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* --- Collapsible "New pain areas?" section --- */
+.pif-survey details.new-areas {
+    margin-top: 14px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); padding-bottom: 6px; overflow: hidden;
+}
+.pif-survey details.new-areas > summary {
+    list-style: none; cursor: pointer; min-height: 48px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 16px; font-size: 15px; font-weight: 600; color: var(--accent);
+}
+.pif-survey details.new-areas > summary::-webkit-details-marker { display: none; }
+.pif-survey details.new-areas > summary::before {
+    content: "▸"; font-size: 12px; transition: transform .15s ease; display: inline-block;
+}
+.pif-survey details.new-areas[open] > summary::before { transform: rotate(90deg); }
+.pif-survey details.new-areas > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 12px; }
+.pif-survey .new-areas-hint { padding: 0 16px 10px; }
+.pif-survey details.new-areas > .region-row { margin: 0 12px 8px; }
+
+/* --- Medication guidance on the scoring screen --- */
+.pif-survey .med-help {
+    background: var(--surface-2); border: 1px solid var(--line-2);
+    border-left: 3px solid var(--accent); border-radius: 8px;
+    padding: 12px 14px; margin: 14px 0 6px;
+    font-size: 13.5px; line-height: 1.55; color: var(--ink);
+}
+
+/* --- Review card header (title + pill on the left, Edit on the right) --- */
+.pif-survey .rr-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pif-survey .review-line { font-size: 14px; line-height: 1.55; color: var(--ink); padding: 8px 0 2px; }
+.pif-survey .review-line.muted { color: var(--muted); }
+
+/* --- Thank-you + feedback --- */
+.pif-survey .pif-thanks h1 { margin-bottom: 8px; }
+.pif-survey .feedback-box { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.pif-survey .fb-label { display: block; font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 10px; text-wrap: pretty; }
+.pif-survey .fb-textarea {
+    width: 100%; box-sizing: border-box; min-height: 112px;
+    padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 10px;
+    font-family: inherit; font-size: 15px; line-height: 1.5; color: var(--ink);
+    background: var(--surface); resize: vertical;
+}
+.pif-survey .fb-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pif-survey .fb-textarea:disabled { opacity: 0.7; }
+.pif-survey .fb-send { margin-top: 14px; }
+.pif-survey .fb-confirm { margin-top: 12px; color: var(--green); font-weight: 600; font-size: 14px; }
+
 /* --- Larger screens --- */
 @media (min-width: 640px) {
     .pif-survey .pif-main { padding: 28px 28px 32px; }
