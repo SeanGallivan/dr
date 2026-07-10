@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derived Results | Follow Up Assessment</title>
+    <!-- Simulated arrival from an emailed link — no login, no password, no 2FA.
+         Fonts + design tokens are shared with the rest of the prototype; the
+         survey-specific components live in pif-survey.css. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="pif-survey.css?v=1">
+</head>
+<body class="pif-survey">
+    <a class="skip-link" href="#app">Skip to the assessment</a>
+
+    <header>
+        <div class="header-brand">
+            <span class="logo-area">DERIVED&nbsp;RESULTS</span>
+            <span class="adx-brand-sep"></span>
+            <span class="adx-eyebrow">Follow Up Assessment</span>
+        </div>
+        <div class="adx-header-right">
+            <label class="adx-status-select">
+                <span class="adx-status-label">Sample patient</span>
+                <select id="patientSelect" aria-label="Sample patient — demo control">
+                    <option value="1">1 — MSK repeat visit</option>
+                    <option value="2">2 — Brain + MSK</option>
+                    <option value="3">3 — First-time MSK</option>
+                </select>
+            </label>
+            <button id="pifThemeToggle" class="adx-theme-toggle" type="button"
+                    aria-label="Toggle light / dark theme" aria-pressed="false">
+                <span class="knob">☀</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="pif-main" id="pifMain">
+        <div id="app" class="pif-shell" aria-live="polite"></div>
+    </main>
+
+    <footer class="pif-nav" role="navigation" aria-label="Assessment navigation">
+        <div class="pif-nav-inner">
+            <button class="pif-btn ghost" id="btnBack" type="button">Back</button>
+            <button class="pif-btn primary" id="btnNext" type="button">Next</button>
+        </div>
+    </footer>
+
+    <div id="pifLive" class="sr-only" role="status" aria-live="assertive"></div>
+
+    <script src="./pif-data.js?v=1"></script>
+    <script src="./pif-app.js?v=1"></script>
+</body>
+</html>
