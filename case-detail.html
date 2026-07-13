@@ -55,7 +55,7 @@
             '<div><h2 style="margin:0;">' + esc(c.beneficiary) + (c.newIntake ? ' <span class="adx-pill adx-pill-new" style="vertical-align:middle;">NEW INTAKE</span>' : '') + '</h2>' +
             '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + multiTag + '</div></div>' +
             '<div class="header-actions">' +
-            '<a class="btn btn-action" href="pif-survey.html?staff=1&patient=' + (c.newIntake ? '3' : '1') + '&name=' + encodeURIComponent(c.beneficiary) + '" target="_blank" rel="noopener" style="text-decoration:none;">Update PIF Assessment</a>' +
+            '<button class="btn btn-action" onclick="alert(\'PIFS follow-up assessment sent to ' + esc(c.beneficiary) + '. It will surface in the pain areas below when returned. Automatic 30-day follow-ups are on.\')">Send PIFS Follow-Up</button>' +
             '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
 
         // Patient-level: every diagnosis is its own patient/diagnosis pair.
@@ -88,7 +88,9 @@
                     '<td style="text-align:right;"><span class="adx-money">' + money(patientSumRT) + '</span></td>' +
                     '<td style="text-align:right;"><span class="adx-mono"><strong>' + patientAgg.total + '</strong></span></td></tr>' +
             '</tbody></table>' +
-            '<p class="adx-sub">Aggregate bonus: <strong>' + patientAgg.total + ' pts</strong> across ' + patientAgg.count + ' diagnosis pair' + (patientAgg.count !== 1 ? 's' : '') + ' · avg ' + patientAgg.avg + '/pair · <strong>' + (patientAgg.eligible ? 'Eligible' : 'Not yet') + '</strong> (need ' + ADX_BONUS_POINTS_THRESHOLD + '/pair) ' + adxInfo("bonus") + '</p>';
+            '<p class="adx-sub">Aggregate bonus: <strong>' + patientAgg.total + ' pts</strong> across ' + patientAgg.count + ' diagnosis pair' + (patientAgg.count !== 1 ? 's' : '') + ' · avg ' + patientAgg.avg + '/pair · <strong>' + (patientAgg.eligible ? 'Eligible' : 'Not yet') + '</strong> (need ' + ADX_BONUS_POINTS_THRESHOLD + '/pair) ' + adxInfo("bonus") + '</p>' +
+            /* B11/B12: send / re-take trigger + auto cadence; in-office (staff) fill de-emphasized. */
+            '<p class="adx-sub">PIFS follow-up: <strong>automatic every 30 days</strong> · <a class="adx-link" href="#" onclick="alert(\'PIFS follow-up sent to ' + esc(c.beneficiary) + '. Results surface in the pain areas when returned.\');return false;">Send now</a> · <a class="adx-link" href="pif-survey.html?staff=1&patient=' + (c.newIntake ? '3' : '1') + '&name=' + encodeURIComponent(c.beneficiary) + '" target="_blank" rel="noopener" style="opacity:0.75;">complete in office ▸</a></p>';
 
         var costTotal = c.costBreakdown.reduce(function(s,x){ return s + x.amount; }, 0);
         var gain = c.pifCurrent - c.pifStart;

@@ -30,30 +30,22 @@ var MDC_POINTS = 3;
 /* Max patient-defined activities per MSK region (PSFS "target up to five"). */
 var MAX_ACTIVITIES = 5;
 
-/* mRPQ-20 threshold-item behavior (items #17–19).
-     false (default, "page 3" reading): counts only when rated >= 3, at face
-            value  (0/1/2 -> 0, 3 -> 3, 4 -> 4).
-     true  (stricter "only 4 counts" reading): 0/1/2/3 -> 0, 4 -> 4.
-   Flip this single constant to switch the interpretation. */
-var SUPP_COUNT_THRESHOLD = false;
+/* mRPQ-20 response scale (B9, Rev 1): a 4-point scale, 1 = Not experienced …
+   4 = Severe. (v0 used a 0–4 scale; Brad's review specifies 1–4.) */
+var MRPQ_SCALE = [1, 2, 3, 4];
 
-/* mRPQ-20 totals. */
-var MRPQ_MAX = 76;      // 16 std items x4 (=64) + 3 threshold x4 (=12); negative item only subtracts.
-var MRPQ_CUTOFF = 25;   // total > 25 flags likely post-concussion syndrome (see conflict note below).
+/* Threshold items (#17–19) count toward the total only when rated at or above
+   this value; the negative item (#20) subtracts. OPEN (O4): the exact thresholds
+   and cutoff are UNRESOLVED pending Brad/ADX — kept as config, NOT hard-coded,
+   so they can be set after review. */
+var MRPQ_THRESHOLD_MIN = 3;
 
-/* mRPQ-20 SCORING CONFLICT NOTE (page 2 vs page 3 of the source PDF) — UNRESOLVED,
-   pending Dr. Vilims + Sean:
-   The Rivermead validation pages (PDF page 2 / page 4+) describe the classic RPQ
-   where a HIGHER total = MORE symptom burden and there is no single fixed
-   "post-concussion syndrome" cutoff. Sean's redesign annotations (PDF page 3)
-   instead specify the ADX-modified scoring used here: threshold items suppressed
-   below 3, one negatively-scored item, max 76, and a total > 25 flags likely PCS.
-   The build doc phrases the cutoff as "a total BELOW the stated cutoff flags,"
-   the opposite direction from the page-3 annotation. Per the resolved build spec
-   we implement the page-3 rule: total > 25 => flag. If the source PDF is later
-   read to mean the reverse, invert MRPQ_CUTOFF_DIRECTION below. Kept as flippable
-   constants so they can be set after Dr. Vilims' review. */
-var MRPQ_CUTOFF_DIRECTION = "above"; // "above" => total > cutoff flags PCS.
+/* Totals + cutoff (OPEN O4 — parameterized). Neck-pain / upper-extremity items
+   are scored negatively and only within the concussion instrument, so an
+   unrelated MSK neck region does not pull the concussion total down. */
+var MRPQ_MAX = 76;
+var MRPQ_CUTOFF = 25;
+var MRPQ_CUTOFF_DIRECTION = "above"; // "above" => total > cutoff flags likely post-concussion syndrome
 
 /* ---------------------------------------------------------------------------
    v2 ENDPOINT-WEIGHTED PIF SCORE LOOKUP  ("PifsScores v2" sheet)
@@ -144,7 +136,7 @@ REGIONS.forEach(function (r) { REGION_BY_ID[r.id] = r; });
      "negative"  = scored 0,-1,-2,-3,-4 and subtracted from the total.
    The four ADX supplemental items are #17,#18,#19 (threshold) and #20 (negative).
    --------------------------------------------------------------------------- */
-var MRPQ_LABELS = ["Not experienced", "No more than before", "Mild", "Moderate", "Severe"];
+var MRPQ_LABELS = ["Not experienced", "Mild", "Moderate", "Severe"];  // index 0..3 => value 1..4
 var MRPQ_ITEMS = [
     { n: 1,  text: "Headaches",                                      type: "std" },
     { n: 2,  text: "Feelings of dizziness",                          type: "std" },
@@ -168,47 +160,65 @@ var MRPQ_ITEMS = [
     { n: 20, text: "Neck pain and/or upper extremity weakness",     type: "negative" }    // ADX-added
 ];
 
-/* Per-item contribution to the mRPQ-20 total. Unanswered (null) contributes 0. */
+/* Per-item contribution to the mRPQ-20 total. Unanswered (null) contributes 0.
+   B9: designated items (neck pain, upper-extremity weakness) are scored as
+   negatives and subtract from the concussion total. Threshold items only count
+   at/above MRPQ_THRESHOLD_MIN (O4 — parameterized). */
 function mrpqItemScore(item, rating) {
     if (rating == null) return 0;
-    if (item.type === "std")      return rating;
-    if (item.type === "negative") return -rating;
-    if (item.type === "threshold") {
-        if (SUPP_COUNT_THRESHOLD) return rating >= 4 ? rating : 0;   // stricter: only 4 counts
-        return rating >= 3 ? rating : 0;                            // default: 3 and 4 count at face value
-    }
+    if (item.type === "std")       return rating;
+    if (item.type === "negative")  return -rating;
+    if (item.type === "threshold") return rating >= MRPQ_THRESHOLD_MIN ? rating : 0;
     return 0;
 }
 function mrpqTotal(responses) {
     return MRPQ_ITEMS.reduce(function (s, it, i) { return s + mrpqItemScore(it, responses[i]); }, 0);
 }
 
+/* Work-status options for the intake question (B7). Editable. */
+var WORK_STATUS_OPTIONS = [
+    "Working full-time",
+    "Working part-time",
+    "Not working because of this injury",
+    "Not working for another reason",
+    "Retired",
+    "Student",
+    "Homemaker / caregiver",
+    "Other"
+];
+
 /* ---------------------------------------------------------------------------
-   SAMPLE PATIENTS (Step 7). Switchable via dropdown or ?patient=1|2|3.
-   Each defines note-seeded region pre-checks (with laterality) and, for MSK
-   regions, activities. A region is "repeat" (activities locked + prior score)
-   or "first-time" (patient defines activities).
-   Activity fields: prior = {wo, wm} last-visit score (repeat only);
-   cur = {wo, wm} current-visit rating (null until answered).
-   wo = without medication, wm = with medication.
+   SAMPLE PATIENTS. Switchable via dropdown or ?patient=1|2|3.
+   Every seeded region is DOC-ASSIGNED (from the IPM note) and therefore locked
+   in the survey; the patient adds any extra areas through the "new / other pain
+   areas" drawer (B5).
+   region: { id, lat, repeat, medication (bool|null), activities }
+     - repeat true  => follow-up: activity names locked, prior position shown as
+       a ghost marker on the slider (B1), no numbers.
+     - medication true => the with/without two-slider pair is shown (B3);
+       false => single slider; null => the patient answers the med question.
+   activity: { name, prior:{wo,wm}|null, cur:{wo,wm} }  (wo=without med, wm=with med;
+     0–10 internal, never shown to the patient — B2).
+   intake: { workRelated, attorney, workStatus } — the non-slider questions (B7);
+     pre-filled on a follow-up so the "has anything changed?" step can confirm.
    PRODUCTION: seeded from the IPM note + prior DR assessments; here it is mocked.
    --------------------------------------------------------------------------- */
 var PIF_SAMPLE_PATIENTS = {
     "1": {
-        name: "Patient 1 — MSK repeat visit",
-        // Neck, Low Back, Shoulder already on file with priors (locked activities).
+        name: "Patient 1 — MSK follow-up",
+        intake: { workRelated: true, attorney: true, workStatus: "Not working because of this injury" },
         regions: [
-            { id: "neck", lat: "Middle", repeat: true, activities: [
+            { id: "neck", lat: "Middle", repeat: true, medication: true, activities: [
                 { name: "Turning my head to check a blind spot while driving", prior: { wo: 2, wm: 3 }, cur: { wo: 6, wm: 7 } },
                 { name: "Looking up to reach a high shelf",                    prior: { wo: 2, wm: 3 }, cur: { wo: 5, wm: 6 } },
                 { name: "Sleeping through the night without neck pain",        prior: { wo: 3, wm: 4 }, cur: { wo: 6, wm: 8 } }
             ] },
-            { id: "lowback", lat: "Left", repeat: true, activities: [
+            { id: "lowback", lat: "Left", repeat: true, medication: true, activities: [
                 { name: "Putting on my socks and shoes",          prior: { wo: 3, wm: 4 }, cur: { wo: 4, wm: 5 } },
                 { name: "Standing at the counter to cook a meal",  prior: { wo: 2, wm: 3 }, cur: { wo: 3, wm: 4 } },
                 { name: "Lifting a laundry basket",                prior: { wo: 2, wm: 3 }, cur: { wo: 3, wm: 4 } }
             ] },
-            { id: "shoulder", lat: "Right", repeat: true, activities: [
+            { id: "shoulder", lat: "Right", repeat: true, medication: true, activities: [
                 { name: "Reaching a plate from an overhead shelf", prior: { wo: 1, wm: 2 }, cur: { wo: 5, wm: 6 } },
                 { name: "Putting on a jacket",                     prior: { wo: 2, wm: 3 }, cur: { wo: 6, wm: 7 } },
                 { name: "Sleeping on my right side",               prior: { wo: 1, wm: 2 }, cur: { wo: 4, wm: 5 } }
@@ -217,24 +227,24 @@ var PIF_SAMPLE_PATIENTS = {
         brain: false, mrpq: null
     },
     "2": {
-        name: "Patient 2 — Brain + MSK",
-        // Brain (mRPQ-20 pre-seeded) + one first-time MSK region (Shoulder).
+        name: "Patient 2 — Brain + MSK (initial)",
+        intake: { workRelated: null, attorney: null, workStatus: null },
         regions: [
-            { id: "shoulder", lat: "Left", repeat: false, activities: [
+            { id: "shoulder", lat: "Left", repeat: false, medication: true, activities: [
                 { name: "Reaching overhead to a shelf", prior: null, cur: { wo: 4, wm: 5 } },
                 { name: "Carrying a bag of groceries",  prior: null, cur: { wo: 5, wm: 6 } }
             ] }
         ],
         brain: true,
-        // Pre-seeded mRPQ-20 responses (index 0..19 => items 1..20). Totals to 37 (> 25 => flag).
-        mrpq: [3, 2, 1, 3, 2, 3, 2, 1, 2, 3, 3, 2, 1, 2, 1, 2, 3, 2, 3, 2]
+        // Pre-seeded mRPQ responses on the 1–4 scale (index 0..19 => items 1..20).
+        mrpq: [4, 3, 2, 3, 2, 4, 3, 2, 3, 3, 4, 3, 2, 3, 2, 3, 3, 4, 3, 2]
     },
     "3": {
-        name: "Patient 3 — First-time MSK",
-        // Brand-new patient, no priors: patient defines activities with example prompts.
+        name: "Patient 3 — First-time MSK (initial)",
+        intake: { workRelated: null, attorney: null, workStatus: null },
         regions: [
-            { id: "knee",    lat: "Right",  repeat: false, activities: [] },
-            { id: "lowback", lat: "Middle", repeat: false, activities: [] }
+            { id: "knee",    lat: "Right",  repeat: false, medication: null, activities: [] },
+            { id: "lowback", lat: "Middle", repeat: false, medication: null, activities: [] }
         ],
         brain: false, mrpq: null
     }
