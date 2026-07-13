@@ -55,6 +55,7 @@
             '<div><h2 style="margin:0;">' + esc(c.beneficiary) + (c.newIntake ? ' <span class="adx-pill adx-pill-new" style="vertical-align:middle;">NEW INTAKE</span>' : '') + '</h2>' +
             '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + multiTag + '</div></div>' +
             '<div class="header-actions">' +
+            '<a class="btn btn-action" href="pif-survey.html?staff=1&patient=' + (c.newIntake ? '3' : '1') + '&name=' + encodeURIComponent(c.beneficiary) + '" target="_blank" rel="noopener" style="text-decoration:none;">Update PIF Assessment</a>' +
             '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
 
         // Patient-level: every diagnosis is its own patient/diagnosis pair.

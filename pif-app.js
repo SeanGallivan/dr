@@ -13,6 +13,8 @@ var PIFApp = (function () {
 
     var state = null;   // current working state
     var stepIndex = 0;  // index into screenList()
+    var staffMode = false;   // ?staff=1 — a doctor/admin completing it WITH the patient in DR
+    var patientName = "";    // ?name= — the real patient's name (staff mode framing)
 
     /* ---- small DOM + math helpers ---- */
     function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -36,6 +38,27 @@ var PIFApp = (function () {
         }
     }
     function toggleTheme() { applyTheme(theme() === "dark" ? "light" : "dark"); }
+
+    /* Staff-assisted mode: reframes the entry/exit for a clinician completing
+       the assessment WITH the patient in DR (no patient internet or login).
+       PRODUCTION: real staff mode seeds the areas, activities, and prior scores
+       from the patient's DR record; here it uses the sample data + the name. */
+    function setupMode() {
+        var eyebrow = document.querySelector(".adx-eyebrow");
+        var banner = document.getElementById("pifStaffBanner");
+        if (staffMode) {
+            document.body.classList.add("pif-staff");
+            if (eyebrow) eyebrow.textContent = "Staff-Assisted Assessment";
+            if (banner) {
+                banner.hidden = false;
+                banner.innerHTML = "<strong>Staff-assisted mode</strong> — complete this together with " +
+                    (patientName ? esc(patientName) : "the patient") +
+                    " in Derived Results. No patient internet or login needed; record the patient’s own answers.";
+            }
+        } else if (banner) {
+            banner.hidden = true;
+        }
+    }
 
     /* =================================================================
        STATE
@@ -251,14 +274,22 @@ var PIFApp = (function () {
     /* ---- Screen 1: Entry / intro (simulated emailed-link arrival) ---- */
     function renderIntro(app) {
         var c = el("div", "card");
-        c.appendChild(el("h1", null, "Welcome to your Follow Up Assessment"));
-        c.appendChild(el("p", "intro-lead", "Thanks for taking a few minutes to check in. Your answers help your care team understand how you are doing and tailor your care to what matters most to you."));
-        c.appendChild(el("p", null, "There is nothing to log in to — you arrived here from the secure link in your email. Please answer honestly; there are no right or wrong answers. You can go back and change anything before you submit."));
-        var who = el("p", "muted");
-        who.innerHTML = "You are viewing sample <strong>" + esc(state.name) + "</strong>. Use the <em>Sample patient</em> menu at the top to switch demos.";
-        c.appendChild(who);
-        // PRODUCTION: real entry validates a signed, single-use emailed token; no
-        // login / 2FA in this prototype (Step 3 entry, Step 9 out of scope).
+        if (staffMode) {
+            var whoName = patientName || "the patient";
+            c.appendChild(el("h1", null, "Follow Up Assessment" + (patientName ? " — " + patientName : "")));
+            c.appendChild(el("p", "intro-lead", "You're completing this together with " + whoName + ". Read each item with them and record their own answers — the ratings should reflect the patient's view of their function, not yours."));
+            c.appendChild(el("p", null, "This is the same assessment the patient would get by email. Use it when they're in front of you or don't have internet access. Nothing to log in to; you can go back and change anything before submitting."));
+            c.appendChild(el("p", "muted", "Demo: sample answers are pre-filled so you can see the flow. Use the Sample patient menu at the top to switch demos."));
+        } else {
+            c.appendChild(el("h1", null, "Welcome to your Follow Up Assessment"));
+            c.appendChild(el("p", "intro-lead", "Thanks for taking a few minutes to check in. Your answers help your care team understand how you are doing and tailor your care to what matters most to you."));
+            c.appendChild(el("p", null, "There is nothing to log in to — you arrived here from the secure link in your email. Please answer honestly; there are no right or wrong answers. You can go back and change anything before you submit."));
+            var who = el("p", "muted");
+            who.innerHTML = "You are viewing sample <strong>" + esc(state.name) + "</strong>. Use the <em>Sample patient</em> menu at the top to switch demos.";
+            c.appendChild(who);
+        }
+        // PRODUCTION: patient entry validates a signed, single-use emailed token;
+        // staff entry is launched from within DR (no login / 2FA in this prototype).
         app.appendChild(c);
     }
 
@@ -533,12 +564,18 @@ var PIFApp = (function () {
        scoring functions remain in pif-data.js (pifV2Score, mrpqTotal, …). */
     function renderThankYou(app) {
         var c = el("div", "card pif-thanks");
-        c.appendChild(el("h1", null, "Thank you!"));
-        c.appendChild(el("p", "intro-lead", "Your answers have been sent to your care team. They'll use them to see how you're doing and tailor your care to what matters most to you."));
-        c.appendChild(el("p", "muted", "There's nothing else you need to do — you can close this page whenever you're ready."));
+        if (staffMode) {
+            c.appendChild(el("h1", null, "Assessment saved"));
+            c.appendChild(el("p", "intro-lead", "The follow-up assessment" + (patientName ? " for " + patientName : "") + " has been saved to the patient's record in Derived Results."));
+            c.appendChild(el("p", "muted", "You can start another assessment or close this tab to return to the chart."));
+        } else {
+            c.appendChild(el("h1", null, "Thank you!"));
+            c.appendChild(el("p", "intro-lead", "Your answers have been sent to your care team. They'll use them to see how you're doing and tailor your care to what matters most to you."));
+            c.appendChild(el("p", "muted", "There's nothing else you need to do — you can close this page whenever you're ready."));
+        }
 
         var fb = el("div", "feedback-box");
-        var lab = el("label", "fb-label", "Any questions, or anything you'd like your care team to know? (optional)");
+        var lab = el("label", "fb-label", staffMode ? "Any notes to add to the patient's record? (optional)" : "Any questions, or anything you'd like your care team to know? (optional)");
         lab.setAttribute("for", "pifFeedback");
         fb.appendChild(lab);
         var ta = el("textarea", "fb-textarea"); ta.id = "pifFeedback"; ta.rows = 5;
@@ -547,14 +584,14 @@ var PIFApp = (function () {
         ta.value = state.feedback || "";
         ta.addEventListener("input", function () { state.feedback = ta.value; });
         fb.appendChild(ta);
-        var send = el("button", "pif-btn primary fb-send", "Send to my care team"); send.type = "button";
+        var send = el("button", "pif-btn primary fb-send", staffMode ? "Save note to record" : "Send to my care team"); send.type = "button";
         var confirm = el("div", "fb-confirm"); confirm.style.display = "none";
         send.addEventListener("click", function () {
-            // PRODUCTION: posts the free-text message to DR alongside the assessment.
-            send.textContent = "Sent ✓"; send.disabled = true; ta.disabled = true;
-            confirm.textContent = "Thanks — your message has been sent to your care team.";
+            // PRODUCTION: posts the free-text message/note to DR alongside the assessment.
+            send.textContent = staffMode ? "Saved ✓" : "Sent ✓"; send.disabled = true; ta.disabled = true;
+            confirm.textContent = staffMode ? "Note saved to the patient's record." : "Thanks — your message has been sent to your care team.";
             confirm.style.display = "block";
-            announce("Your message has been sent to your care team.");
+            announce(staffMode ? "Note saved to the patient's record." : "Your message has been sent to your care team.");
         });
         fb.appendChild(send);
         fb.appendChild(confirm);
@@ -584,6 +621,9 @@ var PIFApp = (function () {
         });
 
         var params = new URLSearchParams(window.location.search);
+        staffMode = (params.get("staff") === "1" || params.get("mode") === "clinic");
+        patientName = params.get("name") || "";
+        setupMode();
         var pid = params.get("patient");
         if (pid !== "1" && pid !== "2" && pid !== "3") pid = "1";
         sel.value = pid;

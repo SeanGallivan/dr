@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=9">
-    <link rel="stylesheet" href="pif-survey.css?v=2">
+    <link rel="stylesheet" href="pif-survey.css?v=3">
 </head>
 <body class="pif-survey">
     <a class="skip-link" href="#app">Skip to the assessment</a>
@@ -38,6 +38,8 @@
         </div>
     </header>
 
+    <div id="pifStaffBanner" class="pif-staff-banner" role="note" hidden></div>
+
     <main class="pif-main" id="pifMain">
         <div id="app" class="pif-shell" aria-live="polite"></div>
     </main>
@@ -52,6 +54,6 @@
     <div id="pifLive" class="sr-only" role="status" aria-live="assertive"></div>
 
     <script src="./pif-data.js?v=1"></script>
-    <script src="./pif-app.js?v=2"></script>
+    <script src="./pif-app.js?v=3"></script>
 </body>
 </html>
