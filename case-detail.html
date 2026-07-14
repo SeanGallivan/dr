@@ -51,11 +51,27 @@
         var dxIndex = allEpisodes.findIndex(function(x){ return x.id === c.id; }) + 1;
         var multiTag = allEpisodes.length > 1 ? ' · Diagnosis ' + dxIndex + ' of ' + allEpisodes.length : '';
 
+        // PIFS follow-up due status — deterministic per case so it's stable across reloads.
+        // Most cases show a countdown (1–29 days); ~1 in 5 is overdue and rendered bright.
+        var pifsSeed = 0; for (var _p = 0; _p < c.id.length; _p++) pifsSeed = (pifsSeed * 31 + c.id.charCodeAt(_p)) % 100000;
+        var pifsOverdue = (pifsSeed % 5 === 0);
+        var pifsDays = pifsOverdue ? (1 + pifsSeed % 12) : (1 + pifsSeed % 29);
+        var pifsPlural = (pifsDays === 1) ? "" : "s";
+        var pifsDueText = pifsOverdue
+            ? "Follow-up OVERDUE — " + pifsDays + " day" + pifsPlural
+            : "Follow-up due in " + pifsDays + " day" + pifsPlural;
+        var pifsDueStyle = pifsOverdue
+            ? "margin-top:2px;background:#e5484d;color:#fff;padding:3px 10px;border-radius:999px;font-weight:800;font-size:0.68rem;letter-spacing:0.04em;box-shadow:0 0 12px rgba(229,72,77,0.6);"
+            : "margin-top:2px;opacity:0.75;font-weight:600;font-size:0.72rem;letter-spacing:0.02em;";
+
         document.getElementById("detailHeader").innerHTML =
             '<div><h2 style="margin:0;">' + esc(c.beneficiary) + (c.newIntake ? ' <span class="adx-pill adx-pill-new" style="vertical-align:middle;">NEW INTAKE</span>' : '') + '</h2>' +
             '<div style="font-size:0.85rem; opacity:0.85; margin-top:4px;">' + term + ' · DOB ' + c.dob + ' · Age ' + c.age + ' · Case ' + c.id + multiTag + '</div></div>' +
             '<div class="header-actions">' +
+            '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">' +
             '<button class="btn btn-action" onclick="alert(\'PIFS follow-up assessment sent to ' + esc(c.beneficiary) + '. It will surface in the pain areas below when returned. Automatic 30-day follow-ups are on.\')">Send PIFS Follow-Up</button>' +
+            '<span style="' + pifsDueStyle + '">' + pifsDueText + '</span>' +
+            '</div>' +
             '<button class="btn btn-action" onclick="alert(\'Message sent to ' + esc(ipm.name) + '.\')">Message Doctor</button></div>';
 
         // Patient-level: every diagnosis is its own patient/diagnosis pair.

@@ -203,7 +203,7 @@ var PIFApp = (function () {
                 thumb.style.left = "-24px"; fill.style.width = "0%";
                 slider.removeAttribute("aria-valuenow");
                 slider.setAttribute("aria-valuetext", "Not answered");
-                valOut.textContent = (prior != null) ? "Slide to answer — the outline shows where you were last time" : "Slide to answer";
+                valOut.textContent = (prior != null) ? "Slide to answer — the white marker shows where you were last time" : "Slide to answer";
             } else {
                 slider.classList.remove("unanswered");
                 var pct = value / 10 * 100;
@@ -211,7 +211,7 @@ var PIFApp = (function () {
                 fill.style.width = pct + "%";
                 slider.setAttribute("aria-valuenow", String(value));         // for assistive tech only
                 slider.setAttribute("aria-valuetext", band(value));          // no numeral shown visually (B2)
-                valOut.textContent = (prior != null) ? "The outline shows where you were last time" : "";
+                valOut.textContent = (prior != null) ? "The white marker shows where you were last time" : "";
             }
         }
         function setVal(v) { v = Math.max(0, Math.min(10, Math.round(v))); value = v; paint(); if (cfg.onChange) cfg.onChange(v); }

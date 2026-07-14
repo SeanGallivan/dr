@@ -324,10 +324,13 @@
 .pif-survey .pif-face-happy { color: var(--green); }
 .pif-survey .pif-slider { padding: 14px 0; }
 .pif-survey .pif-thumb { width: 28px; height: 28px; margin-top: -14px; }
-/* Prior-response position marker (B1) */
+/* Prior-response position marker (B1) — clearly visible white dot on a shaded halo */
 .pif-survey .pif-ghost {
-    position: absolute; top: 50%; width: 18px; height: 18px; margin-top: -9px;
-    border-radius: 50%; border: 2px dashed var(--faint); background: transparent;
+    position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px;
+    border-radius: 50%;
+    background: #ffffff;                     /* white dot */
+    border: 2px solid rgba(0,0,0,0.6);       /* dark outline reads on any track colour */
+    box-shadow: 0 0 0 5px rgba(70,72,82,0.30), 0 1px 3px rgba(0,0,0,0.45);  /* shaded halo */
     box-sizing: border-box; pointer-events: none;
 }
 .pif-survey .pif-val { font-family: var(--ui-font); font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 8px; min-height: 1em; }
