@@ -402,6 +402,63 @@
 /* mRPQ-20 now has 4 options (B9) */
 .pif-survey .mrpq-opts { grid-template-columns: repeat(4, 1fr); }
 
+/* ============================================================
+   Legacy-survey sections restored (work / general / body-area /
+   satisfaction) + submit confirmation modal.
+   ============================================================ */
+
+/* Group sub-headers within a screen ("Compared to one month ago…") */
+.pif-survey .qgroup-head {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    margin: 18px 0 2px; padding-top: 14px; border-top: 1px solid var(--line);
+    text-wrap: pretty;
+}
+.pif-survey .card > .qgroup-head:first-of-type,
+.pif-survey .area-problems > .qgroup-head:first-child { border-top: none; padding-top: 4px; margin-top: 10px; }
+
+/* Number + date inputs (height, weight, work-begin date) */
+.pif-survey .intake-input {
+    width: 100%; max-width: 420px; box-sizing: border-box; min-height: 44px;
+    padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 8px;
+    font-family: inherit; font-size: 15px; color: var(--ink); background: var(--surface);
+}
+.pif-survey .intake-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pif-survey .intake-help { margin: -4px 0 10px; }
+.pif-survey .num-wrap { display: flex; align-items: center; gap: 10px; }
+.pif-survey .num-input { max-width: 140px; font-family: var(--num-font); }
+.pif-survey .num-suffix { font-size: 14px; color: var(--muted); font-weight: 500; }
+.pif-survey .date-input { max-width: 220px; font-family: var(--num-font); }
+.pif-survey .work-sub:not(:empty) { margin-top: 2px; }
+
+/* Per-area problem block (legacy Section 4), divider + activities sub-head */
+.pif-survey .area-divider { height: 1px; background: var(--line); margin: 20px 0 0; }
+.pif-survey .area-subhead {
+    font-size: 16px; font-weight: 600; color: var(--ink);
+    margin: 16px 0 10px; letter-spacing: -0.01em;
+}
+
+/* Submit confirmation modal (legacy Confirmation dialog) */
+.pif-survey .pif-modal {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(15, 17, 22, 0.55);
+}
+.pif-survey .pif-modal-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 26px 26px 22px; max-width: 420px; width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,.28); text-align: center;
+}
+.pif-survey .pif-modal-icon {
+    width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 700; color: var(--accent);
+    border: 2px solid var(--accent); background: var(--accent-soft);
+}
+.pif-survey .pif-modal-title { font-size: 20px; margin: 0 0 8px; }
+.pif-survey .pif-modal-body { font-size: 15px; color: var(--muted); margin: 0 0 20px; line-height: 1.55; }
+.pif-survey .pif-modal-actions { display: flex; gap: 12px; justify-content: center; }
+.pif-survey .pif-modal-actions .pif-btn { min-width: 130px; }
+
 /* Thank-you: added-areas surface (B5) + feedback routing note (B8) */
 .pif-survey .added-summary {
     background: var(--surface-2); border: 1px solid var(--line-2);

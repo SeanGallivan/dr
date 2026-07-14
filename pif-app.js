@@ -82,13 +82,31 @@ var PIFApp = (function () {
             var acts = (r.activities || []).map(function (a) {
                 return { name: a.name, locked: !!r.repeat, prior: a.prior ? { wo: a.prior.wo, wm: a.prior.wm } : null, cur: { wo: (a.cur ? a.cur.wo : null), wm: (a.cur ? a.cur.wm : null) } };
             });
-            return { id: r.id, label: def.label, plain: def.plain, lat: r.lat || null, instrument: "A", repeat: !!r.repeat, medication: (r.medication === undefined ? null : r.medication), activities: acts };
+            var pr = r.problems || {};
+            return { id: r.id, label: def.label, plain: def.plain, lat: r.lat || null, instrument: "A", repeat: !!r.repeat, medication: (r.medication === undefined ? null : r.medication),
+                problems: { work: pr.work || null, pain: pr.pain || null, physical: pr.physical || null, mental: pr.mental || null },
+                activities: acts };
         });
 
+        var si = src.intake || {};
+        var sg = src.general || {};
         state = {
             patientId: pid, name: src.name,
             isFollowUp: regions.some(function (r) { return r.repeat; }),
-            intake: { workRelated: src.intake ? src.intake.workRelated : null, attorney: src.intake ? src.intake.attorney : null, workStatus: src.intake ? src.intake.workStatus : null },
+            // Legacy Section 2 (Work) + Additional Questions (attorney, workers' comp)
+            intake: {
+                workAbility: (si.workAbility === undefined ? null : si.workAbility),
+                workBeganDate: si.workBeganDate || null,
+                workReturnGoal: (si.workReturnGoal === undefined ? null : si.workReturnGoal),
+                prevWorkStatus: si.prevWorkStatus || null,
+                currentWorkStatus: si.currentWorkStatus || null,
+                attorney: (si.attorney === undefined ? null : si.attorney),
+                workersComp: (si.workersComp === undefined ? null : si.workersComp)
+            },
+            // Legacy Section 3 (General / global health)
+            general: { func: sg.func || null, qol: sg.qol || null, painMed: sg.painMed || null, limited: sg.limited || null, heightIn: (sg.heightIn == null ? null : sg.heightIn), weightLb: (sg.weightLb == null ? null : sg.weightLb) },
+            // Legacy Satisfaction section (initial only)
+            satisfaction: { priorToAdx: (src.satisfaction && src.satisfaction.priorToAdx) || null },
             selection: selected,
             regions: regions,
             brainPresent: !!src.brain,
@@ -104,10 +122,15 @@ var PIFApp = (function () {
     /* =================================================================
        SCREEN LIST + NAVIGATION  (no auto-advance; no review screen)
     ================================================================= */
+    // Flow (mirrors the legacy 5-section survey, regrouped for a better experience):
+    //   intro → your pain areas → work → this past month → one screen per treated
+    //   area (problem block + activities) → concussion (if assigned) → a few last
+    //   questions (attorney / workers' comp / satisfaction) → thank-you.
     function screenList() {
-        var list = [{ k: "intro" }, { k: "intake" }, { k: "regions" }];
+        var list = [{ k: "intro" }, { k: "regions" }, { k: "work" }, { k: "general" }];
         state.regions.forEach(function (r) { if (r.instrument === "A") list.push({ k: "msk", id: r.id }); });
         if (state.brainPresent) list.push({ k: "brain" });
+        list.push({ k: "wrapup" });
         list.push({ k: "thankyou" });
         return list;
     }
@@ -140,12 +163,41 @@ var PIFApp = (function () {
         var list = screenList();
         var cur = list[stepIndex];
         if (cur.k === "regions") syncRegionsFromSelection();
-        if (list[stepIndex + 1] && list[stepIndex + 1].k === "thankyou") state.submitted = true; // submit on the last content screen
         if (cur.k === "thankyou") { initPatient(state.patientId); return; } // "Start over"
+        // Confirmation gate before the final submit (legacy Confirmation modal;
+        // a light "ready?" check, not the removed full review screen — B4).
+        if (list[stepIndex + 1] && list[stepIndex + 1].k === "thankyou") { confirmSubmit(); return; }
         stepIndex++;
         render();
     }
+    function commitSubmit() { state.submitted = true; stepIndex++; render(); }
     function onBack() { if (stepIndex > 0) { stepIndex--; render(); } }
+
+    /* Confirmation modal shown when the patient presses Submit on the last
+       content screen (legacy image 9). Go back to keep editing, or submit. */
+    function confirmSubmit() {
+        var prev = document.getElementById("pifModal"); if (prev) prev.parentNode.removeChild(prev);
+        var overlay = el("div", "pif-modal"); overlay.id = "pifModal";
+        var cardc = el("div", "pif-modal-card"); cardc.setAttribute("role", "dialog"); cardc.setAttribute("aria-modal", "true"); cardc.setAttribute("aria-labelledby", "pifModalTitle");
+        cardc.appendChild(el("div", "pif-modal-icon", "✓"));
+        var h = el("h2", "pif-modal-title", staffMode ? "Ready to save?" : "Ready to submit?"); h.id = "pifModalTitle";
+        cardc.appendChild(h);
+        cardc.appendChild(el("p", "pif-modal-body", staffMode
+            ? "That's the whole assessment. Save it to the patient's record, or go back to change any answer."
+            : "That's everything. You can submit now, or go back to change any of your answers first."));
+        var row = el("div", "pif-modal-actions");
+        var back = el("button", "pif-btn ghost", "Go back"); back.type = "button";
+        var go = el("button", "pif-btn primary", staffMode ? "Save assessment" : "Submit"); go.type = "button";
+        function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+        back.addEventListener("click", close);
+        go.addEventListener("click", function () { close(); commitSubmit(); });
+        overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+        document.addEventListener("keydown", function esckey(e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", esckey); } });
+        row.appendChild(back); row.appendChild(go);
+        cardc.appendChild(row); overlay.appendChild(cardc);
+        document.body.appendChild(overlay);
+        go.focus();
+    }
     function goToScreen(pred) { var list = screenList(); for (var i = 0; i < list.length; i++) { if (pred(list[i])) { stepIndex = i; render(); return; } } }
 
     function updateNav(cur) {
@@ -262,6 +314,38 @@ var PIFApp = (function () {
         q.appendChild(sel);
         return q;
     }
+    function numberQuestion(labelText, val, onChange, opts) {
+        opts = opts || {};
+        var q = el("div", "intake-q");
+        var id = "numq" + (++_qseq);
+        var lab = el("label", "intake-label", labelText); lab.setAttribute("for", id);
+        q.appendChild(lab);
+        var wrap = el("div", "num-wrap");
+        var inp = el("input", "intake-input num-input"); inp.type = "number"; inp.id = id;
+        inp.inputMode = "numeric";
+        if (opts.min != null) inp.min = opts.min;
+        if (opts.max != null) inp.max = opts.max;
+        inp.placeholder = opts.placeholder || "";
+        if (val != null) inp.value = val;
+        inp.addEventListener("input", function () { onChange(inp.value === "" ? null : Number(inp.value)); });
+        wrap.appendChild(inp);
+        if (opts.suffix) wrap.appendChild(el("span", "num-suffix", opts.suffix));
+        q.appendChild(wrap);
+        return q;
+    }
+    function dateQuestion(labelText, helpText, val, onChange) {
+        var q = el("div", "intake-q");
+        var id = "dateq" + (++_qseq);
+        var lab = el("label", "intake-label", labelText); lab.setAttribute("for", id);
+        q.appendChild(lab);
+        if (helpText) q.appendChild(el("div", "muted intake-help", helpText));
+        var inp = el("input", "intake-input date-input"); inp.type = "date"; inp.id = id;
+        if (val) inp.value = val;
+        inp.addEventListener("input", function () { onChange(inp.value || null); });
+        q.appendChild(inp);
+        return q;
+    }
+    function groupHead(text) { return el("div", "qgroup-head", text); }
 
     /* =================================================================
        RENDER DISPATCHER
@@ -284,10 +368,12 @@ var PIFApp = (function () {
         }
 
         if (cur.k === "intro")         renderIntro(app);
-        else if (cur.k === "intake")   renderIntake(app);
         else if (cur.k === "regions")  renderRegions(app);
+        else if (cur.k === "work")     renderWork(app);
+        else if (cur.k === "general")  renderGeneral(app);
         else if (cur.k === "msk")      renderMSK(app, cur.id);
         else if (cur.k === "brain")    renderBrain(app);
+        else if (cur.k === "wrapup")   renderWrapup(app);
         else if (cur.k === "thankyou") renderThankYou(app);
 
         updateNav(cur);
@@ -318,20 +404,67 @@ var PIFApp = (function () {
         app.appendChild(c);
     }
 
-    /* ---- Quick intake questions (B7) ---- */
-    function renderIntake(app) {
+    /* ---- Work questions (legacy Section 2). Conditional: the work block only
+           shows if a treated condition affects work. ---- */
+    function renderWork(app) {
         var c = el("div", "card");
         var iv = state.intake;
+        c.appendChild(el("h2", null, "Work"));
         if (state.isFollowUp) {
-            c.appendChild(el("h2", null, "Has anything changed?"));
-            c.appendChild(el("p", "muted", "Here's what we have on file. If anything has changed since your last visit — for example, you haven't returned to work — update it below. If nothing has changed, just continue."));
+            c.appendChild(el("p", "muted", "Here's what we have on file about work. If anything has changed since your last visit, update it below. If nothing has changed, just continue."));
         } else {
-            c.appendChild(el("h2", null, "A few quick questions"));
-            c.appendChild(el("p", "muted", "These help your care team understand your situation. There are no right or wrong answers."));
+            c.appendChild(el("p", "muted", "A few questions about how your health affects your work. There are no right or wrong answers."));
         }
-        c.appendChild(yesNoQuestion("Was this a work-related injury?", iv.workRelated, function (v) { iv.workRelated = v; }));
-        c.appendChild(yesNoQuestion("Do you have an attorney for this?", iv.attorney, function (v) { iv.attorney = v; }));
-        c.appendChild(selectQuestion("What was your work status before the pain or symptoms started?", WORK_STATUS_OPTIONS, iv.workStatus, function (v) { iv.workStatus = v; }));
+        c.appendChild(yesNoQuestion("Is a health problem we're treating making it hard to work, or keeping you from working?", iv.workAbility, function (v) { iv.workAbility = v; rebuild(); }));
+
+        var sub = el("div", "work-sub"); c.appendChild(sub);
+        function rebuild() {
+            sub.innerHTML = "";
+            if (iv.workAbility === true) {
+                sub.appendChild(dateQuestion("When did that start?", "Your best guess is fine if you're not sure of the exact date.", iv.workBeganDate, function (v) { iv.workBeganDate = v; }));
+                sub.appendChild(yesNoQuestion("Is getting back to work — or making work easier — one of your goals for treatment?", iv.workReturnGoal, function (v) { iv.workReturnGoal = v; }));
+                sub.appendChild(selectQuestion("What was your work status before this started?", WORK_STATUS_OPTIONS, iv.prevWorkStatus, function (v) { iv.prevWorkStatus = v; }));
+                sub.appendChild(selectQuestion("What is your work status now?", WORK_STATUS_OPTIONS, iv.currentWorkStatus, function (v) { iv.currentWorkStatus = v; }));
+            } else if (iv.workAbility === false) {
+                sub.appendChild(selectQuestion("What is your work status now?", WORK_STATUS_OPTIONS, iv.currentWorkStatus, function (v) { iv.currentWorkStatus = v; }));
+            }
+        }
+        rebuild();
+        app.appendChild(c);
+    }
+
+    /* ---- General / global-health questions (legacy Section 3) ---- */
+    function renderGeneral(app) {
+        var c = el("div", "card");
+        var g = state.general;
+        c.appendChild(el("h2", null, "How you've been this past month"));
+        c.appendChild(el("p", "muted", "A quick picture of your overall health, not any one body part."));
+
+        c.appendChild(groupHead(GENERAL_QUESTIONS.changeIntro));
+        GENERAL_QUESTIONS.change.forEach(function (q) {
+            c.appendChild(selectQuestion(q.text, CHANGE_SCALE, g[q.id], function (v) { g[q.id] = v; }));
+        });
+        c.appendChild(groupHead(GENERAL_QUESTIONS.freqIntro));
+        GENERAL_QUESTIONS.freq.forEach(function (q) {
+            c.appendChild(selectQuestion(q.text, FREQUENCY_SCALE, g[q.id], function (v) { g[q.id] = v; }));
+        });
+        c.appendChild(groupHead("About you"));
+        c.appendChild(numberQuestion("Your current height", g.heightIn, function (v) { g.heightIn = v; }, { min: 0, max: 96, suffix: "inches", placeholder: "e.g. 68" }));
+        c.appendChild(numberQuestion("Your current weight", g.weightLb, function (v) { g.weightLb = v; }, { min: 0, max: 1000, suffix: "lbs", placeholder: "e.g. 170" }));
+        app.appendChild(c);
+    }
+
+    /* ---- A few last questions (legacy Additional Questions + Satisfaction) ---- */
+    function renderWrapup(app) {
+        var c = el("div", "card");
+        var iv = state.intake;
+        c.appendChild(el("h2", null, "A few last questions"));
+        c.appendChild(el("p", "muted", "Almost done — these help your care team support you."));
+        c.appendChild(yesNoQuestion("Do you have an attorney for this health matter?", iv.attorney, function (v) { iv.attorney = v; }));
+        c.appendChild(yesNoQuestion("Are you on workers' compensation right now?", iv.workersComp, function (v) { iv.workersComp = v; }));
+        if (!state.isFollowUp) {
+            c.appendChild(selectQuestion("Before you came to ADX, how satisfied were you with your treatment?", SATISFACTION_SCALE, state.satisfaction.priorToAdx, function (v) { state.satisfaction.priorToAdx = v; }));
+        }
         app.appendChild(c);
     }
 
@@ -426,6 +559,17 @@ var PIFApp = (function () {
         c.appendChild(el("h2", null, "How is your " + region.plain + "?" + (region.lat ? " (" + region.lat + ")" : "")));
         c.appendChild(el("div", "muted", region.label + (region.lat ? " — " + region.lat : "")));
 
+        // Per-area problem block (legacy Section 4 "Body Area Questions").
+        var probs = el("div", "area-problems");
+        probs.appendChild(el("div", "qgroup-head", "In the past month, how much of a problem did your " + region.plain + " cause with…"));
+        AREA_PROBLEM_QUESTIONS.forEach(function (q) {
+            probs.appendChild(selectQuestion(q.text, PROBLEM_SCALE, region.problems[q.id], function (v) { region.problems[q.id] = v; }));
+        });
+        c.appendChild(probs);
+
+        c.appendChild(el("div", "area-divider"));
+        c.appendChild(el("h3", "area-subhead", "Your everyday activities"));
+
         // Medication gate (B3)
         var medQ = el("div", "med-gate");
         medQ.appendChild(el("div", "med-gate-q", "Are you taking any medication for your " + region.plain + "?"));
@@ -443,7 +587,7 @@ var PIFApp = (function () {
         c.appendChild(medQ);
 
         if (region.repeat) {
-            c.appendChild(el("p", null, "These are the activities you told us about before. Slide each one to show how you're doing now. The outline on each slider shows where you were last time."));
+            c.appendChild(el("p", null, "These are the activities you told us about before. Slide each one to show how you're doing now. The white marker on each slider shows where you were last time."));
         } else {
             c.appendChild(el("p", null, "Tell us up to five everyday activities that are hard for you because of your " + region.plain + ". Use an example to start, or type your own."));
             var ex = EXAMPLE_ACTIVITIES[regionId] || [];

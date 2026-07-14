@@ -175,16 +175,66 @@ function mrpqTotal(responses) {
     return MRPQ_ITEMS.reduce(function (s, it, i) { return s + mrpqItemScore(it, responses[i]); }, 0);
 }
 
-/* Work-status options for the intake question (B7). Editable. */
+/* Work-status options (production ADX PatientSurvey list — used for both the
+   "before" and "now" work-status questions). Verbatim from the legacy survey. */
 var WORK_STATUS_OPTIONS = [
-    "Working full-time",
-    "Working part-time",
-    "Not working because of this injury",
-    "Not working for another reason",
+    "Employed But Unable to Work",
+    "Unemployed But Unable to Work",
+    "Unemployed But Able To Work",
+    "Full Time (No Restrictions)",
+    "Full Time (With Activity Restrictions)",
+    "Full Time (With Restricted Hours)",
+    "Part Time (No Restrictions)",
+    "Part Time (With Activity Restrictions)",
+    "Part Time (With Restricted Hours)",
     "Retired",
-    "Student",
-    "Homemaker / caregiver",
-    "Other"
+    "Disabled - Unrelated to Condition(s) in Treatment With Us (ADX)",
+    "Not Working By Choice"
+];
+
+/* =====================================================================
+   LEGACY-SURVEY QUESTION SETS  (restored from the production PatientSurvey)
+   ---------------------------------------------------------------------
+   These sections existed in the old ADX survey but were not carried into
+   the redesign. They collect important administrative + global-health data
+   that DR reports on, so they're reintroduced here as data-driven options
+   (UI in pif-app.js). Scales are verbatim; question wording is lightly
+   plain-languaged (B10, ~grade 6) without changing meaning.
+   ===================================================================== */
+
+/* "Compared to one month ago, how is your…" — global change scale. */
+var CHANGE_SCALE = ["Much Better", "Somewhat Better", "No Change", "Somewhat Worse", "Much Worse"];
+
+/* "Over the past month, how often did you…" — frequency scale. */
+var FREQUENCY_SCALE = ["Never", "Rarely", "Occasionally", "Frequently", "All The Time"];
+
+/* Per-area problem-severity scale (legacy "Body Area Questions"). */
+var PROBLEM_SCALE = ["No Problem", "Minimal Problem", "Moderate Problem", "Substantial Problem", "Severe Problem"];
+
+/* Treatment-satisfaction scale (legacy "Satisfaction" section). */
+var SATISFACTION_SCALE = ["Very Satisfied", "Somewhat Satisfied", "Neutral", "Somewhat Dissatisfied", "Very Dissatisfied"];
+
+/* General / global-health questions (legacy Section 3). Two groups. */
+var GENERAL_QUESTIONS = {
+    changeIntro: "Compared to one month ago, how is your…",
+    change: [
+        { id: "func", text: "Ability to function in daily life now?" },
+        { id: "qol",  text: "Quality of life now?" }
+    ],
+    freqIntro: "Over the past month, how often did you…",
+    freq: [
+        { id: "painMed", text: "Need prescription pain medicine?" },
+        { id: "limited", text: "Feel limited by your medical condition(s)?" }
+    ]
+};
+
+/* Per-area problem questions (legacy Section 4 "Body Area Questions").
+   Asked once per treated MSK area, alongside that area's activities. */
+var AREA_PROBLEM_QUESTIONS = [
+    { id: "work",     text: "Being able to work?" },
+    { id: "pain",     text: "Pain?" },
+    { id: "physical", text: "Physical problems other than pain? (for example weakness, numbness, or trouble moving)" },
+    { id: "mental",   text: "Stress or low mood caused by this condition?" }
 ];
 
 /* ---------------------------------------------------------------------------
@@ -199,26 +249,44 @@ var WORK_STATUS_OPTIONS = [
        false => single slider; null => the patient answers the med question.
    activity: { name, prior:{wo,wm}|null, cur:{wo,wm} }  (wo=without med, wm=with med;
      0–10 internal, never shown to the patient — B2).
-   intake: { workRelated, attorney, workStatus } — the non-slider questions (B7);
-     pre-filled on a follow-up so the "has anything changed?" step can confirm.
+   intake: work / attorney / workers'-comp questions (legacy Section 2 + Additional).
+     workAbility gates the follow-up work block (begin date, return-to-work goal,
+     previous + current status). Pre-filled on a follow-up so "has anything changed?"
+     can confirm.
+   general: legacy Section 3 global-health answers (change, frequency, height, weight).
+   satisfaction: legacy Satisfaction section (initial only).
+   region.problems: legacy Section 4 per-area problem-severity answers.
    PRODUCTION: seeded from the IPM note + prior DR assessments; here it is mocked.
    --------------------------------------------------------------------------- */
 var PIF_SAMPLE_PATIENTS = {
     "1": {
         name: "Patient 1 — MSK follow-up",
-        intake: { workRelated: true, attorney: true, workStatus: "Not working because of this injury" },
+        intake: {
+            workAbility: true, workBeganDate: "2025-11-15", workReturnGoal: true,
+            prevWorkStatus: "Full Time (No Restrictions)",
+            currentWorkStatus: "Full Time (With Activity Restrictions)",
+            attorney: true, workersComp: true
+        },
+        general: { func: "Somewhat Better", qol: "Somewhat Better", painMed: "Occasionally", limited: "Frequently", heightIn: 70, weightLb: 185 },
+        satisfaction: { priorToAdx: "Somewhat Dissatisfied" },
         regions: [
-            { id: "neck", lat: "Middle", repeat: true, medication: true, activities: [
+            { id: "neck", lat: "Middle", repeat: true, medication: true,
+              problems: { work: "Moderate Problem", pain: "Substantial Problem", physical: "Moderate Problem", mental: "Minimal Problem" },
+              activities: [
                 { name: "Turning my head to check a blind spot while driving", prior: { wo: 2, wm: 3 }, cur: { wo: 6, wm: 7 } },
                 { name: "Looking up to reach a high shelf",                    prior: { wo: 2, wm: 3 }, cur: { wo: 5, wm: 6 } },
                 { name: "Sleeping through the night without neck pain",        prior: { wo: 3, wm: 4 }, cur: { wo: 6, wm: 8 } }
             ] },
-            { id: "lowback", lat: "Left", repeat: true, medication: true, activities: [
+            { id: "lowback", lat: "Left", repeat: true, medication: true,
+              problems: { work: "Substantial Problem", pain: "Substantial Problem", physical: "Moderate Problem", mental: "Minimal Problem" },
+              activities: [
                 { name: "Putting on my socks and shoes",          prior: { wo: 3, wm: 4 }, cur: { wo: 4, wm: 5 } },
                 { name: "Standing at the counter to cook a meal",  prior: { wo: 2, wm: 3 }, cur: { wo: 3, wm: 4 } },
                 { name: "Lifting a laundry basket",                prior: { wo: 2, wm: 3 }, cur: { wo: 3, wm: 4 } }
             ] },
-            { id: "shoulder", lat: "Right", repeat: true, medication: true, activities: [
+            { id: "shoulder", lat: "Right", repeat: true, medication: true,
+              problems: { work: "Minimal Problem", pain: "Moderate Problem", physical: "Substantial Problem", mental: "No Problem" },
+              activities: [
                 { name: "Reaching a plate from an overhead shelf", prior: { wo: 1, wm: 2 }, cur: { wo: 5, wm: 6 } },
                 { name: "Putting on a jacket",                     prior: { wo: 2, wm: 3 }, cur: { wo: 6, wm: 7 } },
                 { name: "Sleeping on my right side",               prior: { wo: 1, wm: 2 }, cur: { wo: 4, wm: 5 } }
@@ -228,9 +296,17 @@ var PIF_SAMPLE_PATIENTS = {
     },
     "2": {
         name: "Patient 2 — Brain + MSK (initial)",
-        intake: { workRelated: null, attorney: null, workStatus: null },
+        intake: {
+            workAbility: false, workBeganDate: null, workReturnGoal: null,
+            prevWorkStatus: null, currentWorkStatus: "Part Time (With Restricted Hours)",
+            attorney: false, workersComp: false
+        },
+        general: { func: "No Change", qol: "Somewhat Worse", painMed: "Frequently", limited: "Frequently", heightIn: 65, weightLb: 150 },
+        satisfaction: { priorToAdx: "Neutral" },
         regions: [
-            { id: "shoulder", lat: "Left", repeat: false, medication: true, activities: [
+            { id: "shoulder", lat: "Left", repeat: false, medication: true,
+              problems: { work: "Moderate Problem", pain: "Substantial Problem", physical: "Moderate Problem", mental: "Minimal Problem" },
+              activities: [
                 { name: "Reaching overhead to a shelf", prior: null, cur: { wo: 4, wm: 5 } },
                 { name: "Carrying a bag of groceries",  prior: null, cur: { wo: 5, wm: 6 } }
             ] }
@@ -241,10 +317,15 @@ var PIF_SAMPLE_PATIENTS = {
     },
     "3": {
         name: "Patient 3 — First-time MSK (initial)",
-        intake: { workRelated: null, attorney: null, workStatus: null },
+        intake: {
+            workAbility: null, workBeganDate: null, workReturnGoal: null,
+            prevWorkStatus: null, currentWorkStatus: null, attorney: null, workersComp: null
+        },
+        general: { func: null, qol: null, painMed: null, limited: null, heightIn: null, weightLb: null },
+        satisfaction: { priorToAdx: null },
         regions: [
-            { id: "knee",    lat: "Right",  repeat: false, medication: null, activities: [] },
-            { id: "lowback", lat: "Middle", repeat: false, medication: null, activities: [] }
+            { id: "knee",    lat: "Right",  repeat: false, medication: null, problems: { work: null, pain: null, physical: null, mental: null }, activities: [] },
+            { id: "lowback", lat: "Middle", repeat: false, medication: null, problems: { work: null, pain: null, physical: null, mental: null }, activities: [] }
         ],
         brain: false, mrpq: null
     }
