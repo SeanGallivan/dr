@@ -393,11 +393,11 @@ var PIFApp = (function () {
         } else if (state.isFollowUp) {
             c.appendChild(el("h1", null, "Welcome back — a quick check-in"));
             c.appendChild(el("p", "intro-lead", "Thanks for taking a few minutes. Your answers help your care team see how you're doing and tailor your care to what matters most to you."));
-            c.appendChild(el("p", null, "There's nothing to log in to — you came here from the secure link in your email. There are no right or wrong answers. You can go back and change anything before you finish."));
+            c.appendChild(el("p", null, "There's nothing to log in to — you came here from the secure link in your email. You can go back and change anything before you finish."));
         } else {
             c.appendChild(el("h1", null, "Welcome — let's get started"));
             c.appendChild(el("p", "intro-lead", "Thanks for taking a few minutes. Your answers help your care team understand how you're doing and tailor your care to what matters most to you."));
-            c.appendChild(el("p", null, "There's nothing to log in to — you came here from the secure link in your email. There are no right or wrong answers. You can go back and change anything before you finish."));
+            c.appendChild(el("p", null, "There's nothing to log in to — you came here from the secure link in your email. You can go back and change anything before you finish."));
         }
         // PRODUCTION: patient entry validates a signed, single-use emailed token;
         // staff entry is launched from within DR (no login / 2FA in this prototype).
