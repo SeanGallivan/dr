@@ -72,9 +72,13 @@ function pifV2Score(startAvg, medStart, endAvg, medEnd) {
 
 /* ---------------------------------------------------------------------------
    PER-REGION EXAMPLE ACTIVITIES  (prompts only; NOT the scored items).
-   Editable so examples can be revised without touching UI code. Keyed by
-   region id; shown to spark the patient's own activity choices.
+   C11: deliberately SHORT curated sets, wired per region so only
+   region-appropriate examples show, always paired with free text.
+   *** PLACEHOLDER SETS (OPEN P1) *** — these lists are placeholders written
+   for the prototype. Swap each region's array for Brad's curated list when
+   delivered; no UI change needed.
    --------------------------------------------------------------------------- */
+var EXAMPLE_ACTIVITIES_ARE_PLACEHOLDERS = true; // OPEN P1 — replace with Brad's per-region lists
 var EXAMPLE_ACTIVITIES = {
     brain:       [], // Brain uses Instrument B (mRPQ-20); no patient-defined activities.
     headface:    ["Chewing tougher foods", "Wearing glasses or a hat comfortably", "Reading without eye strain"],
@@ -214,14 +218,23 @@ var PROBLEM_SCALE = ["No Problem", "Minimal Problem", "Moderate Problem", "Subst
 /* Treatment-satisfaction scale (legacy "Satisfaction" section). */
 var SATISFACTION_SCALE = ["Very Satisfied", "Somewhat Satisfied", "Neutral", "Somewhat Dissatisfied", "Very Dissatisfied"];
 
-/* General / global-health questions (legacy Section 3). Two groups. */
+/* Overall-experience scale for the final-visit flow (C9). */
+var EXPERIENCE_SCALE = ["Excellent", "Very Good", "Good", "Fair", "Poor"];
+
+/* General / global-health questions (legacy Section 3).
+   C1: the recall window is scenario-dependent — patients are sometimes seen
+   days after an accident, so "the past month" straddles the injury on a first
+   visit. First-time asks about the pre-ADX baseline directly; repeat keeps
+   the past-month window. */
 var GENERAL_QUESTIONS = {
-    changeIntro: "Compared to one month ago, how is your…",
+    changeIntroInitial: "Compared to before you came to ADX, how is your…",
+    changeIntroRepeat:  "Compared to one month ago, how is your…",
     change: [
         { id: "func", text: "Ability to function in daily life now?" },
         { id: "qol",  text: "Quality of life now?" }
     ],
-    freqIntro: "Over the past month, how often did you…",
+    freqIntroInitial: "Before you came to ADX, how often did you…",
+    freqIntroRepeat:  "Over the past month, how often did you…",
     freq: [
         { id: "painMed", text: "Need prescription pain medicine?" },
         { id: "limited", text: "Feel limited by your medical condition(s)?" }
@@ -229,12 +242,25 @@ var GENERAL_QUESTIONS = {
 };
 
 /* Per-area problem questions (legacy Section 4 "Body Area Questions").
-   Asked once per treated MSK area, alongside that area's activities. */
+   C8: every question carries the full, lateralized site label via the {site}
+   template ("your left shoulder") — a patient can have a resolved right
+   shoulder and an active left one, so unlabeled questions corrupt the data.
+   One common template populated per site, never hand-written per-site copy. */
 var AREA_PROBLEM_QUESTIONS = [
-    { id: "work",     text: "Being able to work?" },
-    { id: "pain",     text: "Pain?" },
-    { id: "physical", text: "Physical problems other than pain? (for example weakness, numbness, or trouble moving)" },
-    { id: "mental",   text: "Stress or low mood caused by this condition?" }
+    { id: "work",     text: "Being able to work because of {site}?" },
+    { id: "pain",     text: "Pain from {site}?" },
+    { id: "physical", text: "Physical problems other than pain from {site}? (for example weakness, numbness, or trouble moving)" },
+    { id: "mental",   text: "Stress or low mood caused by {site} problem?" }
+];
+
+/* Brain variant of the problem questions (C7d). The MSK wording is nonsense
+   for concussion ("physical problems other than pain" has no brain meaning),
+   so the carried-over questions are reworded to concussion-relevant symptoms.
+   Headache is deliberately EXCLUDED — near-universal in this population, so
+   uninformative. "Stress or low mood" stays as-is. */
+var BRAIN_PROBLEM_QUESTIONS = [
+    { id: "symptoms", text: "Concussion symptoms — trouble concentrating, short-term memory problems, dizziness, trouble moving, weakness, or numbness?" },
+    { id: "mental",   text: "Stress or low mood caused by your concussion?" }
 ];
 
 /* ---------------------------------------------------------------------------
@@ -268,7 +294,9 @@ var PIF_SAMPLE_PATIENTS = {
             attorney: true, workersComp: true
         },
         general: { func: "Somewhat Better", qol: "Somewhat Better", painMed: "Occasionally", limited: "Frequently", heightIn: 70, weightLb: 185 },
-        satisfaction: { priorToAdx: "Somewhat Dissatisfied" },
+        // priorToAdx was answered on the first visit (asked once, ever — C6);
+        // adxTreatment is the repeat-flow satisfaction question, answered fresh.
+        satisfaction: { priorToAdx: "Somewhat Dissatisfied", adxTreatment: null },
         regions: [
             { id: "neck", lat: "Middle", repeat: true, medication: true,
               problems: { work: "Moderate Problem", pain: "Substantial Problem", physical: "Moderate Problem", mental: "Minimal Problem" },
@@ -295,38 +323,73 @@ var PIF_SAMPLE_PATIENTS = {
         brain: false, mrpq: null
     },
     "2": {
-        name: "Patient 2 — Brain + MSK (initial)",
+        name: "Patient 2 — Brain + MSK follow-up",
         intake: {
             workAbility: false, workBeganDate: null, workReturnGoal: null,
             prevWorkStatus: null, currentWorkStatus: "Part Time (With Restricted Hours)",
             attorney: false, workersComp: false
         },
         general: { func: "No Change", qol: "Somewhat Worse", painMed: "Frequently", limited: "Frequently", heightIn: 65, weightLb: 150 },
-        satisfaction: { priorToAdx: "Neutral" },
+        satisfaction: { priorToAdx: "Neutral", adxTreatment: null },
         regions: [
-            { id: "shoulder", lat: "Left", repeat: false, medication: true,
+            { id: "shoulder", lat: "Left", repeat: true, medication: true,
               problems: { work: "Moderate Problem", pain: "Substantial Problem", physical: "Moderate Problem", mental: "Minimal Problem" },
               activities: [
-                { name: "Reaching overhead to a shelf", prior: null, cur: { wo: 4, wm: 5 } },
-                { name: "Carrying a bag of groceries",  prior: null, cur: { wo: 5, wm: 6 } }
+                { name: "Reaching overhead to a shelf", prior: { wo: 2, wm: 3 }, cur: { wo: 4, wm: 5 } },
+                { name: "Carrying a bag of groceries",  prior: { wo: 3, wm: 4 }, cur: { wo: 5, wm: 6 } }
             ] }
         ],
         brain: true,
-        // Pre-seeded mRPQ responses on the 1–4 scale (index 0..19 => items 1..20).
-        mrpq: [4, 3, 2, 3, 2, 4, 3, 2, 3, 3, 4, 3, 2, 3, 2, 3, 3, 4, 3, 2]
+        brainProblems: { symptoms: "Moderate Problem", mental: "Minimal Problem" },
+        // C7b: prior mRPQ answers (1–4 scale) — shown as "last time" markers on
+        // the repeat brain items. Current responses start unanswered.
+        mrpq: null,
+        mrpqPrior: [4, 3, 2, 3, 2, 4, 3, 2, 3, 3, 4, 3, 2, 3, 2, 3, 3, 4, 3, 2]
     },
     "3": {
-        name: "Patient 3 — First-time MSK (initial)",
+        name: "Patient 3 — First visit (MSK + concussion)",
         intake: {
             workAbility: null, workBeganDate: null, workReturnGoal: null,
             prevWorkStatus: null, currentWorkStatus: null, attorney: null, workersComp: null
         },
         general: { func: null, qol: null, painMed: null, limited: null, heightIn: null, weightLb: null },
-        satisfaction: { priorToAdx: null },
+        satisfaction: { priorToAdx: null, adxTreatment: null },
         regions: [
             { id: "knee",    lat: "Right",  repeat: false, medication: null, problems: { work: null, pain: null, physical: null, mental: null }, activities: [] },
             { id: "lowback", lat: "Middle", repeat: false, medication: null, problems: { work: null, pain: null, physical: null, mental: null }, activities: [] }
         ],
-        brain: false, mrpq: null
+        // C7a: first-time brain flow — same items as the repeat flow, minus
+        // the previous-answer markers (confirm per OPEN P2).
+        brain: true, brainProblems: { symptoms: null, mental: null }, mrpq: null, mrpqPrior: null
+    },
+    /* C9 — Scenario 4: final visit after maximum therapeutic benefit
+       (discharged to PRN). Endpoint measurement + experience capture only:
+       activity sliders per area, overall-experience question, comments.
+       No work / medication / intake / height-weight sets. */
+    "4": {
+        name: "Patient 4 — Final visit (PRN discharge)",
+        scenario: "final",
+        intake: {
+            workAbility: null, workBeganDate: null, workReturnGoal: null,
+            prevWorkStatus: null, currentWorkStatus: null, attorney: null, workersComp: null
+        },
+        general: { func: null, qol: null, painMed: null, limited: null, heightIn: 68, weightLb: 172 },
+        satisfaction: { priorToAdx: "Somewhat Dissatisfied", adxTreatment: null },
+        regions: [
+            { id: "knee", lat: "Right", repeat: true, medication: false,
+              problems: { work: null, pain: null, physical: null, mental: null },
+              activities: [
+                { name: "Going down stairs without holding the rail", prior: { wo: 3, wm: null }, cur: { wo: 9, wm: null } },
+                { name: "Kneeling in the garden",                     prior: { wo: 2, wm: null }, cur: { wo: 8, wm: null } },
+                { name: "Walking around the block",                   prior: { wo: 4, wm: null }, cur: { wo: 10, wm: null } }
+            ] },
+            { id: "lowback", lat: "Middle", repeat: true, medication: false,
+              problems: { work: null, pain: null, physical: null, mental: null },
+              activities: [
+                { name: "Standing at the counter to cook a meal", prior: { wo: 3, wm: null }, cur: { wo: 9, wm: null } },
+                { name: "Lifting a laundry basket",               prior: { wo: 2, wm: null }, cur: { wo: 9, wm: null } }
+            ] }
+        ],
+        brain: false, brainProblems: null, mrpq: null, mrpqPrior: null
     }
 };

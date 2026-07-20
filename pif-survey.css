@@ -390,17 +390,69 @@
     font-family: inherit; font-size: 15px; color: var(--ink); background: var(--surface);
 }
 .pif-survey .prompt-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.pif-survey .act-controls { display: inline-flex; align-items: center; gap: 6px; }
-.pif-survey .act-move {
-    font-family: inherit; cursor: pointer; background: none;
-    border: 1px solid var(--line-2); border-radius: 8px;
-    min-width: 40px; min-height: 40px; font-size: 15px; font-weight: 600; color: var(--accent);
-}
-.pif-survey .act-move:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
-.pif-survey .act-move:disabled { opacity: 0.4; cursor: default; }
+/* (C3: activity reordering removed — order carries no meaning.) */
 
 /* mRPQ-20 now has 4 options (B9) */
 .pif-survey .mrpq-opts { grid-template-columns: repeat(4, 1fr); }
+
+/* ============================================================
+   26-0720 review (C-series): slider anchors, production copy,
+   minimized about-you, brain header + prior markers, final visit.
+   ============================================================ */
+
+/* C4: Able / Unable anchor words under the faces */
+.pif-survey .pif-end { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+.pif-survey .pif-end-lab {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* C4: production PIFS description block above the sliders */
+.pif-survey .pifs-desc {
+    background: var(--surface-2); border: 1px solid var(--line-2);
+    border-left: 3px solid var(--accent); border-radius: 8px;
+    padding: 12px 14px; margin: 14px 0 12px;
+    font-size: 13.5px; line-height: 1.55; color: var(--ink);
+}
+
+/* C4: production per-activity lead-in ("So, are you more or less able to…") */
+.pif-survey .act-lead {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; font-style: italic;
+}
+
+/* C5: repeat-visit height/weight — shown, not asked */
+.pif-survey .about-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 0; flex-wrap: wrap;
+}
+.pif-survey .about-vals { font-family: var(--num-font); font-size: 14px; font-weight: 500; color: var(--ink); }
+.pif-survey .btn-inline {
+    font-family: inherit; cursor: pointer; background: none;
+    border: 1px solid var(--line-2); border-radius: 8px;
+    min-height: 40px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: var(--accent);
+}
+.pif-survey .btn-inline:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* C7: Brain header sub-line */
+.pif-survey .brain-sub {
+    font-size: 15px; font-weight: 600; color: var(--muted);
+    margin: -4px 0 10px; letter-spacing: 0.01em;
+}
+
+/* C7b: previous-answer marker on mRPQ option tiles (white dot, mirrors the slider) */
+.pif-survey .mrpq-opt { position: relative; }
+.pif-survey .mrpq-was {
+    position: absolute; top: 6px; right: 6px; width: 12px; height: 12px;
+    border-radius: 50%; background: #ffffff;
+    border: 2px solid rgba(0,0,0,0.6);
+    box-shadow: 0 0 0 3px rgba(70,72,82,0.30);
+    box-sizing: border-box; pointer-events: none;
+}
+.pif-survey .mrpq-opt.on .mrpq-was { border-color: rgba(0,0,0,0.75); }
+
+/* C10: care-team alert confirmation on the thank-you added-areas box */
+.pif-survey .alert-note { font-size: 14px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
 
 /* ============================================================
    Legacy-survey sections restored (work / general / body-area /

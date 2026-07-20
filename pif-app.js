@@ -24,6 +24,11 @@ var PIFApp = (function () {
     /* ---- helpers ---- */
     function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
     function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    /* C8: full lateralized site label from the assigned pain area — "your left
+       shoulder", "your middle low back". Data-driven; used by every per-area
+       question via the {site} template. */
+    function siteLabel(region) { return "your " + (region.lat ? region.lat.toLowerCase() + " " : "") + region.plain; }
+    function fillSite(text, region) { return text.replace(/\{site\}/g, siteLabel(region)); }
     function blankActivity() { return { name: "", locked: false, prior: null, cur: { wo: null, wm: null } }; }
     function faceSVG(kind) {
         var mouth = kind === "happy" ? "M8 14.5 Q12 18.8 16 14.5" : "M8 16.8 Q12 12.5 16 16.8";
@@ -59,7 +64,10 @@ var PIFApp = (function () {
             }
         } else if (banner) { banner.hidden = true; }
     }
-    function assessmentLabel() { return (state && state.isFollowUp) ? "Follow Up Assessment" : "Assessment"; }
+    function assessmentLabel() {
+        if (state && state.scenario === "final") return "Final Assessment";
+        return (state && state.isFollowUp) ? "Follow Up Assessment" : "Assessment";
+    }
     function updateChrome() {
         var eyebrow = document.querySelector(".adx-eyebrow");
         if (eyebrow) eyebrow.textContent = staffMode ? "Staff-Assisted Assessment" : assessmentLabel();
@@ -90,9 +98,11 @@ var PIFApp = (function () {
 
         var si = src.intake || {};
         var sg = src.general || {};
+        var sb = src.brainProblems || {};
         state = {
             patientId: pid, name: src.name,
-            isFollowUp: regions.some(function (r) { return r.repeat; }),
+            scenario: src.scenario || null,   // null = normal; "final" = discharge-to-PRN visit (C9)
+            isFollowUp: regions.some(function (r) { return r.repeat; }) || !!src.mrpqPrior,
             // Legacy Section 2 (Work) + Additional Questions (attorney, workers' comp)
             intake: {
                 workAbility: (si.workAbility === undefined ? null : si.workAbility),
@@ -105,13 +115,24 @@ var PIFApp = (function () {
             },
             // Legacy Section 3 (General / global health)
             general: { func: sg.func || null, qol: sg.qol || null, painMed: sg.painMed || null, limited: sg.limited || null, heightIn: (sg.heightIn == null ? null : sg.heightIn), weightLb: (sg.weightLb == null ? null : sg.weightLb) },
-            // Legacy Satisfaction section (initial only)
-            satisfaction: { priorToAdx: (src.satisfaction && src.satisfaction.priorToAdx) || null },
+            // Satisfaction (C6): priorToAdx asked once ever (first visit);
+            // adxTreatment is the repeat-flow measure.
+            satisfaction: {
+                priorToAdx: (src.satisfaction && src.satisfaction.priorToAdx) || null,
+                adxTreatment: (src.satisfaction && src.satisfaction.adxTreatment) || null
+            },
             selection: selected,
             regions: regions,
             brainPresent: !!src.brain,
-            mrpq: { responses: (src.brain && src.mrpq) ? src.mrpq.slice() : MRPQ_ITEMS.map(function () { return null; }) },
+            // C7: current responses + prior answers (repeat markers). Brain
+            // problem block uses the concussion-reworded question set.
+            mrpq: {
+                responses: (src.brain && src.mrpq) ? src.mrpq.slice() : MRPQ_ITEMS.map(function () { return null; }),
+                prior: (src.brain && src.mrpqPrior) ? src.mrpqPrior.slice() : null
+            },
+            brainProblems: { symptoms: (sb.symptoms || null), mental: (sb.mental || null) },
             addedRegions: [],
+            experience: null, finalComments: "",   // final-visit capture (C9)
             feedback: "", submitted: false
         };
         stepIndex = 0;
@@ -126,7 +147,16 @@ var PIFApp = (function () {
     //   intro → your pain areas → work → this past month → one screen per treated
     //   area (problem block + activities) → concussion (if assigned) → a few last
     //   questions (attorney / workers' comp / satisfaction) → thank-you.
+    // C9 final visit strips to the endpoint measurement: intro (congratulatory) →
+    //   activity sliders per area → overall experience + comments → thank-you.
     function screenList() {
+        if (state.scenario === "final") {
+            var fl = [{ k: "intro" }];
+            state.regions.forEach(function (r) { if (r.instrument === "A") fl.push({ k: "msk", id: r.id }); });
+            fl.push({ k: "experience" });
+            fl.push({ k: "thankyou" });
+            return fl;
+        }
         var list = [{ k: "intro" }, { k: "regions" }, { k: "work" }, { k: "general" }];
         state.regions.forEach(function (r) { if (r.instrument === "A") list.push({ k: "msk", id: r.id }); });
         if (state.brainPresent) list.push({ k: "brain" });
@@ -219,10 +249,17 @@ var PIFApp = (function () {
         var value = (cfg.value == null ? null : cfg.value);
         var prior = (cfg.prior == null ? null : cfg.prior);
         var wrap = el("div", "pif-slider-wrap");
+        // Production anchors (C4): faces + the Able / Unable words. Left end =
+        // unable (0), right end = able (10) — the PIFS scale is reversed vs a
+        // pain score (10 is great); the inversion math happens behind the scenes.
         var ends = el("div", "pif-ends");
+        var sadEnd = el("span", "pif-end");
         var sad = el("span", "pif-face pif-face-sad"); sad.innerHTML = faceSVG("sad");
+        sadEnd.appendChild(sad); sadEnd.appendChild(el("span", "pif-end-lab", "Unable"));
+        var happyEnd = el("span", "pif-end");
         var happy = el("span", "pif-face pif-face-happy"); happy.innerHTML = faceSVG("happy");
-        ends.appendChild(sad); ends.appendChild(happy);
+        happyEnd.appendChild(happy); happyEnd.appendChild(el("span", "pif-end-lab", "Able"));
+        ends.appendChild(sadEnd); ends.appendChild(happyEnd);
         var slider = el("div", "pif-slider");
         slider.setAttribute("role", "slider");
         slider.setAttribute("tabindex", "0");
@@ -374,6 +411,7 @@ var PIFApp = (function () {
         else if (cur.k === "msk")      renderMSK(app, cur.id);
         else if (cur.k === "brain")    renderBrain(app);
         else if (cur.k === "wrapup")   renderWrapup(app);
+        else if (cur.k === "experience") renderExperience(app);
         else if (cur.k === "thankyou") renderThankYou(app);
 
         updateNav(cur);
@@ -390,6 +428,11 @@ var PIFApp = (function () {
             c.appendChild(el("p", "intro-lead", "You're completing this together with " + whoName + ". Read each item with them and record their own answers — the ratings should reflect the patient's view of their function, not yours."));
             c.appendChild(el("p", null, "Use it when they're in front of you or don't have internet access. Nothing to log in to; you can go back and change anything."));
             c.appendChild(el("p", "muted", "Demo: sample answers are pre-filled so you can see the flow. Use the Sample patient menu at the top to switch demos."));
+        } else if (state.scenario === "final") {
+            // C9: congratulatory closing framing — the endpoint measurement.
+            c.appendChild(el("h1", null, "Congratulations!"));
+            c.appendChild(el("p", "intro-lead", "You've reached the maximum benefit from your treatment, and your care team is graduating you from regular visits. That's worth celebrating."));
+            c.appendChild(el("p", null, "Before you go, one last quick check-in: show us how you're doing on your activities, and tell us how we did. If symptoms ever return, ADX is here — just reach out."));
         } else if (state.isFollowUp) {
             c.appendChild(el("h1", null, "Welcome back — a quick check-in"));
             c.appendChild(el("p", "intro-lead", "Thanks for taking a few minutes. Your answers help your care team see how you're doing and tailor your care to what matters most to you."));
@@ -433,38 +476,95 @@ var PIFApp = (function () {
         app.appendChild(c);
     }
 
-    /* ---- General / global-health questions (legacy Section 3) ---- */
+    /* ---- General / global-health questions (legacy Section 3).
+           C1: first-time asks about the pre-ADX baseline directly (patients are
+           sometimes seen days after an accident — "the past month" straddles
+           the injury); repeat keeps the past-month recall window.
+           C5: height/weight are asked ONCE, on the first visit. On repeats they
+           are pre-filled and minimized behind an Update control — the patient
+           is never prompted to re-enter them. ---- */
     function renderGeneral(app) {
         var c = el("div", "card");
         var g = state.general;
-        c.appendChild(el("h2", null, "How you've been this past month"));
-        c.appendChild(el("p", "muted", "A quick picture of your overall health, not any one body part."));
+        var initial = !state.isFollowUp;
+        if (initial) {
+            c.appendChild(el("h2", null, "Before you came to ADX"));
+            c.appendChild(el("p", "muted", "Think about how things were before you started care with ADX — a quick picture of your overall health, not any one body part."));
+        } else {
+            c.appendChild(el("h2", null, "How you've been this past month"));
+            c.appendChild(el("p", "muted", "A quick picture of your overall health, not any one body part."));
+        }
 
-        c.appendChild(groupHead(GENERAL_QUESTIONS.changeIntro));
+        c.appendChild(groupHead(initial ? GENERAL_QUESTIONS.changeIntroInitial : GENERAL_QUESTIONS.changeIntroRepeat));
         GENERAL_QUESTIONS.change.forEach(function (q) {
             c.appendChild(selectQuestion(q.text, CHANGE_SCALE, g[q.id], function (v) { g[q.id] = v; }));
         });
-        c.appendChild(groupHead(GENERAL_QUESTIONS.freqIntro));
+        c.appendChild(groupHead(initial ? GENERAL_QUESTIONS.freqIntroInitial : GENERAL_QUESTIONS.freqIntroRepeat));
         GENERAL_QUESTIONS.freq.forEach(function (q) {
             c.appendChild(selectQuestion(q.text, FREQUENCY_SCALE, g[q.id], function (v) { g[q.id] = v; }));
         });
+
         c.appendChild(groupHead("About you"));
-        c.appendChild(numberQuestion("Your current height", g.heightIn, function (v) { g.heightIn = v; }, { min: 0, max: 96, suffix: "inches", placeholder: "e.g. 68" }));
-        c.appendChild(numberQuestion("Your current weight", g.weightLb, function (v) { g.weightLb = v; }, { min: 0, max: 1000, suffix: "lbs", placeholder: "e.g. 170" }));
+        if (initial || g.heightIn == null || g.weightLb == null) {
+            c.appendChild(numberQuestion("Your current height", g.heightIn, function (v) { g.heightIn = v; }, { min: 0, max: 96, suffix: "inches", placeholder: "e.g. 68" }));
+            c.appendChild(numberQuestion("Your current weight", g.weightLb, function (v) { g.weightLb = v; }, { min: 0, max: 1000, suffix: "lbs", placeholder: "e.g. 170" }));
+        } else {
+            // Repeat: shown, not asked. One compact line; Update expands the inputs.
+            var row = el("div", "about-row");
+            var vals = el("span", "about-vals", "Height " + g.heightIn + " in · Weight " + g.weightLb + " lbs");
+            var chg = el("button", "btn-inline", "Update"); chg.type = "button";
+            chg.setAttribute("aria-label", "Update height or weight");
+            row.appendChild(vals); row.appendChild(chg);
+            c.appendChild(row);
+            chg.addEventListener("click", function () {
+                row.parentNode.removeChild(row);
+                var hq = numberQuestion("Your current height", g.heightIn, function (v) { g.heightIn = v; }, { min: 0, max: 96, suffix: "inches" });
+                var wq = numberQuestion("Your current weight", g.weightLb, function (v) { g.weightLb = v; }, { min: 0, max: 1000, suffix: "lbs" });
+                c.appendChild(hq); c.appendChild(wq);
+            });
+        }
         app.appendChild(c);
     }
 
-    /* ---- A few last questions (legacy Additional Questions + Satisfaction) ---- */
+    /* ---- A few last questions (C6). First-time: attorney, workers' comp, and
+           the pre-ADX satisfaction Likert (asked once, EVER). Repeat: attorney
+           and workers' comp stay — pre-filled with one-click correction, since
+           status changes mid-course (e.g. a recurrence at work converts the
+           case to workers' comp) — plus the ADX-treatment satisfaction Likert. ---- */
     function renderWrapup(app) {
         var c = el("div", "card");
         var iv = state.intake;
         c.appendChild(el("h2", null, "A few last questions"));
-        c.appendChild(el("p", "muted", "Almost done — these help your care team support you."));
+        c.appendChild(el("p", "muted", state.isFollowUp
+            ? "We've filled in what we have on file — change anything that's different."
+            : "Almost done — these help your care team support you."));
         c.appendChild(yesNoQuestion("Do you have an attorney for this health matter?", iv.attorney, function (v) { iv.attorney = v; }));
         c.appendChild(yesNoQuestion("Are you on workers' compensation right now?", iv.workersComp, function (v) { iv.workersComp = v; }));
-        if (!state.isFollowUp) {
+        if (state.isFollowUp) {
+            c.appendChild(selectQuestion("How satisfied are you with your ADX treatment?", SATISFACTION_SCALE, state.satisfaction.adxTreatment, function (v) { state.satisfaction.adxTreatment = v; }));
+        } else {
+            // Asked once, ever — never re-rendered after the first submission.
             c.appendChild(selectQuestion("Before you came to ADX, how satisfied were you with your treatment?", SATISFACTION_SCALE, state.satisfaction.priorToAdx, function (v) { state.satisfaction.priorToAdx = v; }));
         }
+        app.appendChild(c);
+    }
+
+    /* ---- Final-visit experience capture (C9): "How did we do?" ---- */
+    function renderExperience(app) {
+        var c = el("div", "card");
+        c.appendChild(el("h2", null, "How did we do?"));
+        c.appendChild(el("p", "muted", "One last thing — tell us about your time with ADX."));
+        c.appendChild(selectQuestion("What was your overall experience with ADX?", EXPERIENCE_SCALE, state.experience, function (v) { state.experience = v; }));
+        var q = el("div", "intake-q");
+        var lab = el("label", "intake-label", "Anything you'd like to share about your care? (optional)");
+        lab.setAttribute("for", "pifFinalComments");
+        q.appendChild(lab);
+        var ta = el("textarea", "fb-textarea"); ta.id = "pifFinalComments"; ta.rows = 5;
+        ta.placeholder = "Your comments go to the ADX care team…";
+        ta.value = state.finalComments || "";
+        ta.addEventListener("input", function () { state.finalComments = ta.value; });
+        q.appendChild(ta);
+        c.appendChild(q);
         app.appendChild(c);
     }
 
@@ -555,43 +655,60 @@ var PIFApp = (function () {
     function renderMSK(app, regionId) {
         var region = state.regions.find(function (r) { return r.id === regionId; });
         if (!region) { app.appendChild(el("div", "card", "This area is no longer selected.")); return; }
+        var site = siteLabel(region);   // C8: "your left shoulder" — used in every question
+        var isFinal = state.scenario === "final";
         var c = el("div", "card");
-        c.appendChild(el("h2", null, "How is your " + region.plain + "?" + (region.lat ? " (" + region.lat + ")" : "")));
+        c.appendChild(el("h2", null, "How is " + site + "?"));
         c.appendChild(el("div", "muted", region.label + (region.lat ? " — " + region.lat : "")));
 
-        // Per-area problem block (legacy Section 4 "Body Area Questions").
-        var probs = el("div", "area-problems");
-        probs.appendChild(el("div", "qgroup-head", "In the past month, how much of a problem did your " + region.plain + " cause with…"));
-        AREA_PROBLEM_QUESTIONS.forEach(function (q) {
-            probs.appendChild(selectQuestion(q.text, PROBLEM_SCALE, region.problems[q.id], function (v) { region.problems[q.id] = v; }));
-        });
-        c.appendChild(probs);
+        if (!isFinal) {
+            // Per-area problem block (legacy Section 4 "Body Area Questions").
+            // C8: each question carries the full lateralized site label.
+            // C1-adjacent: first-time uses "since your injury" (no month window).
+            var probs = el("div", "area-problems");
+            probs.appendChild(el("div", "qgroup-head", state.isFollowUp
+                ? "In the past month, how much of a problem did you have with…"
+                : "Since your injury, how much of a problem have you had with…"));
+            AREA_PROBLEM_QUESTIONS.forEach(function (q) {
+                probs.appendChild(selectQuestion(fillSite(q.text, region), PROBLEM_SCALE, region.problems[q.id], function (v) { region.problems[q.id] = v; }));
+            });
+            c.appendChild(probs);
 
-        c.appendChild(el("div", "area-divider"));
-        c.appendChild(el("h3", "area-subhead", "Your everyday activities"));
+            c.appendChild(el("div", "area-divider"));
+            c.appendChild(el("h3", "area-subhead", "Your everyday activities"));
 
-        // Medication gate (B3)
-        var medQ = el("div", "med-gate");
-        medQ.appendChild(el("div", "med-gate-q", "Are you taking any medication for your " + region.plain + "?"));
-        medQ.appendChild(el("div", "muted", "This helps us tell your true function from the relief your medication gives."));
-        var group = el("div", "seg-group"); group.setAttribute("role", "radiogroup"); group.setAttribute("aria-label", "Taking medication for your " + region.plain);
-        [["Yes", true], ["No", false]].forEach(function (pair) {
-            var seg = el("label", "seg" + (region.medication === pair[1] ? " on" : ""));
-            var r = el("input"); r.type = "radio"; r.name = "med_" + region.id; r.checked = (region.medication === pair[1]);
-            r.setAttribute("aria-label", pair[0]);
-            r.addEventListener("change", function () { region.medication = pair[1]; Array.prototype.forEach.call(group.children, function (ch) { ch.classList.remove("on"); }); seg.classList.add("on"); buildActs(); });
-            seg.appendChild(r); seg.appendChild(document.createTextNode(pair[0]));
-            group.appendChild(seg);
-        });
-        medQ.appendChild(group);
-        c.appendChild(medQ);
+            // Medication gate (C2): PRESCRIPTION-only yes/no. OTC never qualifies,
+            // and the drug name is never asked — ADX-prescribed meds are already
+            // in DR; the only signal needed is whether a prescription med is in
+            // play so function with/without can be compared.
+            var medQ = el("div", "med-gate");
+            medQ.appendChild(el("div", "med-gate-q", "Are you taking any prescription medication for " + site + "?"));
+            medQ.appendChild(el("div", "muted", "Prescription medications are those requiring a healthcare professional's order — not over-the-counter medicines like Tylenol, Motrin, or Advil."));
+            var group = el("div", "seg-group"); group.setAttribute("role", "radiogroup"); group.setAttribute("aria-label", "Taking prescription medication for " + site);
+            [["Yes", true], ["No", false]].forEach(function (pair) {
+                var seg = el("label", "seg" + (region.medication === pair[1] ? " on" : ""));
+                var r = el("input"); r.type = "radio"; r.name = "med_" + region.id; r.checked = (region.medication === pair[1]);
+                r.setAttribute("aria-label", pair[0]);
+                r.addEventListener("change", function () { region.medication = pair[1]; Array.prototype.forEach.call(group.children, function (ch) { ch.classList.remove("on"); }); seg.classList.add("on"); buildActs(); });
+                seg.appendChild(r); seg.appendChild(document.createTextNode(pair[0]));
+                group.appendChild(seg);
+            });
+            medQ.appendChild(group);
+            c.appendChild(medQ);
+        }
 
-        if (region.repeat) {
-            c.appendChild(el("p", null, "These are the activities you told us about before. Slide each one to show how you're doing now. The white marker on each slider shows where you were last time."));
+        // C4a: production PIFS description — the copy that stops patients reading
+        // the slider as a pain score (the scale is reversed: able/10 is great).
+        if (isFinal) {
+            c.appendChild(el("p", "pifs-desc", "Use the sliding bars to show your ability to perform each activity today. The white marker shows where you were last time."));
+        } else if (region.repeat) {
+            c.appendChild(el("p", "pifs-desc", "Use the sliding bars to indicate your ability to perform these activities — with your prescription medication (if any), and without medication. The white marker on each slider shows where you were last time."));
         } else {
-            c.appendChild(el("p", null, "Tell us up to five everyday activities that are hard for you because of your " + region.plain + ". Use an example to start, or type your own."));
+            c.appendChild(el("p", "pifs-desc", "In the boxes below, please enter up to five important activities that have been impacted due to your injury or pain condition. Use the sliding bars to indicate your ability to perform these activities since your injury — with prescription medication (if any), and without medication."));
             var ex = EXAMPLE_ACTIVITIES[regionId] || [];
             if (ex.length) {
+                // C11: short, region-appropriate example set (PLACEHOLDER lists —
+                // OPEN P1), always paired with the free-text box below.
                 var prow = el("div", "prompt-row");
                 var plab = el("label", "prompt-label", "Examples to spark ideas — these are prompts, not answers. Pick one to use it, or type your own below."); plab.setAttribute("for", "exSel_" + regionId);
                 var psel = el("select", "prompt-select"); psel.id = "exSel_" + regionId;
@@ -616,6 +733,8 @@ var PIFApp = (function () {
             actsWrap.innerHTML = "";
             region.activities.forEach(function (a, idx) {
                 var box = el("div", "activity");
+                // C4a: production lead-in phrasing on every activity.
+                box.appendChild(el("div", "act-lead", "So, are you more or less able to…"));
                 var head = el("div", "act-head");
                 if (region.repeat) {
                     head.appendChild(el("div", "locked-name", a.name)); // no prior number shown (B1)
@@ -625,17 +744,22 @@ var PIFApp = (function () {
                     inp.setAttribute("aria-label", "Activity " + (idx + 1) + " for " + region.plain);
                     inp.addEventListener("input", function () { a.name = inp.value; });
                     head.appendChild(inp);
-                    var ctr = el("div", "act-controls");
-                    var up = el("button", "act-move", "↑"); up.type = "button"; up.setAttribute("aria-label", "Move activity up"); if (idx === 0) up.disabled = true;
-                    up.addEventListener("click", function () { if (idx > 0) { var t = region.activities[idx - 1]; region.activities[idx - 1] = region.activities[idx]; region.activities[idx] = t; buildActs(); } });
-                    var down = el("button", "act-move", "↓"); down.type = "button"; down.setAttribute("aria-label", "Move activity down"); if (idx === region.activities.length - 1) down.disabled = true;
-                    down.addEventListener("click", function () { if (idx < region.activities.length - 1) { var t = region.activities[idx + 1]; region.activities[idx + 1] = region.activities[idx]; region.activities[idx] = t; buildActs(); } });
+                    // C3: add + remove only — no reordering (order carries no meaning).
                     var rm = el("button", "btn-remove", "Remove"); rm.type = "button";
                     rm.addEventListener("click", function () { region.activities.splice(idx, 1); if (region.activities.length === 0) region.activities.push(blankActivity()); buildActs(); });
-                    ctr.appendChild(up); ctr.appendChild(down); ctr.appendChild(rm);
-                    head.appendChild(ctr);
+                    head.appendChild(rm);
                 }
                 box.appendChild(head);
+
+                if (isFinal) {
+                    // C9: endpoint measurement — single slider per activity,
+                    // prior marker kept (critical), no medication pairing.
+                    var fBlk = el("div", "med-block");
+                    fBlk.appendChild(makeSlider({ value: a.cur.wo, prior: (a.prior ? a.prior.wo : null), ariaLabel: (a.name || ("activity " + (idx + 1))), onChange: function (v) { a.cur.wo = v; } }));
+                    box.appendChild(fBlk);
+                    actsWrap.appendChild(box);
+                    return;
+                }
 
                 if (region.medication === true) {
                     var woBlk = el("div", "med-block");
@@ -665,23 +789,53 @@ var PIFApp = (function () {
         app.appendChild(c);
     }
 
-    /* ---- Concussion check (Instrument B, mRPQ-20 on a 1–4 scale) (B9) ---- */
+    /* ---- Brain / concussion check (Instrument B, mRPQ-20 on a 1–4 scale).
+           C7: works first-time (no markers) and repeat (prior answers shown as
+           "last time" markers — same convention as the sliders). Header is
+           "Brain" with "Concussion symptom check" beneath. The precursor-style
+           questions are the concussion-reworded set (no headache — near-
+           universal here, so uninformative). Scale stays 1–4 (mRPQ-20). ---- */
     function renderBrain(app) {
         var c = el("div", "card");
-        c.appendChild(el("h2", null, "Concussion symptom check"));
+        var isRepeat = !!state.mrpq.prior;
+        c.appendChild(el("h2", null, "Brain"));
+        c.appendChild(el("div", "brain-sub", "Concussion symptom check"));
+
+        // Concussion-reworded problem questions (C7d).
+        var probs = el("div", "area-problems");
+        probs.appendChild(el("div", "qgroup-head", state.isFollowUp
+            ? "In the past month, how much of a problem did you have with…"
+            : "Since your injury, how much of a problem have you had with…"));
+        BRAIN_PROBLEM_QUESTIONS.forEach(function (q) {
+            probs.appendChild(selectQuestion(q.text, PROBLEM_SCALE, state.brainProblems[q.id], function (v) { state.brainProblems[q.id] = v; }));
+        });
+        c.appendChild(probs);
+
+        c.appendChild(el("div", "area-divider"));
+        c.appendChild(el("h3", "area-subhead", "Your symptoms"));
         c.appendChild(el("p", null, "Compared with before your injury, please rate each symptom over the last 24 hours."));
         c.appendChild(el("p", "muted", MRPQ_LABELS.map(function (l, i) { return (i + 1) + " = " + l; }).join("   ·   ")));
+        if (isRepeat) c.appendChild(el("p", "muted", "The white dot shows your answer from last time."));
+
         MRPQ_ITEMS.forEach(function (it, i) {
             var box = el("div", "mrpq-item");
             box.appendChild(el("div", "mrpq-q", it.n + ". " + it.text));
             var opts = el("div", "mrpq-opts"); opts.setAttribute("role", "radiogroup"); opts.setAttribute("aria-label", it.text);
+            var priorVal = isRepeat ? state.mrpq.prior[i] : null;
             MRPQ_SCALE.forEach(function (val, ki) {
                 var o = el("div", "mrpq-opt" + (state.mrpq.responses[i] === val ? " on" : ""));
                 o.setAttribute("role", "radio"); o.setAttribute("tabindex", "0");
                 o.setAttribute("aria-checked", state.mrpq.responses[i] === val ? "true" : "false");
-                o.setAttribute("aria-label", MRPQ_LABELS[ki]);
+                o.setAttribute("aria-label", MRPQ_LABELS[ki] + (priorVal === val ? " — your answer last time" : ""));
                 o.appendChild(el("div", "num", String(val)));
                 o.appendChild(el("div", null, MRPQ_LABELS[ki]));
+                if (priorVal === val) {
+                    // C7b: previous-answer marker, mirroring the slider's white dot.
+                    var dot = el("span", "mrpq-was"); dot.setAttribute("aria-hidden", "true");
+                    dot.title = "Your answer last time";
+                    o.appendChild(dot);
+                    o.classList.add("was");
+                }
                 var choose = function () { state.mrpq.responses[i] = val; Array.prototype.forEach.call(opts.children, function (ch, ci) { ch.classList.toggle("on", ci === ki); ch.setAttribute("aria-checked", ci === ki ? "true" : "false"); }); };
                 o.addEventListener("click", choose);
                 o.addEventListener("keydown", function (e) { if (e.key === " " || e.key === "Enter") { e.preventDefault(); choose(); } });
@@ -700,20 +854,31 @@ var PIFApp = (function () {
             c.appendChild(el("h1", null, "Assessment saved"));
             c.appendChild(el("p", "intro-lead", "The assessment" + (patientName ? " for " + patientName : "") + " has been saved to the patient's record in Derived Results."));
             c.appendChild(el("p", "muted", "You can start another assessment or close this tab to return to the chart."));
+        } else if (state.scenario === "final") {
+            c.appendChild(el("h1", null, "Thank you — and congratulations!"));
+            c.appendChild(el("p", "intro-lead", "Your final results were sent to your care team. We're proud of the progress you've made."));
+            c.appendChild(el("p", null, "You're welcome back any time — if your symptoms return, contact ADX and we'll get you in."));
         } else {
             c.appendChild(el("h1", null, "Thank you!"));
             c.appendChild(el("p", "intro-lead", "Your answers were sent to your care team. There's nothing else you need to do — you can close this page whenever you're ready."));
         }
 
         if (state.addedRegions && state.addedRegions.length) {
+            // C10: a patient-added area generates a care-team alert in addition
+            // to the production behaviors (Salesforce event; the added region
+            // shows in DR pain regions in a distinct color).
             var box = el("div", "added-summary");
             box.appendChild(el("strong", null, "You also told us about new pain in:"));
             var ul = el("ul", null);
             state.addedRegions.forEach(function (a) { ul.appendChild(el("li", null, a.label + (a.lat ? " — " + a.lat : ""))); });
             box.appendChild(ul);
-            box.appendChild(el("div", "muted", "Your care team will review these and follow up with you."));
+            box.appendChild(el("div", "alert-note", "✓ An alert was sent to your care team about these new areas."));
+            box.appendChild(el("div", "muted", "They'll review them and follow up with you."));
             c.appendChild(box);
+            announce("An alert about your new pain areas was sent to your care team.");
         }
+
+        if (state.scenario === "final") { app.appendChild(c); return; } // comments already captured on the experience screen (C9)
 
         var fb = el("div", "feedback-box");
         var lab = el("label", "fb-label", staffMode ? "Any notes to add for the care team? (optional)" : "Anything confusing, or any pain you didn't get to mention? (optional)");
@@ -767,7 +932,7 @@ var PIFApp = (function () {
         patientName = params.get("name") || "";
         setupMode();
         var pid = params.get("patient");
-        if (pid !== "1" && pid !== "2" && pid !== "3") pid = "1";
+        if (!PIF_SAMPLE_PATIENTS[pid]) pid = "1";
         sel.value = pid;
         initPatient(pid);
     }
