@@ -175,13 +175,13 @@ var PIFApp = (function () {
         REGIONS.forEach(function (def) {
             var sel = state.selection[def.id];
             if (!sel || !sel.checked) return;
-            if (def.id === "brain") { if (!sel.fromNote) added.push({ id: "brain", label: def.label, lat: null }); return; }
+            if (def.id === "brain") { if (!sel.fromNote) added.push({ id: "brain", label: def.label, lat: null, activities: [] }); return; }
             if (sel.fromNote) {
                 var r = existing[def.id] || { id: def.id, label: def.label, plain: def.plain, lat: sel.lat || null, instrument: "A", repeat: false, medication: null, activities: [] };
                 r.lat = sel.lat || null;
                 next.push(r);
             } else {
-                added.push({ id: def.id, label: def.label, lat: sel.lat || null }); // unassigned — no activity screen
+                added.push({ id: def.id, label: def.label, lat: sel.lat || null, activities: (sel.activities || []).slice() }); // unassigned — no activity screen
             }
         });
         state.regions = next;
@@ -602,6 +602,62 @@ var PIFApp = (function () {
         c.appendChild(drawer);
         app.appendChild(c);
 
+        /* Activity capture for a patient-added (unassigned) area: the region's
+           instrument-derived example list in a dropdown, plus free text. The
+           names travel with the added area to the care team; nothing is scored
+           here (B5 — the care team sets the area up before it enters PIFS). */
+        function addedActivityPicker(def, sel) {
+            sel.activities = sel.activities || [];
+            var wrap = el("div", "added-acts");
+            var lab = el("label", "prompt-label", "Which activities does this affect? Pick from the examples or type your own. (optional)");
+            lab.setAttribute("for", "addSel_" + def.id);
+            wrap.appendChild(lab);
+
+            var list = el("div", "added-act-list");
+            function paintList() {
+                list.innerHTML = "";
+                sel.activities.forEach(function (name, i) {
+                    var chip = el("span", "added-act-chip");
+                    chip.appendChild(document.createTextNode(name));
+                    var x = el("button", "added-act-x", "×"); x.type = "button";
+                    x.setAttribute("aria-label", "Remove " + name);
+                    x.addEventListener("click", function () { sel.activities.splice(i, 1); paintList(); });
+                    chip.appendChild(x);
+                    list.appendChild(chip);
+                });
+            }
+
+            var ex = EXAMPLE_ACTIVITIES[def.id] || [];
+            if (ex.length) {
+                var psel = el("select", "prompt-select"); psel.id = "addSel_" + def.id;
+                var ph = el("option", null, "Choose an example…"); ph.value = ""; psel.appendChild(ph);
+                ex.forEach(function (t) { var o = el("option", null, t); o.value = t; psel.appendChild(o); });
+                psel.addEventListener("change", function () {
+                    var t = psel.value; if (!t) return;
+                    if (sel.activities.indexOf(t) === -1) sel.activities.push(t);
+                    psel.value = ""; paintList();
+                });
+                wrap.appendChild(psel);
+            }
+
+            var freeRow = el("div", "added-act-free");
+            var inp = el("input", "added-act-input"); inp.type = "text";
+            inp.placeholder = "Or type an activity…";
+            inp.setAttribute("aria-label", "Add your own activity for " + def.label);
+            var addBtn = el("button", "btn-inline", "Add"); addBtn.type = "button";
+            function addFree() {
+                var t = inp.value.trim(); if (!t) return;
+                if (sel.activities.indexOf(t) === -1) sel.activities.push(t);
+                inp.value = ""; paintList();
+            }
+            addBtn.addEventListener("click", addFree);
+            inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addFree(); } });
+            freeRow.appendChild(inp); freeRow.appendChild(addBtn);
+            wrap.appendChild(freeRow);
+            wrap.appendChild(list);
+            paintList();
+            return wrap;
+        }
         function latPicker(def, sel) {
             var opts = def.lat === "LRM" ? ["Left", "Right", "Middle"] : ["Left", "Right"];
             var lg = el("div", "lat-group");
@@ -631,6 +687,10 @@ var PIFApp = (function () {
                 top.appendChild(rm);
                 row.appendChild(top);
                 if (def.lat) row.appendChild(latPicker(def, sel));
+                // Region-appropriate suggestions for the added area: the same
+                // instrument-derived example list the assigned screens use, so
+                // the patient can tell the care team which activities are affected.
+                if (def.id !== "brain") row.appendChild(addedActivityPicker(def, sel));
                 row.appendChild(el("div", "muted", "This isn't scored yet — your care team will set it up at your next visit."));
                 addedWrap.appendChild(row);
             });
@@ -870,7 +930,11 @@ var PIFApp = (function () {
             var box = el("div", "added-summary");
             box.appendChild(el("strong", null, "You also told us about new pain in:"));
             var ul = el("ul", null);
-            state.addedRegions.forEach(function (a) { ul.appendChild(el("li", null, a.label + (a.lat ? " — " + a.lat : ""))); });
+            state.addedRegions.forEach(function (a) {
+                var li = el("li", null, a.label + (a.lat ? " — " + a.lat : ""));
+                if (a.activities && a.activities.length) li.appendChild(el("div", "muted", "Affects: " + a.activities.join(", ")));
+                ul.appendChild(li);
+            });
             box.appendChild(ul);
             box.appendChild(el("div", "alert-note", "✓ An alert was sent to your care team about these new areas."));
             box.appendChild(el("div", "muted", "They'll review them and follow up with you."));

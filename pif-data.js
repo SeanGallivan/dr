@@ -72,29 +72,164 @@ function pifV2Score(startAvg, medStart, endAvg, medEnd) {
 
 /* ---------------------------------------------------------------------------
    PER-REGION EXAMPLE ACTIVITIES  (prompts only; NOT the scored items).
-   C11: deliberately SHORT curated sets, wired per region so only
-   region-appropriate examples show, always paired with free text.
-   *** PLACEHOLDER SETS (OPEN P1) *** — these lists are placeholders written
-   for the prototype. Swap each region's array for Brad's curated list when
-   delivered; no UI change needed.
+   Wired per region so only region-appropriate examples show, always paired
+   with free text. The lists appear in the suggestions dropdown on every
+   displayed (doc-assigned) area screen, AND when the patient adds a
+   non-displayed area via the "New or other pain areas" drawer.
+
+   Sources — functional-activity items drawn from validated patient-reported
+   outcome measures per region:
+     neck        NDI (Neck Disability Index)
+     lowback     ODI (Oswestry Disability Index)
+     knee        WOMAC Physical Function + KOOS Sport/Rec + KOOS JR (deduped)
+     shoulder    SPADI Disability + ASES ADL (deduped)
+     arm         DASH / QuickDASH
+     wristhand   DASH / QuickDASH (hand-relevant items)
+     hipleg      HOOS / HOOS JR + WOMAC (deduped)
+     footankle   FAAM ADL + Sports subscales
+   Regions with no instrument list provided (headface, upperback, midback,
+   chest, pelvabd, pelvgen, psych, systemic, unspecified) keep PLACEHOLDER
+   sets (OPEN P1) pending Brad's curated lists.
    --------------------------------------------------------------------------- */
-var EXAMPLE_ACTIVITIES_ARE_PLACEHOLDERS = true; // OPEN P1 — replace with Brad's per-region lists
 var EXAMPLE_ACTIVITIES = {
     brain:       [], // Brain uses Instrument B (mRPQ-20); no patient-defined activities.
+
+    /* NDI */
+    neck: [
+        "Personal care (washing, dressing)",
+        "Lifting",
+        "Reading",
+        "Work",
+        "Driving",
+        "Sleeping",
+        "Recreation"
+    ],
+
+    /* ODI */
+    lowback: [
+        "Personal care (washing, dressing)",
+        "Lifting",
+        "Walking",
+        "Sitting",
+        "Standing",
+        "Sleeping",
+        "Sex life",
+        "Social life",
+        "Traveling"
+    ],
+
+    /* WOMAC Physical Function + KOOS Sport/Rec + KOOS JR (deduped) */
+    knee: [
+        "Descending stairs",
+        "Ascending stairs",
+        "Rising from sitting",
+        "Standing",
+        "Bending to the floor / picking up an object",
+        "Walking on a flat surface",
+        "Getting in or out of a car",
+        "Going shopping",
+        "Putting on socks",
+        "Rising from bed",
+        "Taking off socks",
+        "Lying in bed",
+        "Sitting",
+        "Getting on or off the toilet",
+        "Heavy domestic duties",
+        "Light domestic duties",
+        "Running",
+        "Jumping",
+        "Kneeling",
+        "Squatting",
+        "Twisting or pivoting on the knee"
+    ],
+
+    /* SPADI Disability + ASES ADL (deduped) */
+    shoulder: [
+        "Washing your hair",
+        "Washing your back",
+        "Putting on an undershirt or jumper",
+        "Putting on a button-front shirt",
+        "Putting on pants",
+        "Putting on a coat",
+        "Placing an object on a high shelf",
+        "Carrying a heavy object (about 10 lb)",
+        "Removing something from your back pocket",
+        "Combing your hair",
+        "Lifting 10 lb above shoulder level",
+        "Throwing a ball"
+    ],
+
+    /* DASH / QuickDASH */
+    arm: [
+        "Opening a tight or new jar",
+        "Writing",
+        "Turning a key",
+        "Preparing a meal",
+        "Pushing open a heavy door",
+        "Placing an object on a high shelf",
+        "Heavy household chores (washing walls or floors)",
+        "Gardening or yard work",
+        "Making a bed",
+        "Carrying a shopping bag or briefcase",
+        "Carrying heavy objects",
+        "Recreation involving arm force or impact (golf, hammering, tennis)"
+    ],
+
+    /* DASH / QuickDASH — hand-relevant items */
+    wristhand: [
+        "Opening a tight or new jar",
+        "Writing",
+        "Turning a key",
+        "Using a knife to cut food",
+        "Preparing a meal",
+        "Carrying a shopping bag or briefcase",
+        "Recreation involving arm force or impact (golf, hammering, tennis)"
+    ],
+
+    /* HOOS / HOOS JR + WOMAC (deduped) */
+    hipleg: [
+        "Going up or down stairs",
+        "Walking on an uneven surface",
+        "Rising from sitting",
+        "Bending to the floor / picking up an object",
+        "Lying in bed (turning over)",
+        "Sitting",
+        "Standing",
+        "Walking on a flat surface",
+        "Getting in or out of a car",
+        "Putting on socks",
+        "Getting on or off the toilet",
+        "Heavy domestic duties",
+        "Light domestic duties",
+        "Higher-demand sport or recreation"
+    ],
+
+    /* FAAM ADL + Sports subscales */
+    footankle: [
+        "Standing",
+        "Walking on even ground",
+        "Walking on even ground without shoes",
+        "Walking up or down hills",
+        "Going up or down stairs",
+        "Walking on uneven ground",
+        "Stepping up or down curbs",
+        "Squatting",
+        "Coming up on your toes",
+        "Walking various distances",
+        "Running",
+        "Jumping",
+        "Landing",
+        "Starting and stopping quickly",
+        "Cutting or lateral movements"
+    ],
+
+    /* --- PLACEHOLDER SETS (OPEN P1) — no instrument list provided yet --- */
     headface:    ["Chewing tougher foods", "Wearing glasses or a hat comfortably", "Reading without eye strain"],
-    neck:        ["Turning your head to check a blind spot", "Looking up at a high shelf", "Sleeping through the night", "Working at a computer"],
-    shoulder:    ["Reaching an overhead shelf", "Putting on a jacket", "Sleeping on that side", "Lifting a grocery bag"],
-    arm:         ["Carrying a bag of groceries", "Lifting a gallon of milk", "Reaching across a table"],
-    wristhand:   ["Opening a jar", "Typing or writing", "Buttoning a shirt", "Holding a coffee cup"],
     upperback:   ["Sitting upright at a desk", "Reaching behind your back", "Taking a deep breath"],
     midback:     ["Bending to load the dishwasher", "Twisting to reach the back seat", "Standing for a long time"],
     chest:       ["Taking a deep breath", "Lifting a light box", "Reaching overhead"],
-    lowback:     ["Putting on socks and shoes", "Standing to cook a meal", "Lifting a laundry basket", "Getting out of a car"],
     pelvabd:     ["Bending to pick something up", "Sitting through a long meal", "Rolling over in bed"],
     pelvgen:     ["Sitting comfortably", "Walking for exercise", "Sleeping through the night"],
-    hipleg:      ["Climbing a flight of stairs", "Getting up from a low chair", "Walking around the block"],
-    knee:        ["Going down stairs", "Kneeling in the garden", "Getting up from the floor", "Walking on uneven ground"],
-    footankle:   ["Walking on uneven ground", "Standing to cook a meal", "Rising up onto your toes"],
     psych:       ["Concentrating on a task", "Being in a crowded place", "Keeping to your daily routine"],
     systemic:    ["Doing daily chores without tiring", "Walking for exercise", "Getting through the workday"],
     unspecified: ["A daily task that is hard right now", "An activity you had to give up", "Something you want to get back to"]

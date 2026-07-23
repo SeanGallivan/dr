@@ -454,6 +454,29 @@
 /* C10: care-team alert confirmation on the thank-you added-areas box */
 .pif-survey .alert-note { font-size: 14px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
 
+/* Suggestions + activity capture on a patient-added (unassigned) area */
+.pif-survey .added-acts { margin: 12px 0 8px; }
+.pif-survey .added-acts .prompt-select { margin-bottom: 8px; }
+.pif-survey .added-act-free { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.pif-survey .added-act-input {
+    flex: 1; max-width: 360px; box-sizing: border-box; min-height: 40px;
+    padding: 8px 12px; border: 1px solid var(--line-2); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--ink); background: var(--surface);
+}
+.pif-survey .added-act-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pif-survey .added-act-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.pif-survey .added-act-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 8px 6px 12px; border: 1px solid var(--line-2); border-radius: 16px;
+    background: var(--surface-2); font-size: 13px; color: var(--ink);
+}
+.pif-survey .added-act-x {
+    font-family: inherit; cursor: pointer; background: none; border: none;
+    font-size: 15px; font-weight: 600; color: var(--muted); line-height: 1;
+    min-width: 24px; min-height: 24px; border-radius: 50%;
+}
+.pif-survey .added-act-x:hover { color: var(--clay); background: var(--surface); }
+
 /* ============================================================
    Legacy-survey sections restored (work / general / body-area /
    satisfaction) + submit confirmation modal.
